@@ -271,12 +271,16 @@ export class DatabaseService {
 
 export const dbServiceInstance = new DatabaseService();
 
-// --- AI MODEL INTEGRATOR (STRICT YOLOv8 ONLY) ---
+// --- AI MODEL INTEGRATOR (YOLOv11) ---
+
+// Configurable model path - later replace best.pt here
+const DEFAULT_MODEL_NAME = 'yolov11n';
+const DEFAULT_MODEL_PATH = 'best.pt';
 
 export async function processCamouflageImageAI(
   base64Data: string,
   fileName: string,
-  modelName: string = 'yolov8n',
+  modelName: string = DEFAULT_MODEL_NAME,
   threshold: number = 0.70,
   mockType: string = 'none'
 ): Promise<Omit<DetectionRecord, 'blocIndex' | 'blockchainHash'>> {
@@ -287,16 +291,16 @@ export async function processCamouflageImageAI(
   if (!fs.existsSync(tempDir)) {
     fs.mkdirSync(tempDir, { recursive: true });
   }
-  const tempFileName = `temp_recon_${Date.now()}_${Math.floor(Math.random() * 1000)}.jpg`;
+  const tempFileName = `temp_${Date.now()}_${Math.floor(Math.random() * 1000)}.jpg`;
   const tempFilePath = path.join(tempDir, tempFileName);
 
   try {
     const buffer = Buffer.from(cleanBase64, 'base64');
     fs.writeFileSync(tempFilePath, buffer);
 
-    // Call Python core passing configuration threshold
+    // Call Python core passing configuration threshold and model path
     const mockArg = mockType !== 'none' ? ` "${mockType}"` : '';
-    const stdout = execSync(`python3 yolo_pipeline.py "${tempFilePath}" "${threshold}"${mockArg}`, {
+    const stdout = execSync(`python3 yolo_pipeline.py "${tempFilePath}" "${threshold}" "${DEFAULT_MODEL_PATH}"${mockArg}`, {
       encoding: 'utf-8',
       timeout: 30000,
     });
@@ -315,9 +319,9 @@ export async function processCamouflageImageAI(
       const tacticalAnalysis: TacticalAnalysis = {
         concealmentScore: Math.round((1 - parsed.confidence) * 100 + 10),
         threatRating: parsed.confidence > 0.9 ? 'CRITICAL' : (parsed.confidence > 0.8 ? 'HIGH' : 'MED'),
-        recommendedAction: `Target tracked via YOLOv8 validation layer. Sector coordinates locked. Prepare countermeasures.`,
+        recommendedAction: `Target tracked via YOLOv11 validation layer.`,
         thermalSignature: parsed.confidence > 0.85 ? 'HIGH' : 'MEDIUM',
-        fusionRatio: `65% Visual / 35% Thermal`,
+        fusionRatio: `100% Visual`,
         sensorConfidence: Math.round(parsed.confidence * 100)
       };
 
@@ -325,7 +329,7 @@ export async function processCamouflageImageAI(
           id: detId,
           timestamp: new Date().toISOString(),
           imageUrl: imageSource,
-          fileName: fileName || 'fused_recon_scan.jpg',
+          fileName: fileName || 'image.jpg',
           threatType: parsed.threatType,
           confidence: parsed.confidence,
           boundingBoxes: finalBoxes,
@@ -339,14 +343,14 @@ export async function processCamouflageImageAI(
           id: detId,
           timestamp: new Date().toISOString(),
           imageUrl: imageSource,
-          fileName: fileName || 'fused_recon_scan.jpg',
+          fileName: fileName || 'image.jpg',
           threatType: 'None',
           confidence: 0,
           boundingBoxes: [],
           tacticalAnalysis: {
             concealmentScore: 0,
             threatRating: 'LOW',
-            recommendedAction: 'No action required. Sector secure.',
+            recommendedAction: 'No action required.',
             thermalSignature: 'LOW',
             fusionRatio: '100% Visual',
             sensorConfidence: 100
@@ -361,14 +365,14 @@ export async function processCamouflageImageAI(
         id: `scan-err-${Date.now()}`,
         timestamp: new Date().toISOString(),
         imageUrl: imageSource,
-        fileName: fileName || 'fused_recon_error.jpg',
+        fileName: fileName || 'image.jpg',
         threatType: 'None',
         confidence: 0,
         boundingBoxes: [],
         tacticalAnalysis: {
           concealmentScore: 0,
           threatRating: 'LOW',
-          recommendedAction: 'Verify pipeline channels.',
+          recommendedAction: 'Verify pipeline.',
           thermalSignature: 'LOW',
           fusionRatio: '100% Visual',
           sensorConfidence: 0
@@ -388,9 +392,9 @@ export async function processCamouflageImageAI(
 export async function processCamouflageVideoAI(
   base64Video: string,
   fileName: string,
-  modelName: string = 'yolov8n'
+  modelName: string = DEFAULT_MODEL_NAME
 ): Promise<any> {
-  // Return standard tracking format but utilizing clean detections over time
+  // Return standard tracking format
   const mockTracking = [
     {
       time_seconds: 0,
@@ -412,12 +416,9 @@ export async function runFPTestSuite(threshold: number = 0.70) {
   const tinyPngBase64 = 'iVBOR0g0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
 
   const testCases = [
-    { name: 'Blank Image (Clean White)', base64: tinyPngBase64, mockType: 'none', expected: false },
-    { name: 'Desktop GUI Screenshot', base64: tinyPngBase64, mockType: 'none', expected: false },
-    { name: 'Alpine Woodland Landscape', base64: tinyPngBase64, mockType: 'none', expected: false },
-    { name: 'Random Internet Noisy Feed', base64: tinyPngBase64, mockType: 'none', expected: false },
-    { name: 'Combat Sentry Guard (Positive Control)', base64: tinyPngBase64, mockType: 'mock_positive_control', expected: true },
-    { name: 'Heavy Patrol Truck (Positive Control)', base64: tinyPngBase64, mockType: 'mock_positive_control', expected: true }
+    { name: 'Blank Image', base64: tinyPngBase64, mockType: 'none', expected: false },
+    { name: 'Positive Control 1', base64: tinyPngBase64, mockType: 'mock_positive_control', expected: true },
+    { name: 'Positive Control 2', base64: tinyPngBase64, mockType: 'mock_positive_control', expected: true }
   ];
 
   let tp = 0; // True Positives
@@ -429,7 +430,7 @@ export async function runFPTestSuite(threshold: number = 0.70) {
 
   for (const tc of testCases) {
     addSurveillanceLog(`Running verify test case: ${tc.name}`);
-    const res = await processCamouflageImageAI(tc.base64, `${tc.name.toLowerCase().replace(/\s/g, '_')}.png`, 'yolov8n', threshold, tc.mockType);
+    const res = await processCamouflageImageAI(tc.base64, `${tc.name.toLowerCase().replace(/\s/g, '_')}.png`, DEFAULT_MODEL_NAME, threshold, tc.mockType);
     
     const wasDetected = res.detected === true;
     
@@ -460,7 +461,7 @@ export async function runFPTestSuite(threshold: number = 0.70) {
   const recall = (tp + fn) > 0 ? (tp / (tp + fn)) : 1.0;
   const fpr = (fp + tn) > 0 ? (fp / (fp + tn)) : 0.0;
 
-  addSurveillanceLog(`=== TEST SUITE COMPLETED === Result: ${tn + tp}/6 PASSED.`);
+  addSurveillanceLog(`=== TEST SUITE COMPLETED === Result: ${tn + tp}/${testCases.length} PASSED.`);
 
   return {
     timestamp: new Date().toISOString(),

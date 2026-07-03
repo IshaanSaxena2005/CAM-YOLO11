@@ -105,8 +105,10 @@ export default function App() {
   const fetchLogs = async () => {
     try {
       const res = await fetch('/api/logs');
-      const data = await res.json();
-      setSystemLogs(data);
+      const json = await res.json();
+      if (json.success && json.data) {
+        setSystemLogs(json.data);
+      }
     } catch (e) {
       console.error('Failed to sync logs', e);
     }
@@ -121,10 +123,12 @@ export default function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ threshold: confThreshold })
       });
-      const data = await res.json();
-      setTestSuiteReport(data);
-      fetchStats();
-      fetchLogs();
+      const json = await res.json();
+      if (json.success && json.data) {
+        setTestSuiteReport(json.data);
+        fetchStats();
+        fetchLogs();
+      }
     } catch (err) {
       console.error('Test suite failed', err);
     } finally {
@@ -210,9 +214,11 @@ export default function App() {
   const fetchStats = async () => {
     try {
       const res = await fetch('/api/stats');
-      const data = await res.json();
-      setStats(data);
-      setIsChainCompromised(!data.systemIntegrity);
+      const json = await res.json();
+      if (json.success && json.data) {
+        setStats(json.data);
+        setIsChainCompromised(!json.data.systemIntegrity);
+      }
     } catch (e) {
       console.error('Failed to sync telemetry stats', e);
     }
@@ -221,10 +227,12 @@ export default function App() {
   const fetchHistory = async () => {
     try {
       const res = await fetch('/api/history');
-      const data = await res.json();
-      setDetections(data);
-      if (data.length > 0 && !selectedDetection) {
-        setSelectedDetection(data[0]);
+      const json = await res.json();
+      if (json.success && json.data) {
+        setDetections(json.data);
+        if (json.data.length > 0 && !selectedDetection) {
+          setSelectedDetection(json.data[0]);
+        }
       }
     } catch (e) {
       console.error('Failed to sync archives', e);
@@ -234,8 +242,10 @@ export default function App() {
   const fetchBlockchain = async () => {
     try {
       const res = await fetch('/api/blockchain');
-      const data = await res.json();
-      setBlockchain(data);
+      const json = await res.json();
+      if (json.success && json.data) {
+        setBlockchain(json.data);
+      }
     } catch (e) {
       console.error('Failed to sync block ledger', e);
     }
@@ -260,21 +270,24 @@ export default function App() {
   const triggerAudit = async () => {
     try {
       const res = await fetch('/api/blockchain/verify', { method: 'POST' });
-      const audit = await res.json();
-      if (audit.isValid) {
-        setSystemAlert({
-          type: 'success',
-          message: 'Cryptographic security audit fully green! Ledger chains verified to block zero.'
-        });
-        setIsChainCompromised(false);
-      } else {
-        setSystemAlert({
-          type: 'tamper',
-          message: `CRITICAL SEC CODE ERROR: Cryptographic link corruption detected starting at Block #${audit.errorBlockIndex}! Evidence logs are compromised.`
-        });
-        setIsChainCompromised(true);
+      const json = await res.json();
+      if (json.success && json.data) {
+        const audit = json.data;
+        if (audit.isValid) {
+          setSystemAlert({
+            type: 'success',
+            message: 'Cryptographic security audit fully green! Ledger chains verified to block zero.'
+          });
+          setIsChainCompromised(false);
+        } else {
+          setSystemAlert({
+            type: 'tamper',
+            message: `CRITICAL SEC CODE ERROR: Cryptographic link corruption detected starting at Block #${audit.errorBlockIndex}! Evidence logs are compromised.`
+          });
+          setIsChainCompromised(true);
+        }
+        fetchStats();
       }
-      fetchStats();
     } catch (e) {
       setSystemAlert({ type: 'error', message: 'Failed to broadcast secure blockchain validation sweep.' });
     }
@@ -292,7 +305,7 @@ export default function App() {
       
       setSystemAlert({
         type: 'tamper',
-        message: `LEDGER HACK ACTIVATED: Block #${selectedBlockForTamper} overwritten. Integrity watchdogs triggered.`
+        message: data.message
       });
       setIsChainCompromised(true);
       fetchStats();
@@ -305,10 +318,10 @@ export default function App() {
   const resetBlockchainChain = async () => {
     try {
       const res = await fetch('/api/blockchain/reset', { method: 'POST' });
-      await res.json();
+      const data = await res.json();
       setSystemAlert({
         type: 'success',
-        message: 'Cryptographic security module reset. Recalibrated ledger chains; integrity normal.'
+        message: data.message
       });
       setIsChainCompromised(false);
       setSelectedBlockForTamper(null);
@@ -401,25 +414,29 @@ export default function App() {
         })
       });
 
-      const responseRecord = await res.json();
-      
-      // Update states
-      setSelectedDetection(responseRecord);
-      if (responseRecord.detected !== false) {
-        setSystemAlert({
-          type: 'success',
-          message: `Analysis completed! Detections: ${responseRecord.boundingBoxes.length} targets locked. Added to security blockchain.`
-        });
+      const json = await res.json();
+      if (json.success && json.data) {
+        const responseRecord = json.data;
+        // Update states
+        setSelectedDetection(responseRecord);
+        if (responseRecord.detected !== false) {
+          setSystemAlert({
+            type: 'success',
+            message: `Analysis completed! Detections: ${responseRecord.boundingBoxes.length} targets locked. Added to security blockchain.`
+          });
+        } else {
+          setSystemAlert({
+            type: 'error',
+            message: `Inference completed. No valid target detected above ${confThreshold.toFixed(2)} threshold.`
+          });
+        }
+        fetchStats();
+        fetchHistory();
+        fetchBlockchain();
+        fetchLogs();
       } else {
-        setSystemAlert({
-          type: 'error',
-          message: `Inference completed. No valid military target detected above ${confThreshold.toFixed(2)} threshold.`
-        });
+        throw new Error(json.message || 'Detection failed');
       }
-      fetchStats();
-      fetchHistory();
-      fetchBlockchain();
-      fetchLogs();
     } catch (err: any) {
       setSystemAlert({ type: 'error', message: 'Failed to route frames to YOLOv11 backend.' });
     } finally {
@@ -498,17 +515,21 @@ export default function App() {
           throw new Error('Video tracker compilation rejected by YOLO frame parser.');
         }
 
-        const data = await res.json();
-        setVideoTrackingData(data);
-        setIsVideoAnalyzing(false);
+        const json = await res.json();
+        if (json.success && json.data) {
+          setVideoTrackingData(json.data);
+          setIsVideoAnalyzing(false);
 
-        setSystemAlert({
-          type: 'success',
-          message: `Camouflage targeting network mapped! Blockchain block mined and locked for video stream ${file.name}. Click Play to watch tracking overlays.`
-        });
-        fetchStats();
-        fetchHistory();
-        fetchBlockchain();
+          setSystemAlert({
+            type: 'success',
+            message: `Camouflage targeting network mapped! Blockchain block mined and locked for video stream ${file.name}. Click Play to watch tracking overlays.`
+          });
+          fetchStats();
+          fetchHistory();
+          fetchBlockchain();
+        } else {
+          throw new Error(json.message || 'Video detection failed');
+        }
       } catch (err: any) {
         setIsVideoAnalyzing(false);
         setSystemAlert({
