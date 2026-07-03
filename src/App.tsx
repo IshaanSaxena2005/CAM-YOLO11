@@ -94,6 +94,7 @@ export default function App() {
   const [selectedScenario, setSelectedScenario] = useState<number>(0);
   const [customImage, setCustomImage] = useState<string | null>(null);
   const [customFileName, setCustomFileName] = useState('');
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const [activeOverlayMode, setActiveOverlayMode] = useState<'raw' | 'yolo' | 'gradcam' | 'thermal'>('yolo');
   const [gradcamAlpha, setGradcamAlpha] = useState<number>(75);
   const [selectedModel, setSelectedModel] = useState<string>('yolov8n');
@@ -346,10 +347,36 @@ export default function App() {
     }, 1800);
   };
 
+  // Validate uploaded file
+  const validateFile = (file: File): string | null => {
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+    const maxSizeMB = 10;
+    const maxSizeBytes = maxSizeMB * 1024 * 1024;
+
+    if (!allowedTypes.includes(file.type)) {
+      return 'Invalid file type. Only JPG, JPEG, and PNG are supported.';
+    }
+
+    if (file.size > maxSizeBytes) {
+      return `File too large. Maximum size is ${maxSizeMB} MB.`;
+    }
+
+    return null;
+  };
+
   // --- IMAGE ANALYSIS TRIGGER ---
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    const validationError = validateFile(file);
+    if (validationError) {
+      setUploadError(validationError);
+      setSystemAlert({ type: 'error', message: validationError });
+      return;
+    }
+
+    setUploadError(null);
     const reader = new FileReader();
     reader.onload = () => {
       setCustomImage(reader.result as string);
@@ -367,6 +394,15 @@ export default function App() {
     e.preventDefault();
     const file = e.dataTransfer.files?.[0];
     if (!file) return;
+
+    const validationError = validateFile(file);
+    if (validationError) {
+      setUploadError(validationError);
+      setSystemAlert({ type: 'error', message: validationError });
+      return;
+    }
+
+    setUploadError(null);
     const reader = new FileReader();
     reader.onload = () => {
       setCustomImage(reader.result as string);
@@ -403,6 +439,10 @@ export default function App() {
         fName = `recon_${SCENARIOS[selectedScenario].title.toLowerCase().replace(/\s/g, '_')}.jpg`;
       }
 
+      // Create abort controller for timeout (30 seconds)
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
+
       const res = await fetch('/api/detect', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -411,10 +451,20 @@ export default function App() {
           fileName: fName,
           modelName: selectedModel,
           threshold: confThreshold
-        })
+        }),
+        signal: controller.signal
       });
 
-      const json = await res.json();
+      clearTimeout(timeoutId);
+
+      // Parse response
+      let json;
+      try {
+        json = await res.json();
+      } catch (parseErr) {
+        throw new Error('Invalid JSON response from server');
+      }
+
       if (json.success && json.data) {
         const responseRecord = json.data;
         // Update states
@@ -438,7 +488,15 @@ export default function App() {
         throw new Error(json.message || 'Detection failed');
       }
     } catch (err: any) {
-      setSystemAlert({ type: 'error', message: 'Failed to route frames to YOLOv11 backend.' });
+      let errorMessage = 'Failed to route frames to YOLOv11 backend.';
+      
+      if (err.name === 'AbortError') {
+        errorMessage = 'Request timed out. Please try again.';
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
+      setSystemAlert({ type: 'error', message: errorMessage });
     } finally {
       setIsAnalyzing(false);
     }
@@ -908,10 +966,17 @@ export default function App() {
                   {/* LOG ENTRIES */}
                   <div className="flex-1 space-y-2 overflow-y-auto max-h-[220px] font-mono text-[11px] text-gray-300">
                     {systemLogs.length > 0 ? (
-                      systemLogs.map((item, idx) => (
+                      systemLogs.map((item: any, idx: number) => (
                         <div key={idx} className="border-b border-slate-900 pb-1.5 flex gap-2">
                           <span className="text-emerald-500 font-bold shrink-0">[{item.time}]</span>
-                          <span className="text-gray-300">{item.log}</span>
+                          <span className={`font-bold shrink-0 ${
+                            item.severity === 'ERROR' ? 'text-red-400' : 
+                            item.severity === 'WARNING' ? 'text-orange-400' : 
+                            'text-emerald-400'
+                          }`}>
+                            [{item.severity}]
+                          </span>
+                          <span className="text-gray-300">{item.message || item.log}</span>
                         </div>
                       ))
                     ) : (
@@ -1076,15 +1141,17 @@ export default function App() {
                       onDragOver={handleDragOver}
                       onDrop={handleDrop}
                       className={`rounded-lg border-2 border-dashed p-4 text-center cursor-pointer transition-colors ${
-                        customImage 
-                          ? 'border-emerald-500/50 bg-emerald-950/5' 
-                          : 'border-slate-800 bg-slate-950/20 hover:border-emerald-500/30'
+                        uploadError 
+                          ? 'border-red-500/50 bg-red-950/5' 
+                          : customImage 
+                            ? 'border-emerald-500/50 bg-emerald-950/5' 
+                            : 'border-slate-800 bg-slate-950/20 hover:border-emerald-500/30'
                       }`}
                     >
                       <input 
                         type="file" 
                         id="image-file-uploader" 
-                        accept="image/*" 
+                        accept="image/jpeg,image/png,image/jpg" 
                         className="hidden" 
                         onChange={handleFileUpload} 
                       />
@@ -1105,12 +1172,16 @@ export default function App() {
                               e.preventDefault();
                               setCustomImage(null);
                               setCustomFileName('');
+                              setUploadError(null);
                             }} 
                             className="text-red-400 hover:text-red-300"
                           >
                             <X className="h-3 w-3" />
                           </button>
                         </div>
+                      )}
+                      {uploadError && (
+                        <div className="mt-2 text-[10px] text-red-400 font-bold">{uploadError}</div>
                       )}
                     </div>
 

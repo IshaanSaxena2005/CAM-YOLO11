@@ -77,27 +77,42 @@ app.post('/api/detect', async (req, res) => {
   try {
     const { base64, fileName, modelName, threshold } = req.body;
     if (!base64) {
+      addSurveillanceLog('Image validation failed: Missing base64 payload', 'ERROR');
       return res.status(400).json({ success: false, message: 'Missing image payload', error: 'Base64 is required' });
     }
 
     const confThreshold = threshold !== undefined ? Number(threshold) : 0.70;
 
-    addSurveillanceLog(`Image uploaded. Filename: ${fileName || 'image.jpg'}`);
-    addSurveillanceLog(`Inference started on YOLOv11 Core.`);
+    addSurveillanceLog(`Image uploaded: ${fileName || 'image.jpg'}`);
+    addSurveillanceLog('Detection request received');
+    addSurveillanceLog('Inference started on YOLOv11 Core');
 
     // Process image through yolo_pipeline
     const rawResult = await processCamouflageImageAI(base64, fileName, modelName, confThreshold);
-    addSurveillanceLog(`Inference completed.`);
+    addSurveillanceLog('Inference completed');
 
     if (rawResult.detected) {
-      addSurveillanceLog(`Target accepted: ${rawResult.threatType} (Confidence: ${(rawResult.confidence * 100).toFixed(1)}%).`);
+      addSurveillanceLog(`Target accepted: ${rawResult.threatType} (Confidence: ${(rawResult.confidence * 100).toFixed(1)}%)`);
     } else {
-      addSurveillanceLog(`Inference scan concluded. ${rawResult.message || 'No valid targets matched.'}`);
+      addSurveillanceLog(`No valid target detected: ${rawResult.message || 'No targets matched threshold'}`, 'WARNING');
     }
 
     const savedRecord = dbServiceInstance.addDetection(rawResult);
+    addSurveillanceLog('Detection stored in database');
+    if (savedRecord.detected !== false) {
+      addSurveillanceLog(`Blockchain record created (Block #${savedRecord.blocIndex})`);
+    }
+    addSurveillanceLog('History updated');
     res.json({ success: true, data: savedRecord });
   } catch (error: any) {
+    const errMsg = error.message || 'Unknown error';
+    if (errMsg.includes('timeout')) {
+      addSurveillanceLog('Detection timeout', 'ERROR');
+    } else if (errMsg.includes('python3') || errMsg.includes('Python')) {
+      addSurveillanceLog('Python pipeline unavailable', 'ERROR');
+    } else {
+      addSurveillanceLog(`Critical surveillance pipeline error: ${errMsg}`, 'ERROR');
+    }
     console.error('Error in /api/detect:', error);
     res.status(500).json({ success: false, message: 'Critical surveillance pipeline error', error: error.message });
   }

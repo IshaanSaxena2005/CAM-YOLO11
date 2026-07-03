@@ -66,10 +66,19 @@ function ensureDirectories() {
 
 // --- REAL LOGGING COMPONENT BACKBONE ---
 
-export function addSurveillanceLog(event: string) {
+export type LogSeverity = 'INFO' | 'WARNING' | 'ERROR';
+
+export interface SurvellianceLog {
+  time: string;
+  timestamp: string;
+  message: string;
+  severity: LogSeverity;
+}
+
+export function addSurveillanceLog(message: string, severity: LogSeverity = 'INFO') {
   try {
     ensureDirectories();
-    let currentLogs: any[] = [];
+    let currentLogs: SurvellianceLog[] = [];
     if (fs.existsSync(LOGS_FILE)) {
       try {
         currentLogs = JSON.parse(fs.readFileSync(LOGS_FILE, 'utf-8'));
@@ -79,8 +88,15 @@ export function addSurveillanceLog(event: string) {
     }
     const timestamp = new Date().toISOString();
     const time = new Date().toLocaleTimeString();
-    currentLogs.push({ time, timestamp, log: event });
-    // Limit to last 100 log entries
+    // Avoid duplicate consecutive log messages
+    if (currentLogs.length > 0) {
+      const lastLog = currentLogs[currentLogs.length - 1];
+      if (lastLog.message === message && lastLog.severity === severity) {
+        return;
+      }
+    }
+    currentLogs.push({ time, timestamp, message, severity });
+    // Keep only latest 100 entries, newest first
     if (currentLogs.length > 100) {
       currentLogs.shift();
     }
@@ -90,14 +106,23 @@ export function addSurveillanceLog(event: string) {
   }
 }
 
-export function getSurveillanceLogs() {
+export function getSurveillanceLogs(): SurvellianceLog[] {
   try {
     if (fs.existsSync(LOGS_FILE)) {
-      return JSON.parse(fs.readFileSync(LOGS_FILE, 'utf-8'));
+      const logs = JSON.parse(fs.readFileSync(LOGS_FILE, 'utf-8'));
+      // Ensure logs are sorted newest first
+      return logs.sort((a: SurvellianceLog, b: SurvellianceLog) => 
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      );
     }
   } catch {}
   return [
-    { time: new Date().toLocaleTimeString(), timestamp: new Date().toISOString(), log: 'Multispectral sensor array online. Telemetry established.' }
+    { 
+      time: new Date().toLocaleTimeString(), 
+      timestamp: new Date().toISOString(), 
+      message: 'System initialized', 
+      severity: 'INFO' 
+    }
   ];
 }
 
@@ -223,7 +248,11 @@ export class DatabaseService {
     try {
       if (fs.existsSync(DB_FILE)) {
         const raw = fs.readFileSync(DB_FILE, 'utf-8');
-        return JSON.parse(raw);
+        const detections = JSON.parse(raw);
+        // Sort by timestamp descending (newest first)
+        return detections.sort((a: DetectionRecord, b: DetectionRecord) =>
+          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+        );
       }
     } catch {
       // fallback
