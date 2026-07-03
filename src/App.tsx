@@ -723,18 +723,7 @@ export default function App() {
                 <span>Analytics Grid</span>
               </button>
 
-              {/* About Section (formerly Academic UROP) */}
-              <button 
-                onClick={() => setActiveTab('about')}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-xs font-bold tracking-wide transition-all ${
-                  activeTab === 'about' 
-                    ? 'bg-emerald-950/30 text-emerald-400 border-l-4 border-emerald-500' 
-                    : 'text-gray-400 hover:bg-slate-900 hover:text-white'
-                }`} 
-                id="tab-about">
-                <BookOpen className="h-4 w-4" />
-                <span>About</span>
-              </button>
+
             </nav>
 
             {/* SATELLITE GROUNDING SYSTEM HEALTH */}
