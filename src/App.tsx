@@ -54,13 +54,13 @@ import {
 
 // --- STYLING CONSTANTS ---
 const COLORS = {
-  emerald: '#10b981',
+  emerald: 'var(--accent-green)',
   blue: '#0ea5e9',
   orange: '#f97316',
   red: '#ef4444',
-  darkBg: '#0b0f17',
-  cardBg: '#121a28',
-  border: '#1e293b'
+  darkBg: 'var(--bg-primary)',
+  cardBg: 'var(--bg-card)',
+  border: 'var(--border-color)'
 };
 
 export default function App() {
@@ -629,23 +629,22 @@ export default function App() {
       )}
 
       {/* 2. MAIN GRID LAYOUT */}
-      <main className="mx-auto flex max-w-7xl flex-col gap-6 p-4 lg:flex-row lg:p-6" id="main-content-layout">
+      <main className="mx-auto flex max-w-7xl flex-col gap-6 p-4 lg:flex-row lg:p-6" id="main-content-layout" style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
         
         {/* SIDE BAR DASHBOARD NAVIGATION */}
-        <aside className="w-full shrink-0 lg:w-64" id="sidebar-navigation">
-          <div className="sticky top-6 flex flex-col gap-4 rounded-xl border bg-slate-950/80 p-3 shadow-md" style={{ borderColor: COLORS.border }}>
-            <div className="px-3 py-2 text-[10px] font-black uppercase tracking-widest text-gray-500">SURVEILLANCE MODULES</div>
+        <aside className="w-full shrink-0 lg:w-72" id="sidebar-navigation" style={{ backgroundColor: 'var(--bg-sidebar)' }}>
+          <div className="sticky top-6 flex flex-col gap-4 rounded-xl border p-3" style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: 'var(--border-color)', borderRadius: 'var(--border-radius)', boxShadow: 'var(--shadow)' }}>
+            <div className="px-3 py-2 text-[10px] font-black uppercase tracking-widest" style={{ color: 'var(--text-secondary)' }}>SURVEILLANCE MODULES</div>
             
             <nav className="flex flex-col gap-1">
               <button 
                 onClick={() => setActiveTab('dashboard')}
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-xs font-bold tracking-wide transition-all ${
                   activeTab === 'dashboard' 
-                    ? 'bg-emerald-950/30 text-emerald-400 border-l-2 border-emerald-500 shadow-[0_4px_12px_rgba(16,185,129,0.06)]' 
+                    ? 'bg-emerald-950/30 text-emerald-400 border-l-4 border-emerald-500' 
                     : 'text-gray-400 hover:bg-slate-900 hover:text-white'
-                }`}
-                id="tab-dashboard"
-              >
+                }`} 
+                id="tab-dashboard">
                 <Layers className="h-4 w-4" />
                 <span>Command Deck HUD</span>
               </button>
@@ -654,11 +653,10 @@ export default function App() {
                 onClick={() => setActiveTab('analysis')}
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-xs font-bold tracking-wide transition-all ${
                   activeTab === 'analysis' 
-                    ? 'bg-emerald-950/30 text-emerald-400 border-l-2 border-emerald-500 shadow-[0_4px_12px_rgba(16,185,129,0.06)]' 
+                    ? 'bg-emerald-950/30 text-emerald-400 border-l-4 border-emerald-500' 
                     : 'text-gray-400 hover:bg-slate-900 hover:text-white'
-                }`}
-                id="tab-analysis"
-              >
+                }`} 
+                id="tab-analysis">
                 <Eye className="h-4 w-4" />
                 <span>CAM-YOLO11 Analyzer</span>
               </button>
@@ -667,11 +665,10 @@ export default function App() {
                 onClick={() => setActiveTab('video')}
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-xs font-bold tracking-wide transition-all ${
                   activeTab === 'video' 
-                    ? 'bg-emerald-950/30 text-emerald-400 border-l-2 border-emerald-500 shadow-[0_4px_12px_rgba(16,185,129,0.06)]' 
+                    ? 'bg-emerald-950/30 text-emerald-400 border-l-4 border-emerald-500' 
                     : 'text-gray-400 hover:bg-slate-900 hover:text-white'
-                }`}
-                id="tab-video"
-              >
+                }`} 
+                id="tab-video">
                 <Play className="h-4 w-4" />
                 <span>Real-Time Drone Feed</span>
               </button>
@@ -680,26 +677,24 @@ export default function App() {
                 onClick={() => setActiveTab('blockchain')}
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-xs font-bold tracking-wide transition-all ${
                   activeTab === 'blockchain' 
-                    ? 'bg-emerald-950/30 text-emerald-400 border-l-2 border-emerald-500 shadow-[0_4px_12px_rgba(16,185,129,0.06)]' 
+                    ? 'bg-emerald-950/30 text-emerald-400 border-l-4 border-emerald-500' 
                     : 'text-gray-400 hover:bg-slate-900 hover:text-white'
-                }`}
-                id="tab-blockchain"
-              >
+                }`} 
+                id="tab-blockchain">
                 <Shield className="h-4 w-4" />
-                <span>Secure block Ledger</span>
+                <span>Evidence Integrity Ledger</span>
               </button>
 
               <button 
                 onClick={() => setActiveTab('quantum')}
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-xs font-bold tracking-wide transition-all ${
                   activeTab === 'quantum' 
-                    ? 'bg-emerald-950/30 text-emerald-400 border-l-2 border-emerald-500 shadow-[0_4px_12px_rgba(16,185,129,0.06)]' 
+                    ? 'bg-emerald-950/30 text-emerald-400 border-l-4 border-emerald-500' 
                     : 'text-gray-400 hover:bg-slate-900 hover:text-white'
-                }`}
-                id="tab-quantum"
-              >
+                }`} 
+                id="tab-quantum">
                 <Cpu className="h-4 w-4" />
-                <span>Quantum Optimizer</span>
+                <span>Quantum Optimization Engine</span>
               </button>
 
               <button 
@@ -728,26 +723,26 @@ export default function App() {
                 <span>Analytics Grid</span>
               </button>
 
+              {/* About Section (formerly Academic UROP) */}
               <button 
-                onClick={() => setActiveTab('research')}
+                onClick={() => setActiveTab('about')}
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-xs font-bold tracking-wide transition-all ${
-                  activeTab === 'research' 
-                    ? 'bg-emerald-950/30 text-emerald-400 border-l-2 border-emerald-500 shadow-[0_4px_12px_rgba(16,185,129,0.06)]' 
+                  activeTab === 'about' 
+                    ? 'bg-emerald-950/30 text-emerald-400 border-l-4 border-emerald-500' 
                     : 'text-gray-400 hover:bg-slate-900 hover:text-white'
-                }`}
-                id="tab-research"
-              >
+                }`} 
+                id="tab-about">
                 <BookOpen className="h-4 w-4" />
-                <span>Academic UROP Panel</span>
+                <span>About</span>
               </button>
             </nav>
 
             {/* SATELLITE GROUNDING SYSTEM HEALTH */}
-            <div className="mt-4 border-t pt-4" style={{ borderColor: COLORS.border }}>
-              <div className="flex justify-between text-[10px] tracking-wider text-gray-500 uppercase font-black">
-                <span>SENSOR STATUS</span>
-                <span className="text-emerald-500">NOMINAL</span>
-              </div>
+            <div className="mt-4" style={{ borderTop: `1px solid ${COLORS.border}`, paddingTop: 'var(--spacing-unit)' }}>
+               <div className="flex justify-between text-[10px] tracking-wider" style={{ color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: '900' }}>
+                 <span>SENSOR STATUS</span>
+                 <span className="text-emerald-500">NOMINAL</span>
+               </div></div>
               <div className="mt-2 space-y-1 text-[11px] text-gray-400">
                 <div className="flex justify-between">
                   <span>FLIR Fusion Ratio:</span>
@@ -773,7 +768,7 @@ export default function App() {
                 <Shield className="h-3.5 w-3.5" />
                 <span>Trigger security Audit</span>
               </button>
-            </div>
+
           </div>
         </aside>
 
