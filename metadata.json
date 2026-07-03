@@ -1,0 +1,6 @@
+{
+  "name": "CAM-YOLO11 Military Surveillance",
+  "description": "AI-Powered Military Surveillance & Camouflaged Object Detection Command Center based on YOLOv11, featuring Grad-CAM explainability, secure cryptographic ledger recording, and Quantum Hyperparameter optimization insights.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

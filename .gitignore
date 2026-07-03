@@ -1,0 +1,53 @@
+# Dependencies
+node_modules/
+
+# Build
+dist/
+build/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Environment
+.env
+.env.local
+.env.development.local
+.env.production.local
+
+# Vite
+.vite/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+.venv/
+venv/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Coverage
+coverage/
+
+# Temporary
+temp/
+tmp/
+
+# Misc
+*.bak
