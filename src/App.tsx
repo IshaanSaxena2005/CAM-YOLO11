@@ -55,12 +55,20 @@ import {
 // --- STYLING CONSTANTS ---
 const COLORS = {
   emerald: 'var(--accent-green)',
+  emeraldHover: 'var(--accent-green-hover)',
+  emeraldSubtle: 'var(--accent-green-subtle)',
   blue: '#0ea5e9',
   orange: '#f97316',
   red: '#ef4444',
   darkBg: 'var(--bg-primary)',
   cardBg: 'var(--bg-card)',
-  border: 'var(--border-color)'
+  sidebarBg: 'var(--bg-sidebar)',
+  hoverBg: 'var(--bg-hover)',
+  border: 'var(--border-color)',
+  borderLight: 'var(--border-light)',
+  textPrimary: 'var(--text-primary)',
+  textSecondary: 'var(--text-secondary)',
+  textMuted: 'var(--text-muted)'
 };
 
 export default function App() {
@@ -470,10 +478,7 @@ export default function App() {
         // Update states
         setSelectedDetection(responseRecord);
         if (responseRecord.detected !== false) {
-          setSystemAlert({
-            type: 'success',
-            message: `Analysis completed! Detections: ${responseRecord.boundingBoxes.length} targets locked. Added to security blockchain.`
-          });
+          setSystemAlert({ type: 'success', message: `Analysis completed! Detections: ${responseRecord.detections?.length ?? 0} targets locked. Added to security blockchain.` });
         } else {
           setSystemAlert({
             type: 'error',
@@ -639,48 +644,48 @@ export default function App() {
     <div id="app-root" className="min-h-screen font-sans text-gray-100 antialiased selection:bg-emerald-500/30 selection:text-emerald-400" style={{ backgroundColor: COLORS.darkBg }}>
       
       {/* 1. FUTURISTIC TOP BAR */}
-      <header className="border-b bg-slate-950 px-4 py-3 shadow-lg" style={{ borderColor: COLORS.border }} id="header-bar">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="relative flex h-10 w-10 items-center justify-center rounded-lg border border-emerald-500/50 bg-emerald-950/20 text-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.2)]">
-              <Radar className="h-5 w-5 animate-pulse" />
-              <div className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 animate-ping rounded-full bg-emerald-500" />
+      <header className="border-b px-4 py-5" style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border, boxShadow: 'var(--shadow-subtle)' }} id="header-bar">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-6">
+          <div className="flex items-center gap-4">
+            <div className="relative flex h-10 w-10 items-center justify-center rounded-lg border" style={{ backgroundColor: 'var(--accent-green-subtle)', borderColor: 'var(--accent-green)' }}>
+              <Radar className="h-5 w-5 animate-pulse" style={{ color: 'var(--accent-green)' }} />
+              <div className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 animate-ping rounded-full" style={{ backgroundColor: 'var(--accent-green)' }} />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-sm font-black tracking-widest text-white uppercase sm:text-base">CAM-YOLO11</h1>
-                <span className="rounded bg-sky-950/80 px-2 py-0.5 text-[10px] font-bold tracking-tight text-sky-400 border border-sky-800">
+                <h1 className="text-sm font-bold tracking-widest uppercase sm:text-base" style={{ color: 'var(--text-primary)' }}>CAM-YOLO11</h1>
+                <span className="rounded px-2 py-0.5 text-[10px] font-bold tracking-tight border" style={{ backgroundColor: 'rgba(14, 165, 233, 0.2)', color: '#38bdf8', borderColor: 'rgba(14, 165, 233, 0.3)' }}>
                   UROP PROTOTYPE v2.4
                 </span>
               </div>
-              <p className="text-[10px] text-gray-400 sm:text-xs">Military Command Suite & Camouflage Detection Portal</p>
+              <p className="text-[10px] sm:text-xs" style={{ color: 'var(--text-muted)' }}>Military Command Suite & Camouflage Detection Portal</p>
             </div>
           </div>
 
           {/* TELEMETRY READOUTS */}
-          <div className="hidden items-center gap-6 text-xs md:flex lg:gap-8">
-            <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+          <div className="hidden items-center gap-8 text-xs md:flex lg:gap-10">
+            <div className="flex items-center gap-3">
+              <span className="h-2 w-2 rounded-full animate-pulse" style={{ backgroundColor: 'var(--accent-green)' }} />
               <div className="text-left">
-                <div className="text-[10px] uppercase tracking-wider text-gray-500">TACTICAL WATCHDOG</div>
-                <div className="font-bold text-gray-300">GEO-STATIONERY SATELLITE ACTIVE</div>
+                <div className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>TACTICAL WATCHDOG</div>
+                <div className="font-bold" style={{ color: 'var(--text-primary)' }}>GEO-STATIONERY SATELLITE ACTIVE</div>
               </div>
             </div>
             
-            <div className="flex items-center gap-2">
-              <span className={`h-2 w-2 rounded-full ${isChainCompromised ? 'bg-red-500 animate-ping' : 'bg-emerald-500 animate-pulse'}`} />
+            <div className="flex items-center gap-3">
+              <span className={`h-2 w-2 rounded-full ${isChainCompromised ? 'bg-red-500 animate-ping' : 'animate-pulse'}`} style={{ backgroundColor: isChainCompromised ? '#ef4444' : 'var(--accent-green)' }} />
               <div className="text-left">
-                <div className="text-[10px] uppercase tracking-wider text-gray-500">BLOCKCHAIN SECURITY</div>
-                <div className={`font-bold ${isChainCompromised ? 'text-red-400' : 'text-emerald-400 font-mono text-[11px]'}`}>
+                <div className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>BLOCKCHAIN SECURITY</div>
+                <div className={`font-bold font-mono text-[11px] ${isChainCompromised ? 'text-red-400' : ''}`} style={{ color: isChainCompromised ? '#f87171' : 'var(--accent-green)' }}>
                   {isChainCompromised ? 'COMPROMISED (TAMPER TRIGGERED)' : 'CRYPTOGRAPHIC INTEGRITY GUARANTEED'}
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-2 border-l pl-4" style={{ borderColor: COLORS.border }}>
-              <Clock className="h-4 w-4 text-emerald-500" />
-              <div className="font-mono text-gray-300">
-                15:21:24 <span className="text-[10px] text-gray-500 font-sans">UTC</span>
+            <div className="flex items-center gap-3 border-l pl-6" style={{ borderColor: COLORS.border }}>
+              <Clock className="h-4 w-4" style={{ color: 'var(--accent-green)' }} />
+              <div className="font-mono" style={{ color: 'var(--text-primary)' }}>
+                15:21:24 <span className="text-[10px] font-sans" style={{ color: 'var(--text-muted)' }}>UTC</span>
               </div>
             </div>
           </div>
@@ -711,95 +716,260 @@ export default function App() {
       <main className="mx-auto flex max-w-7xl flex-col gap-6 p-4 lg:flex-row lg:p-6" id="main-content-layout" style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
         
         {/* SIDE BAR DASHBOARD NAVIGATION */}
-        <aside className="w-full shrink-0 lg:w-72" id="sidebar-navigation" style={{ backgroundColor: 'var(--bg-sidebar)' }}>
-          <div className="sticky top-6 flex flex-col gap-4 rounded-xl border p-3" style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: 'var(--border-color)', borderRadius: 'var(--border-radius)', boxShadow: 'var(--shadow)' }}>
-            <div className="px-3 py-2 text-[10px] font-black uppercase tracking-widest" style={{ color: 'var(--text-secondary)' }}>SURVEILLANCE MODULES</div>
+        <aside className="w-full shrink-0 lg:w-72" id="sidebar-navigation">
+          <div className="sticky top-6 flex flex-col gap-4 border p-3" style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: 'var(--border-color)', borderRadius: 'var(--border-radius)', boxShadow: 'var(--shadow-card)' }}>
+            <div className="px-3 py-2 text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-secondary)' }}>SURVEILLANCE MODULES</div>
             
             <nav className="flex flex-col gap-1">
               <button 
                 onClick={() => setActiveTab('dashboard')}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-xs font-bold tracking-wide transition-all ${
+                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-xs tracking-wide transition-all ${
                   activeTab === 'dashboard' 
-                    ? 'bg-emerald-950/30 text-emerald-400 border-l-4 border-emerald-500' 
-                    : 'text-gray-400 hover:bg-slate-900 hover:text-white'
+                    ? 'border-l-4' 
+                    : ''
                 }`} 
+                style={activeTab === 'dashboard' ? {
+                  backgroundColor: 'var(--accent-green-subtle)',
+                  color: 'var(--accent-green)',
+                  borderColor: 'var(--accent-green)',
+                  fontWeight: 600
+                } : {
+                  color: 'var(--text-secondary)',
+                  fontWeight: 400
+                }}
+                onMouseEnter={(e) => {
+                  if (activeTab !== 'dashboard') {
+                    e.currentTarget.style.backgroundColor = 'var(--bg-hover)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (activeTab !== 'dashboard') {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                  }
+                }}
                 id="tab-dashboard">
-                <Layers className="h-4 w-4" />
+                <Layers className="h-4 w-4" style={{ color: activeTab === 'dashboard' ? 'var(--accent-green)' : 'var(--text-secondary)' }} />
                 <span>Command Deck HUD</span>
               </button>
 
               <button 
                 onClick={() => setActiveTab('analysis')}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-xs font-bold tracking-wide transition-all ${
+                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-xs tracking-wide transition-all ${
                   activeTab === 'analysis' 
-                    ? 'bg-emerald-950/30 text-emerald-400 border-l-4 border-emerald-500' 
-                    : 'text-gray-400 hover:bg-slate-900 hover:text-white'
+                    ? 'border-l-4' 
+                    : ''
                 }`} 
+                style={activeTab === 'analysis' ? {
+                  backgroundColor: 'var(--accent-green-subtle)',
+                  color: 'var(--accent-green)',
+                  borderColor: 'var(--accent-green)',
+                  fontWeight: 600
+                } : {
+                  color: 'var(--text-secondary)',
+                  fontWeight: 400
+                }}
+                onMouseEnter={(e) => {
+                  if (activeTab !== 'analysis') {
+                    e.currentTarget.style.backgroundColor = 'var(--bg-hover)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (activeTab !== 'analysis') {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                  }
+                }}
                 id="tab-analysis">
-                <Eye className="h-4 w-4" />
+                <Eye className="h-4 w-4" style={{ color: activeTab === 'analysis' ? 'var(--accent-green)' : 'var(--text-secondary)' }} />
                 <span>CAM-YOLO11 Analyzer</span>
               </button>
 
               <button 
                 onClick={() => setActiveTab('video')}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-xs font-bold tracking-wide transition-all ${
+                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-xs tracking-wide transition-all ${
                   activeTab === 'video' 
-                    ? 'bg-emerald-950/30 text-emerald-400 border-l-4 border-emerald-500' 
-                    : 'text-gray-400 hover:bg-slate-900 hover:text-white'
+                    ? 'border-l-4' 
+                    : ''
                 }`} 
+                style={activeTab === 'video' ? {
+                  backgroundColor: 'var(--accent-green-subtle)',
+                  color: 'var(--accent-green)',
+                  borderColor: 'var(--accent-green)',
+                  fontWeight: 600
+                } : {
+                  color: 'var(--text-secondary)',
+                  fontWeight: 400
+                }}
+                onMouseEnter={(e) => {
+                  if (activeTab !== 'video') {
+                    e.currentTarget.style.backgroundColor = 'var(--bg-hover)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (activeTab !== 'video') {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                  }
+                }}
                 id="tab-video">
-                <Play className="h-4 w-4" />
+                <Play className="h-4 w-4" style={{ color: activeTab === 'video' ? 'var(--accent-green)' : 'var(--text-secondary)' }} />
                 <span>Real-Time Drone Feed</span>
               </button>
 
               <button 
                 onClick={() => setActiveTab('blockchain')}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-xs font-bold tracking-wide transition-all ${
+                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-xs tracking-wide transition-all ${
                   activeTab === 'blockchain' 
-                    ? 'bg-emerald-950/30 text-emerald-400 border-l-4 border-emerald-500' 
-                    : 'text-gray-400 hover:bg-slate-900 hover:text-white'
+                    ? 'border-l-4' 
+                    : ''
                 }`} 
+                style={activeTab === 'blockchain' ? {
+                  backgroundColor: 'var(--accent-green-subtle)',
+                  color: 'var(--accent-green)',
+                  borderColor: 'var(--accent-green)',
+                  fontWeight: 600
+                } : {
+                  color: 'var(--text-secondary)',
+                  fontWeight: 400
+                }}
+                onMouseEnter={(e) => {
+                  if (activeTab !== 'blockchain') {
+                    e.currentTarget.style.backgroundColor = 'var(--bg-hover)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (activeTab !== 'blockchain') {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                  }
+                }}
                 id="tab-blockchain">
-                <Shield className="h-4 w-4" />
+                <Shield className="h-4 w-4" style={{ color: activeTab === 'blockchain' ? 'var(--accent-green)' : 'var(--text-secondary)' }} />
                 <span>Evidence Integrity Ledger</span>
               </button>
 
               <button 
                 onClick={() => setActiveTab('quantum')}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-xs font-bold tracking-wide transition-all ${
+                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-xs tracking-wide transition-all ${
                   activeTab === 'quantum' 
-                    ? 'bg-emerald-950/30 text-emerald-400 border-l-4 border-emerald-500' 
-                    : 'text-gray-400 hover:bg-slate-900 hover:text-white'
+                    ? 'border-l-4' 
+                    : ''
                 }`} 
+                style={activeTab === 'quantum' ? {
+                  backgroundColor: 'var(--accent-green-subtle)',
+                  color: 'var(--accent-green)',
+                  borderColor: 'var(--accent-green)',
+                  fontWeight: 600
+                } : {
+                  color: 'var(--text-secondary)',
+                  fontWeight: 400
+                }}
+                onMouseEnter={(e) => {
+                  if (activeTab !== 'quantum') {
+                    e.currentTarget.style.backgroundColor = 'var(--bg-hover)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (activeTab !== 'quantum') {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                  }
+                }}
                 id="tab-quantum">
-                <Cpu className="h-4 w-4" />
+                <Cpu className="h-4 w-4" style={{ color: activeTab === 'quantum' ? 'var(--accent-green)' : 'var(--text-secondary)' }} />
                 <span>Quantum Optimization Engine</span>
               </button>
 
               <button 
                 onClick={() => setActiveTab('history')}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-xs font-bold tracking-wide transition-all ${
+                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-xs tracking-wide transition-all ${
                   activeTab === 'history' 
-                    ? 'bg-emerald-950/30 text-emerald-400 border-l-2 border-emerald-500 shadow-[0_4px_12px_rgba(16,185,129,0.06)]' 
-                    : 'text-gray-400 hover:bg-slate-900 hover:text-white'
+                    ? 'border-l-4' 
+                    : ''
                 }`}
+                style={activeTab === 'history' ? {
+                  backgroundColor: 'var(--accent-green-subtle)',
+                  color: 'var(--accent-green)',
+                  borderColor: 'var(--accent-green)',
+                  fontWeight: 600
+                } : {
+                  color: 'var(--text-secondary)',
+                  fontWeight: 400
+                }}
+                onMouseEnter={(e) => {
+                  if (activeTab !== 'history') {
+                    e.currentTarget.style.backgroundColor = 'var(--bg-hover)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (activeTab !== 'history') {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                  }
+                }}
                 id="tab-history"
               >
-                <History className="h-4 w-4" />
+                <History className="h-4 w-4" style={{ color: activeTab === 'history' ? 'var(--accent-green)' : 'var(--text-secondary)' }} />
                 <span>Archive & Logs</span>
               </button>
 
               <button 
                 onClick={() => setActiveTab('analytics')}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-xs font-bold tracking-wide transition-all ${
+                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-xs tracking-wide transition-all ${
                   activeTab === 'analytics' 
-                    ? 'bg-emerald-950/30 text-emerald-400 border-l-2 border-emerald-500 shadow-[0_4px_12px_rgba(16,185,129,0.06)]' 
-                    : 'text-gray-400 hover:bg-slate-900 hover:text-white'
+                    ? 'border-l-4' 
+                    : ''
                 }`}
+                style={activeTab === 'analytics' ? {
+                  backgroundColor: 'var(--accent-green-subtle)',
+                  color: 'var(--accent-green)',
+                  borderColor: 'var(--accent-green)',
+                  fontWeight: 600
+                } : {
+                  color: 'var(--text-secondary)',
+                  fontWeight: 400
+                }}
+                onMouseEnter={(e) => {
+                  if (activeTab !== 'analytics') {
+                    e.currentTarget.style.backgroundColor = 'var(--bg-hover)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (activeTab !== 'analytics') {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                  }
+                }}
                 id="tab-analytics"
               >
-                <BarChart3 className="h-4 w-4" />
+                <BarChart3 className="h-4 w-4" style={{ color: activeTab === 'analytics' ? 'var(--accent-green)' : 'var(--text-secondary)' }} />
                 <span>Analytics Grid</span>
+              </button>
+
+              <button 
+                onClick={() => setActiveTab('research')}
+                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-xs tracking-wide transition-all ${
+                  activeTab === 'research' 
+                    ? 'border-l-4' 
+                    : ''
+                }`}
+                style={activeTab === 'research' ? {
+                  backgroundColor: 'var(--accent-green-subtle)',
+                  color: 'var(--accent-green)',
+                  borderColor: 'var(--accent-green)',
+                  fontWeight: 600
+                } : {
+                  color: 'var(--text-secondary)',
+                  fontWeight: 400
+                }}
+                onMouseEnter={(e) => {
+                  if (activeTab !== 'research') {
+                    e.currentTarget.style.backgroundColor = 'var(--bg-hover)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (activeTab !== 'research') {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                  }
+                }}
+                id="tab-research"
+              >
+                <BookOpen className="h-4 w-4" style={{ color: activeTab === 'research' ? 'var(--accent-green)' : 'var(--text-secondary)' }} />
+                <span>Academic Research</span>
               </button>
 
 
@@ -809,20 +979,20 @@ export default function App() {
             <div className="mt-4" style={{ borderTop: `1px solid ${COLORS.border}`, paddingTop: 'var(--spacing-unit)' }}>
                <div className="flex justify-between text-[10px] tracking-wider" style={{ color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: '900' }}>
                  <span>SENSOR STATUS</span>
-                 <span className="text-emerald-500">NOMINAL</span>
+                 <span style={{ color: 'var(--accent-green)' }}>NOMINAL</span>
                </div></div>
-              <div className="mt-2 space-y-1 text-[11px] text-gray-400">
+              <div className="mt-2 space-y-1 text-[11px]" style={{ color: 'var(--text-secondary)' }}>
                 <div className="flex justify-between">
                   <span>FLIR Fusion Ratio:</span>
-                  <span className="font-mono text-emerald-400 font-bold">94.8% OPT</span>
+                  <span className="font-mono font-bold" style={{ color: 'var(--accent-green)' }}>94.8% OPT</span>
                 </div>
                 <div className="flex justify-between">
                   <span>SQLite DB Threads:</span>
-                  <span className="font-mono text-gray-300">4 Active</span>
+                  <span className="font-mono" style={{ color: 'var(--text-primary)' }}>4 Active</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Ledger validation:</span>
-                  <span className={`font-mono font-bold ${isChainCompromised ? 'text-red-400' : 'text-emerald-400'}`}>
+                  <span className={`font-mono font-bold ${isChainCompromised ? 'text-red-400' : ''}`} style={isChainCompromised ? {} : { color: 'var(--accent-green)' }}>
                     {isChainCompromised ? 'FAILING' : 'SECURE'}
                   </span>
                 </div>
@@ -831,7 +1001,10 @@ export default function App() {
               {/* LEDGER FORCE VALIDATION SENSORS */}
               <button 
                 onClick={triggerAudit}
-                className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg border border-sky-500/30 bg-sky-950/20 py-2 text-xs font-bold text-sky-400 transition-colors hover:bg-sky-950/40"
+                className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg border py-2 text-xs font-bold transition-colors"
+                style={{ borderColor: 'rgba(14, 165, 233, 0.3)', backgroundColor: 'rgba(15, 23, 42, 0.4)', color: '#38bdf8' }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(15, 23, 42, 0.6)'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(15, 23, 42, 0.4)'}
               >
                 <Shield className="h-3.5 w-3.5" />
                 <span>Trigger security Audit</span>
@@ -849,31 +1022,31 @@ export default function App() {
               
               {/* TOP PERFORMANCE METRIC OVERLAYS */}
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-                <div className="rounded-xl border bg-slate-950/50 p-4 transition-all hover:bg-slate-950/80" style={{ borderColor: COLORS.border }}>
-                  <div className="text-[10px] font-bold tracking-widest text-emerald-500 uppercase">SYS SCANS CARRIED</div>
-                  <div className="mt-1 font-mono text-2xl font-black text-white">{stats.totalDetections}</div>
-                  <p className="text-[10px] text-gray-400">Archived in persistent DB</p>
+                <div className="border transition-all" style={{ backgroundColor: 'var(--bg-card)', borderColor: COLORS.border, borderRadius: 'var(--border-radius)', padding: 'var(--card-padding)', boxShadow: 'var(--shadow-card)' }} onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = 'var(--shadow-hover)'; e.currentTarget.style.backgroundColor = 'var(--bg-hover)'; }} onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'var(--shadow-card)'; e.currentTarget.style.backgroundColor = 'var(--bg-card)'; }}>
+                  <div className="text-[10px] font-bold tracking-widest uppercase" style={{ color: 'var(--accent-green)' }}>SYS SCANS CARRIED</div>
+                  <div className="mt-1 font-mono text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>{stats.totalDetections}</div>
+                  <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Archived in persistent DB</p>
                 </div>
                 
-                <div className="rounded-xl border bg-slate-950/50 p-4 transition-all hover:bg-slate-950/80 border-rose-950/40" style={{ borderColor: COLORS.border }}>
+                <div className="border transition-all" style={{ backgroundColor: 'var(--bg-card)', borderColor: COLORS.border, borderRadius: 'var(--border-radius)', padding: 'var(--card-padding)', boxShadow: 'var(--shadow-card)' }} onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = 'var(--shadow-hover)'; e.currentTarget.style.backgroundColor = 'var(--bg-hover)'; }} onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'var(--shadow-card)'; e.currentTarget.style.backgroundColor = 'var(--bg-card)'; }}>
                   <div className="flex items-center gap-2 text-[10px] font-bold tracking-widest text-red-500 uppercase">
                     <span className="h-2.5 w-2.5 rounded-full bg-red-500 animate-ping inline-block" />
                     <span>ACTIVE TARGETS</span>
                   </div>
-                  <div className="mt-1 font-mono text-2xl font-black text-red-400">{stats.activeThreats}</div>
-                  <p className="text-[10px] text-gray-400">High / Critical threat rating</p>
+                  <div className="mt-1 font-mono text-2xl font-bold text-red-400">{stats.activeThreats}</div>
+                  <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>High / Critical threat rating</p>
                 </div>
 
-                <div className="rounded-xl border bg-slate-950/50 p-4 transition-all hover:bg-slate-950/80" style={{ borderColor: COLORS.border }}>
+                <div className="border transition-all" style={{ backgroundColor: 'var(--bg-card)', borderColor: COLORS.border, borderRadius: 'var(--border-radius)', padding: 'var(--card-padding)', boxShadow: 'var(--shadow-card)' }} onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = 'var(--shadow-hover)'; e.currentTarget.style.backgroundColor = 'var(--bg-hover)'; }} onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'var(--shadow-card)'; e.currentTarget.style.backgroundColor = 'var(--bg-card)'; }}>
                   <div className="text-[10px] font-bold tracking-widest text-sky-500 uppercase">SCANS COMPLETED (24H)</div>
-                  <div className="mt-1 font-mono text-2xl font-black text-sky-400">{stats.todaysScans}</div>
-                  <p className="text-[10px] text-gray-400">Tactical orbits sweep</p>
+                  <div className="mt-1 font-mono text-2xl font-bold text-sky-400">{stats.todaysScans}</div>
+                  <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Tactical orbits sweep</p>
                 </div>
 
-                <div className="rounded-xl border bg-slate-950/50 p-4 transition-all hover:bg-slate-950/80" style={{ borderColor: COLORS.border }}>
+                <div className="border transition-all" style={{ backgroundColor: 'var(--bg-card)', borderColor: COLORS.border, borderRadius: 'var(--border-radius)', padding: 'var(--card-padding)', boxShadow: 'var(--shadow-card)' }} onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = 'var(--shadow-hover)'; e.currentTarget.style.backgroundColor = 'var(--bg-hover)'; }} onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'var(--shadow-card)'; e.currentTarget.style.backgroundColor = 'var(--bg-card)'; }}>
                   <div className="text-[10px] font-bold tracking-widest text-orange-500 uppercase">AI CONFIDENCE OVERALL</div>
-                  <div className="mt-1 font-mono text-2xl font-black text-orange-400">{stats.aiConfidence}%</div>
-                  <p className="text-[10px] text-gray-400">Mean probability score</p>
+                  <div className="mt-1 font-mono text-2xl font-bold text-orange-400">{stats.aiConfidence}%</div>
+                  <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Mean probability score</p>
                 </div>
               </div>
 
@@ -881,29 +1054,29 @@ export default function App() {
               <div className="grid gap-6 lg:grid-cols-12">
                 
                 {/* CYBERNETIC INTEGRATION RADAR MATRIX */}
-                <div className="lg:col-span-8 rounded-xl border bg-slate-950/60 p-4 relative overflow-hidden flex flex-col justify-between" style={{ borderColor: COLORS.border, height: '420px' }}>
-                  <div className="z-10 flex justify-between items-center bg-slate-950/90 p-2 rounded border border-slate-800">
+                <div className="lg:col-span-8 border p-4 relative overflow-hidden flex flex-col justify-between" style={{ backgroundColor: 'var(--bg-card)', borderColor: COLORS.border, borderRadius: 'var(--border-radius)', height: '420px', boxShadow: 'var(--shadow-card)' }}>
+                  <div className="z-10 flex justify-between items-center p-2 rounded border" style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border }}>
                     <div className="flex items-center gap-2">
-                      <span className="h-2 w-2 rounded-full bg-emerald-500 animate-ping" />
-                      <span className="text-[10px] font-black tracking-widest uppercase font-mono text-emerald-400">ACTIVE MULTISPECTRAL SECTOR RECON</span>
+                      <span className="h-2 w-2 rounded-full animate-ping" style={{ backgroundColor: 'var(--accent-green)' }} />
+                      <span className="text-[10px] font-bold tracking-widest uppercase font-mono" style={{ color: 'var(--accent-green)' }}>ACTIVE MULTISPECTRAL SECTOR RECON</span>
                     </div>
-                    <span className="font-mono text-[10px] text-gray-400">BEIDOU LAT: 37.4 / LNG: -122.0</span>
+                    <span className="font-mono text-[10px]" style={{ color: 'var(--text-muted)' }}>BEIDOU LAT: 37.4 / LNG: -122.0</span>
                   </div>
 
                   {/* RADAR RETICLE CONTAINER */}
-                  <div className="absolute inset-0 flex items-center justify-center opacity-60">
-                    <div className="relative w-[340px] h-[340px] rounded-full border border-emerald-500/20 flex items-center justify-center">
-                      <div className="absolute inset-0 rounded-full border border-emerald-500/10 animate-pulse" />
-                      <div className="w-[240px] h-[240px] rounded-full border border-emerald-500/30 flex items-center justify-center">
-                        <div className="w-[140px] h-[140px] rounded-full border border-emerald-500/40 border-dotted" />
+                  <div className="absolute inset-0 flex items-center justify-center opacity-70">
+                    <div className="relative w-[340px] h-[340px] rounded-full border flex items-center justify-center" style={{ borderColor: 'rgba(16, 185, 129, 0.35)' }}>
+                      <div className="absolute inset-0 rounded-full border animate-pulse" style={{ borderColor: 'rgba(16, 185, 129, 0.15)' }} />
+                      <div className="w-[240px] h-[240px] rounded-full border flex items-center justify-center" style={{ borderColor: 'rgba(16, 185, 129, 0.45)' }}>
+                        <div className="w-[140px] h-[140px] rounded-full border border-dotted" style={{ borderColor: 'rgba(16, 185, 129, 0.55)' }} />
                       </div>
                       
                       {/* Crosshairs axis lines */}
-                      <div className="absolute h-full w-[1px] bg-emerald-500/20" />
-                      <div className="absolute w-full h-[1px] bg-emerald-500/20" />
+                      <div className="absolute h-full w-[1px]" style={{ backgroundColor: 'rgba(16, 185, 129, 0.35)' }} />
+                      <div className="absolute w-full h-[1px]" style={{ backgroundColor: 'rgba(16, 185, 129, 0.35)' }} />
                       
                       {/* Interactive Radar Vector sweeping sweep */}
-                      <div className="absolute w-[170px] h-[170px] bg-gradient-to-tr from-emerald-500/0 to-emerald-500/20 origin-bottom-left bottom-1/2 left-1/2 animate-radar" style={{ transformOrigin: '0% 100%' }} />
+                      <div className="absolute w-[170px] h-[170px] bg-gradient-to-tr from-emerald-500/0 to-emerald-500/15 origin-bottom-left bottom-1/2 left-1/2 animate-radar" style={{ transformOrigin: '0% 100%', backgroundImage: 'linear-gradient(to top right, transparent, rgba(16, 185, 129, 0.15))' }} />
                       
                       {/* Active detected threat blips mapped from selectedDetection boundingBoxes */}
                       {selectedDetection && selectedDetection.detected !== false && selectedDetection.boundingBoxes && selectedDetection.boundingBoxes.length > 0 ? (
@@ -922,7 +1095,7 @@ export default function App() {
                             >
                               <span className="h-2.5 w-2.5 bg-red-400 rounded-full animate-ping absolute" />
                               <span className="h-2 w-2 bg-red-500 rounded-full" />
-                              <span className="text-[8px] bg-slate-950 border border-red-500/50 text-red-400 px-1.5 py-0.5 rounded font-mono mt-1 font-bold shadow-lg whitespace-nowrap">
+                              <span className="text-[8px] px-1.5 py-0.5 rounded font-mono mt-1 font-bold whitespace-nowrap" style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: 'rgba(239, 68, 68, 0.5)', color: '#f87171', boxShadow: 'var(--shadow-subtle)' }}>
                                 TRG-{idx + 1}: {boxObj.label.split(':')[1]?.trim() || boxObj.label}
                               </span>
                             </div>
@@ -930,7 +1103,7 @@ export default function App() {
                         })
                       ) : (
                         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                          <span className="text-gray-500 font-mono text-[10px] bg-slate-950/80 border border-slate-800 px-2 py-1 rounded z-10">
+                          <span className="font-mono text-[10px] px-2 py-1 rounded z-10" style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border, color: 'var(--text-muted)' }}>
                             No active targets.
                           </span>
                         </div>
@@ -939,14 +1112,17 @@ export default function App() {
                   </div>
 
                   <div className="z-10 flex justify-between items-end">
-                    <div className="bg-slate-950/80 p-3 rounded font-mono text-[10px] space-y-1 text-gray-400 border border-emerald-950">
-                      <div className="text-emerald-400 font-bold">RADAR EMISSION STATUS: ACTIVE</div>
+                    <div className="p-3 rounded font-mono text-[10px] space-y-1 border" style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border, color: 'var(--text-secondary)' }}>
+                      <div className="font-bold" style={{ color: 'var(--accent-green)' }}>RADAR EMISSION STATUS: ACTIVE</div>
                       <div>FREQUENCY: 9.42 GHz (Multimode)</div>
                       <div>PULSE WIDTH: 0.12 μs | ANGLE: 312.4°</div>
                     </div>
                     <button 
                       onClick={() => setActiveTab('analysis')}
-                      className="rounded bg-emerald-600 px-4 py-2 text-xs font-black tracking-wider text-black transition-colors hover:bg-emerald-500 hover:shadow-[0_0_15px_rgba(16,185,129,0.4)] uppercase"
+                      className="rounded px-4 py-2 text-xs font-bold tracking-wider uppercase transition-all"
+                      style={{ backgroundColor: 'var(--accent-green)', color: '#000' }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--accent-green-hover)'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--accent-green)'}
                     >
                       ENGAGE CAM-YOLO BACKBONE
                     </button>
@@ -954,50 +1130,52 @@ export default function App() {
                 </div>
 
                 {/* TELEMETRY TICKS & BLOCK DETAILS */}
-                <div className="lg:col-span-4 rounded-xl border bg-slate-950/60 p-4 flex flex-col gap-4" style={{ borderColor: COLORS.border }}>
+                <div className="lg:col-span-4 border p-4 flex flex-col gap-4" style={{ backgroundColor: 'var(--bg-card)', borderColor: COLORS.border, borderRadius: 'var(--border-radius)', boxShadow: 'var(--shadow-card)' }}>
                   <div>
-                    <h3 className="text-xs font-black uppercase tracking-widest text-white flex items-center gap-2">
-                      <Terminal className="h-4 w-4 text-emerald-500" />
+                    <h3 className="text-xs font-bold uppercase tracking-widest flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+                      <Terminal className="h-4 w-4" style={{ color: 'var(--accent-green)' }} />
                       <span>SURVEILLANCE ACTIVITY LOG</span>
                     </h3>
-                    <p className="text-[10px] text-gray-400">Live operational event stream</p>
+                    <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Live operational event stream</p>
                   </div>
 
                   {/* LOG ENTRIES */}
-                  <div className="flex-1 space-y-2 overflow-y-auto max-h-[220px] font-mono text-[11px] text-gray-300">
+                  <div className="flex-1 space-y-2 overflow-y-auto max-h-[220px] font-mono text-[11px]" style={{ color: 'var(--text-primary)' }}>
                     {systemLogs.length > 0 ? (
                       systemLogs.map((item: any, idx: number) => (
-                        <div key={idx} className="border-b border-slate-900 pb-1.5 flex gap-2">
-                          <span className="text-emerald-500 font-bold shrink-0">[{item.time}]</span>
+                        <div key={idx} className="border-b pb-1.5 flex gap-2" style={{ borderColor: COLORS.border }}>
+                          <span className="font-bold shrink-0" style={{ color: 'var(--accent-green)' }}>[{item.time}]</span>
                           <span className={`font-bold shrink-0 ${
                             item.severity === 'ERROR' ? 'text-red-400' : 
                             item.severity === 'WARNING' ? 'text-orange-400' : 
-                            'text-emerald-400'
-                          }`}>
+                            ''
+                          }`} style={item.severity !== 'ERROR' && item.severity !== 'WARNING' ? { color: 'var(--accent-green)' } : {}}>
                             [{item.severity}]
                           </span>
-                          <span className="text-gray-300">{item.message || item.log}</span>
+                          <span style={{ color: 'var(--text-primary)' }}>{item.message || item.log}</span>
                         </div>
                       ))
                     ) : (
-                      <div className="text-gray-500 text-center py-4 italic">
-                        No operational logs recorded. Engage the backbone to track active targets.
+                      <div className="text-center py-8 space-y-2">
+                        <div className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>System Ready</div>
+                        <div className="text-xs" style={{ color: 'var(--text-muted)' }}>Waiting for reconnaissance scan...</div>
+                        <div className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Upload an image to begin analysis.</div>
                       </div>
                     )}
                   </div>
 
                   {/* SECURE BLOCKCHAIN SHORT DET BRIEF */}
-                  <div className="rounded-lg bg-slate-900/50 p-3 border border-slate-800">
-                    <div className="flex justify-between items-center text-[10px] tracking-wider text-gray-400 font-bold uppercase mb-2">
+                  <div className="rounded-lg p-3 border" style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border }}>
+                    <div className="flex justify-between items-center text-[10px] tracking-wider font-bold uppercase mb-2" style={{ color: 'var(--text-muted)' }}>
                       <span>LEDGER SUMMARY</span>
-                      <span className={`px-1.5 rounded text-[9px] ${isChainCompromised ? 'bg-red-950 text-red-400' : 'bg-emerald-950 text-emerald-400'}`}>
+                      <span className="px-1.5 rounded text-[9px]" style={{ backgroundColor: isChainCompromised ? 'rgba(127, 29, 29, 0.5)' : 'rgba(16, 185, 129, 0.15)', color: isChainCompromised ? '#f87171' : 'var(--accent-green)' }}>
                         {isChainCompromised ? 'HACK_ALERT' : 'VERIFIED'}
                       </span>
                     </div>
-                    <div className="space-y-1 text-[11px] text-gray-300 font-mono">
+                    <div className="space-y-1 text-[11px] font-mono" style={{ color: 'var(--text-primary)' }}>
                       <div className="flex justify-between">
                         <span>LEDGER BLOCKS:</span>
-                        <span className="font-bold text-white">#{blockchain.length}</span>
+                        <span className="font-bold" style={{ color: 'var(--text-primary)' }}>#{blockchain.length}</span>
                       </div>
                       <div className="flex justify-between">
                         <span>LATEST HASH:</span>
@@ -1008,7 +1186,10 @@ export default function App() {
                     </div>
                     <button 
                       onClick={() => setActiveTab('blockchain')}
-                      className="mt-3 w-full rounded bg-slate-800 py-1.5 text-center text-xs font-bold text-gray-300 hover:bg-slate-700 hover:text-white"
+                      className="mt-3 w-full rounded py-1.5 text-center text-xs font-bold transition-colors"
+                      style={{ backgroundColor: 'var(--bg-hover)', color: 'var(--text-secondary)' }}
+                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--bg-card)'; e.currentTarget.style.color = 'var(--text-primary)'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--bg-hover)'; e.currentTarget.style.color = 'var(--text-secondary)'; }}
                     >
                       Enter Blockchain Security Module
                     </button>
@@ -1018,14 +1199,14 @@ export default function App() {
               </div>
 
               {/* DENSE CAMOUFLAGE KNOWLEDGE BLOCK SUMMARY */}
-              <div className="rounded-xl border bg-slate-950/40 p-4 border-slate-800" id="summary-urop-box">
+              <div className="border p-4" style={{ backgroundColor: 'var(--bg-card)', borderColor: COLORS.border, borderRadius: 'var(--border-radius)' }} id="summary-urop-box">
                 <div className="flex gap-4">
-                  <div className="bg-emerald-950/20 text-emerald-500 rounded p-2 h-fit border border-emerald-900/50">
+                  <div className="rounded p-2 h-fit border" style={{ backgroundColor: 'var(--accent-green-subtle)', color: 'var(--accent-green)', borderColor: 'rgba(16, 185, 129, 0.3)' }}>
                     <Info className="h-5 w-5" />
                   </div>
                   <div>
-                    <h4 className="text-xs font-black uppercase tracking-widest text-white">CAM-YOLO11 SURVEILLANCE RESEARCH BACKBONE</h4>
-                    <p className="mt-1 text-xs text-gray-400 leading-relaxed">
+                    <h4 className="text-xs font-bold uppercase tracking-widest" style={{ color: 'var(--text-primary)' }}>CAM-YOLO11 SURVEILLANCE RESEARCH BACKBONE</h4>
+                    <p className="mt-1 text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
                       Classical algorithms like YOLOv8 suffer from high miss-detection ratios when targets possess military visual camouflage. By implementing Grad-CAM gradient overlays coupled with custom multiphase backpropagation models, the CAM-YOLO11 prototype identifies localized heat maps and isolates hidden edges. Results are validated in a zero-trust blockchain architecture, guaranteeing unalterable defense surveillance logs.
                     </p>
                   </div>
@@ -1039,13 +1220,13 @@ export default function App() {
           {activeTab === 'analysis' && (
             <div className="space-y-6 animate-fade-in" id="image-analyzer-view">
               
-              <div className="rounded-xl border bg-slate-950/60 p-4 shadow-md" style={{ borderColor: COLORS.border }}>
+              <div className="border p-4" style={{ backgroundColor: 'var(--bg-card)', borderColor: COLORS.border, borderRadius: 'var(--border-radius)', boxShadow: 'var(--shadow-card)' }}>
                 <div>
-                  <h2 className="text-sm font-black uppercase tracking-widest text-white flex items-center gap-2">
-                    <Eye className="h-5 w-5 text-emerald-500" />
+                  <h2 className="text-sm font-bold uppercase tracking-widest flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+                    <Eye className="h-5 w-5" style={{ color: 'var(--accent-green)' }} />
                     <span>CAM-YOLO11 INTELLIGENCE COMPILATION PIPELINE</span>
                   </h2>
-                  <p className="text-xs text-gray-400">Upload drone recon frames or select academic scenarios for multispectral camouflage classification.</p>
+                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Upload drone recon frames or select academic scenarios for multispectral camouflage classification.</p>
                 </div>
 
                 <div className="mt-4 grid gap-6 lg:grid-cols-12">
@@ -1054,8 +1235,8 @@ export default function App() {
                   <div className="lg:col-span-4 flex flex-col gap-4">
                     
                     {/* SCENARIOS CHOOSER */}
-                    <div className="rounded-lg bg-slate-900/50 p-3 border border-slate-800">
-                      <div className="text-[10px] tracking-wide text-gray-400 font-black uppercase mb-2">SCENARIO TEMPLATES</div>
+                    <div className="rounded-lg p-3 border" style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border }}>
+                      <div className="text-[10px] tracking-wide font-black uppercase mb-2" style={{ color: 'var(--text-muted)' }}>SCENARIO TEMPLATES</div>
                       <div className="space-y-1.5">
                         {SCENARIOS.map((sc, index) => (
                           <button
@@ -1066,28 +1247,50 @@ export default function App() {
                             }}
                             className={`w-full text-left p-2.5 rounded text-xs transition-all flex items-center justify-between border ${
                               selectedScenario === index && !customImage
-                                ? 'bg-emerald-950/20 text-emerald-400 border-emerald-500/50'
-                                : 'bg-slate-950 text-gray-400 border-transparent hover:bg-slate-900 hover:text-white'
+                                ? ''
+                                : ''
                             }`}
+                            style={selectedScenario === index && !customImage ? {
+                              backgroundColor: 'var(--accent-green-subtle)',
+                              color: 'var(--accent-green)',
+                              borderColor: 'rgba(16, 185, 129, 0.3)'
+                            } : {
+                              backgroundColor: 'var(--bg-sidebar)',
+                              color: 'var(--text-secondary)',
+                              borderColor: 'transparent'
+                            }}
+                            onMouseEnter={(e) => {
+                              if (!(selectedScenario === index && !customImage)) {
+                                e.currentTarget.style.backgroundColor = 'var(--bg-hover)';
+                                e.currentTarget.style.color = 'var(--text-primary)';
+                              }
+                            }}
+                            onMouseLeave={(e) => {
+                              if (!(selectedScenario === index && !customImage)) {
+                                e.currentTarget.style.backgroundColor = 'var(--bg-sidebar)';
+                                e.currentTarget.style.color = 'var(--text-secondary)';
+                              }
+                            }}
                           >
                             <div>
                               <div className="font-bold">{sc.title}</div>
-                              <div className="text-[10px] text-gray-500">{sc.location} • {sc.terrain}</div>
+                              <div className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{sc.location} • {sc.terrain}</div>
                             </div>
-                            <CheckCircle2 className={`h-4 w-4 ${selectedScenario === index && !customImage ? 'opacity-100 text-emerald-400' : 'opacity-0'}`} />
+                            <CheckCircle2 className={`h-4 w-4 ${selectedScenario === index && !customImage ? 'opacity-100' : 'opacity-0'}`} style={selectedScenario === index && !customImage ? { color: 'var(--accent-green)' } : {}} />
                           </button>
                         ))}
                       </div>
                     </div>
 
                     {/* MODEL ENGINE CHOOSER & TRIGGER */}
-                    <div className="rounded-lg bg-slate-900/50 p-3 border border-slate-800 space-y-4">
+                    <div className="rounded-lg p-3 border space-y-4" style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border }}>
                       <div>
-                        <div className="text-[10px] tracking-wide text-gray-400 font-black uppercase mb-1">ANALYSIS MODEL ENGINE</div>
+                        <div className="text-[10px] tracking-wide font-black uppercase mb-1" style={{ color: 'var(--text-muted)' }}>ANALYSIS MODEL ENGINE</div>
                         <select 
                           value={selectedModel}
                           onChange={(e) => setSelectedModel(e.target.value)}
-                          className="w-full bg-slate-950 border border-slate-800 text-xs rounded px-2.5 py-1.5 text-gray-300 focus:outline-none focus:border-emerald-500"
+                          className="w-full text-xs rounded px-2.5 py-1.5 focus:outline-none transition-colors"
+                          style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border, color: 'var(--text-primary)' }}
                         >
                           <option value="yolov8n">YOLOv8n (Core Real-time Edge Backbone)</option>
                           <option value="yolov8s">YOLOv8s (Enhanced Feature Fusion Backbone)</option>
@@ -1095,9 +1298,9 @@ export default function App() {
                       </div>
 
                       <div>
-                        <div className="flex items-center justify-between text-[10px] tracking-wide text-gray-400 font-black uppercase mb-1">
+                        <div className="flex items-center justify-between text-[10px] tracking-wide font-black uppercase mb-1" style={{ color: 'var(--text-muted)' }}>
                           <span>CONFIDENCE THRESHOLD</span>
-                          <span className={`${confThreshold >= 0.70 ? 'text-emerald-400' : 'text-orange-400'} font-bold`}>
+                          <span className="font-bold" style={{ color: confThreshold >= 0.70 ? 'var(--accent-green)' : '#f97316' }}>
                             {confThreshold.toFixed(2)}
                           </span>
                         </div>
@@ -1108,11 +1311,12 @@ export default function App() {
                           step="0.05"
                           value={confThreshold}
                           onChange={(e) => setConfThreshold(parseFloat(e.target.value))}
-                          className="w-full h-1 bg-slate-850 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                          className="w-full h-1 rounded-lg appearance-none cursor-pointer transition-all"
+                          style={{ backgroundColor: 'var(--bg-hover)', accentColor: 'var(--accent-green)' }}
                         />
-                        <div className="flex justify-between text-[9px] text-gray-500 font-mono mt-1">
+                        <div className="flex justify-between text-[9px] font-mono mt-1" style={{ color: 'var(--text-muted)' }}>
                           <span>0.10</span>
-                          <span className="text-[8px] bg-slate-950 px-1 rounded border border-slate-800 text-gray-400 px-1.5">Rejects &lt; 0.50</span>
+                          <span className="text-[8px] px-1 rounded" style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border, color: 'var(--text-secondary)' }}>Rejects &lt; 0.50</span>
                           <span>0.95</span>
                         </div>
                       </div>
@@ -1121,11 +1325,21 @@ export default function App() {
                       <button
                         onClick={runYoloAnalysis}
                         disabled={isAnalyzing}
-                        className={`w-full rounded font-black tracking-wider text-xs py-2.5 uppercase transition-all flex items-center justify-center gap-2 ${
-                          isAnalyzing 
-                            ? 'bg-slate-800 text-gray-500 cursor-not-allowed'
-                            : 'bg-emerald-600 text-black hover:bg-emerald-500 hover:shadow-[0_0_15px_rgba(16,185,129,0.3)]'
-                        }`}
+                        className="w-full rounded font-black tracking-wider text-xs py-2.5 uppercase transition-all flex items-center justify-center gap-2"
+                        style={isAnalyzing ? {
+                          backgroundColor: 'var(--bg-hover)',
+                          color: 'var(--text-muted)',
+                          cursor: 'not-allowed'
+                        } : {
+                          backgroundColor: 'var(--accent-green)',
+                          color: '#000'
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!isAnalyzing) e.currentTarget.style.backgroundColor = 'var(--accent-green-hover)';
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!isAnalyzing) e.currentTarget.style.backgroundColor = 'var(--accent-green)';
+                        }}
                       >
                         {isAnalyzing ? (
                           <RefreshCw className="h-4 w-4 animate-spin" />
@@ -1140,13 +1354,23 @@ export default function App() {
                     <div 
                       onDragOver={handleDragOver}
                       onDrop={handleDrop}
-                      className={`rounded-lg border-2 border-dashed p-4 text-center cursor-pointer transition-colors ${
-                        uploadError 
-                          ? 'border-red-500/50 bg-red-950/5' 
-                          : customImage 
-                            ? 'border-emerald-500/50 bg-emerald-950/5' 
-                            : 'border-slate-800 bg-slate-950/20 hover:border-emerald-500/30'
-                      }`}
+                      className={`rounded-lg border-2 border-dashed p-4 text-center cursor-pointer transition-colors`}
+                      style={uploadError 
+                        ? { borderColor: 'rgba(239, 68, 68, 0.5)', backgroundColor: 'rgba(127, 29, 29, 0.05)' } 
+                        : customImage 
+                          ? { borderColor: 'rgba(16, 185, 129, 0.5)', backgroundColor: 'rgba(16, 185, 129, 0.05)' } 
+                          : { borderColor: COLORS.border, backgroundColor: 'rgba(15, 23, 42, 0.2)' }
+                      }
+                      onMouseEnter={(e) => {
+                        if (!uploadError && !customImage) {
+                          e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.3)';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!uploadError && !customImage) {
+                          e.currentTarget.style.borderColor = COLORS.border;
+                        }
+                      }}
                     >
                       <input 
                         type="file" 
@@ -1156,15 +1380,15 @@ export default function App() {
                         onChange={handleFileUpload} 
                       />
                       <label htmlFor="image-file-uploader" className="cursor-pointer space-y-2 block">
-                        <Upload className="h-6 w-6 mx-auto text-sky-400" />
-                        <div className="text-xs font-bold text-gray-300">
+                        <Upload className="h-6 w-6 mx-auto" style={{ color: '#38bdf8' }} />
+                        <div className="text-xs font-bold" style={{ color: 'var(--text-primary)' }}>
                           {customImage ? 'Custom image loaded' : 'Drag & drop custom recon photo'}
                         </div>
-                        <p className="text-[10px] text-gray-500">Supports PNG, JPG, JPEG up to 10MB</p>
+                        <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Supports PNG, JPG, JPEG up to 10MB</p>
                       </label>
                       {customImage && (
                         <div className="mt-2 flex items-center justify-center gap-2">
-                          <span className="text-[10px] bg-emerald-950 text-emerald-400 px-2 py-0.5 rounded truncate max-w-[150px] font-mono">
+                          <span className="text-[10px] px-2 py-0.5 rounded truncate max-w-[150px] font-mono" style={{ backgroundColor: 'var(--accent-green-subtle)', color: 'var(--accent-green)' }}>
                             {customFileName}
                           </span>
                           <button 
@@ -1186,32 +1410,32 @@ export default function App() {
                     </div>
 
                     {/* DYNAMIC SYSTEM DIAGNOSTIC PANEL */}
-                    <div className="rounded-lg bg-slate-950 border border-slate-800 p-3.5 space-y-3 font-mono text-[10px]">
-                      <div className="flex items-center justify-between border-b border-slate-800 pb-1.5">
-                        <span className="text-emerald-400 font-bold uppercase tracking-wider">YOLOv11 Core Engine</span>
-                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    <div className="rounded-lg border p-3.5 space-y-3 font-mono text-[10px]" style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border }}>
+                      <div className="flex items-center justify-between border-b pb-1.5" style={{ borderColor: COLORS.border }}>
+                        <span className="font-bold uppercase tracking-wider" style={{ color: 'var(--accent-green)' }}>YOLOv11 Core Engine</span>
+                        <span className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ backgroundColor: 'var(--accent-green)' }} />
                       </div>
                       
-                      <div className="space-y-2 text-gray-400">
+                      <div className="space-y-2" style={{ color: 'var(--text-secondary)' }}>
                         <div>
-                          <span className="text-gray-500">MODEL LOADED:</span>
-                          <span className="text-gray-200 block font-bold">YOLOv11-Military-Camo (Ultralytics v11)</span>
+                          <span style={{ color: 'var(--text-muted)' }}>MODEL LOADED:</span>
+                          <span className="block font-bold" style={{ color: 'var(--text-primary)' }}>YOLOv11-Military-Camo (Ultralytics v11)</span>
                         </div>
                         <div>
-                          <span className="text-gray-500">SPEC WEIGHTS:</span>
-                          <span className="text-emerald-400 block break-all">yolov11x_camo_military_v4.2.pt</span>
+                          <span style={{ color: 'var(--text-muted)' }}>SPEC WEIGHTS:</span>
+                          <span className="block break-all" style={{ color: 'var(--accent-green)' }}>yolov11x_camo_military_v4.2.pt</span>
                         </div>
                         <div>
-                          <span className="text-gray-500">IMAGE ENDPOINT:</span>
-                          <span className="text-blue-400 block">POST /api/detect</span>
+                          <span style={{ color: 'var(--text-muted)' }}>IMAGE ENDPOINT:</span>
+                          <span className="block" style={{ color: '#60a5fa' }}>POST /api/detect</span>
                         </div>
                         <div>
-                          <span className="text-gray-500">VIDEO ENDPOINT:</span>
-                          <span className="text-cyan-400 block">POST /api/detect-video</span>
+                          <span style={{ color: 'var(--text-muted)' }}>VIDEO ENDPOINT:</span>
+                          <span className="block" style={{ color: '#22d3ee' }}>POST /api/detect-video</span>
                         </div>
-                        <div className="border-t border-slate-900 pt-1.5">
-                          <span className="text-gray-500 block mb-1">DETECTION OUTPUT SCHEMATIC:</span>
-                          <pre className="bg-slate-900 border border-slate-800 p-1.5 rounded text-[9px] text-emerald-500 overflow-x-auto whitespace-pre">
+                        <div className="border-t pt-1.5" style={{ borderColor: COLORS.border }}>
+                          <span className="block mb-1" style={{ color: 'var(--text-muted)' }}>DETECTION OUTPUT SCHEMATIC:</span>
+                          <pre className="border p-1.5 rounded text-[9px] overflow-x-auto whitespace-pre" style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border, color: 'var(--accent-green)' }}>
 {`{
   "id": "camo_tkt_129481",
   "threatType": "Camo Sniper",
@@ -1237,17 +1461,36 @@ export default function App() {
                   <div className="lg:col-span-8 flex flex-col gap-4">
                     
                     {/* CHOOSE PREVIEW RECON LAYER */}
-                    <div className="flex flex-wrap gap-1 bg-slate-950 p-1.5 rounded-lg border border-slate-800 justify-between items-center">
+                    <div className="flex flex-wrap gap-1 p-1.5 rounded-lg border justify-between items-center" style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border }}>
                       <div className="flex gap-1">
                         {(['raw', 'yolo', 'gradcam', 'thermal'] as const).map((mode) => (
                           <button
                             key={mode}
                             onClick={() => setActiveOverlayMode(mode)}
-                            className={`px-3 py-1.5 rounded text-xs transition-all uppercase tracking-wider font-bold ${
-                              activeOverlayMode === mode
-                                ? 'bg-emerald-900/30 text-emerald-400 border border-emerald-500/20'
-                                : 'text-gray-400 hover:text-white hover:bg-slate-900'
-                            }`}
+                            className="px-3 py-1.5 rounded text-xs transition-all uppercase tracking-wider font-bold"
+                            style={activeOverlayMode === mode
+                              ? {
+                                  backgroundColor: 'var(--accent-green-subtle)',
+                                  color: 'var(--accent-green)',
+                                  borderColor: 'rgba(16, 185, 129, 0.2)'
+                                }
+                              : {
+                                  color: 'var(--text-secondary)',
+                                  borderColor: 'transparent'
+                                }
+                            }
+                            onMouseEnter={(e) => {
+                              if (activeOverlayMode !== mode) {
+                                e.currentTarget.style.color = 'var(--text-primary)';
+                                e.currentTarget.style.backgroundColor = 'var(--bg-hover)';
+                              }
+                            }}
+                            onMouseLeave={(e) => {
+                              if (activeOverlayMode !== mode) {
+                                e.currentTarget.style.color = 'var(--text-secondary)';
+                                e.currentTarget.style.backgroundColor = 'transparent';
+                              }
+                            }}
                           >
                             {mode === 'raw' ? 'Raw drone frame' :
                              mode === 'yolo' ? 'YOLO Coordinates' :
@@ -1259,7 +1502,7 @@ export default function App() {
 
                       {/* Gradcam Slider */}
                       {activeOverlayMode === 'gradcam' && (
-                        <div className="flex items-center gap-2 px-2 text-xs text-gray-400 font-mono">
+                        <div className="flex items-center gap-2 px-2 text-xs font-mono" style={{ color: 'var(--text-secondary)' }}>
                           <span>Alpha:</span>
                           <input 
                             type="range" 
@@ -1267,7 +1510,8 @@ export default function App() {
                             max="95" 
                             value={gradcamAlpha}
                             onChange={(e) => setGradcamAlpha(Number(e.target.value))}
-                            className="w-16 accent-emerald-500 h-1 rounded" 
+                            className="w-16 h-1 rounded" 
+                            style={{ accentColor: 'var(--accent-green)', backgroundColor: 'var(--bg-hover)' }}
                           />
                           <span>{gradcamAlpha}%</span>
                         </div>
@@ -1275,7 +1519,7 @@ export default function App() {
                     </div>
 
                     {/* SCREEN CANVAS WORKSPACE AREA */}
-                    <div className="relative w-full h-[360px] rounded-xl border overflow-hidden flex items-center justify-center bg-slate-950" style={{ borderColor: COLORS.border }}>
+                    <div className="relative w-full h-[360px] border overflow-hidden flex items-center justify-center" style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border, borderRadius: 'var(--border-radius)' }}>
                       
                       {/* Grid crosshair visual graphics */}
                       <div className="absolute inset-0 grid grid-cols-6 grid-rows-6 opacity-10 pointer-events-none">
@@ -1317,22 +1561,25 @@ export default function App() {
                             return (
                               <div 
                                 key={idx} 
-                                className="absolute border-2 border-emerald-500 bg-emerald-500/10 shadow-[0_0_15px_rgba(16,185,129,0.25)] flex flex-col justify-between"
+                                className="absolute border-2 flex flex-col justify-between"
                                 style={{
                                   top: `${ymin}%`,
                                   left: `${xmin}%`,
                                   height: `${ymax - ymin}%`,
                                   width: `${xmax - xmin}%`,
-                                  transition: 'all 0.3s ease'
+                                  transition: 'all 0.3s ease',
+                                  borderColor: 'var(--accent-green)',
+                                  backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                                  boxShadow: '0 0 15px rgba(16, 185, 129, 0.15)'
                                 }}
                               >
-                                <div className="absolute -top-5 left-0 bg-emerald-500 text-black text-[9px] font-black uppercase font-mono px-1 py-0.5 whitespace-nowrap rounded">
+                                <div className="absolute -top-5 left-0 text-black text-[9px] font-black uppercase font-mono px-1 py-0.5 whitespace-nowrap rounded" style={{ backgroundColor: 'var(--accent-green)' }}>
                                   {boxObj.label} • {(boxObj.confidence * 100).toFixed(0)}%
                                 </div>
-                                <div className="p-1 border-b border-r border-emerald-500/30 font-mono text-[9px] text-emerald-400 bg-slate-950/60 self-start">
+                                <div className="p-1 border-b border-r font-mono text-[9px] self-start" style={{ borderColor: 'rgba(16, 185, 129, 0.3)', color: 'var(--accent-green)', backgroundColor: 'rgba(15, 23, 42, 0.6)' }}>
                                   L_LOC: [{xmin}%, {ymin}%]
                                 </div>
-                                <div className="absolute bottom-0 right-0 p-1 border-t border-l border-emerald-500/30 text-emerald-400 font-mono text-[8px] bg-slate-950/60">
+                                <div className="absolute bottom-0 right-0 p-1 border-t border-l font-mono text-[8px]" style={{ borderColor: 'rgba(16, 185, 129, 0.3)', color: 'var(--accent-green)', backgroundColor: 'rgba(15, 23, 42, 0.6)' }}>
                                   YOLOv11
                                 </div>
                               </div>
@@ -1344,7 +1591,7 @@ export default function App() {
                       {/* 2. GRAD-CAM ACTIVATION ATTENTION OVERLAY */}
                       {activeOverlayMode === 'gradcam' && (
                         <>
-                          <div className="absolute inset-0 flex items-center justify-center bg-slate-950/45 pointer-events-none">
+                          <div className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{ backgroundColor: 'rgba(15, 23, 42, 0.45)' }}>
                             {selectedDetection && selectedDetection.detected !== false && selectedDetection.gradcamHeatmapUrl ? (
                               <img 
                                 src={selectedDetection.gradcamHeatmapUrl} 
@@ -1353,18 +1600,18 @@ export default function App() {
                                 alt="Grad-CAM visual attention heatmap overlaid on recon"
                               />
                             ) : (
-                              <div className="text-gray-400 font-mono text-xs bg-slate-950/90 border border-slate-850 px-3.5 py-2 rounded-lg shadow-lg pointer-events-auto">
+                              <div className="font-mono text-xs px-3.5 py-2 rounded-lg pointer-events-auto" style={{ backgroundColor: 'rgba(15, 23, 42, 0.9)', borderColor: COLORS.border, color: 'var(--text-muted)', boxShadow: 'var(--shadow-subtle)' }}>
                                 No Grad-CAM available.
                               </div>
                             )}
                           </div>
                           
                           {/* Math indicator HUD in bottom corners */}
-                          <div className="absolute right-3 bottom-3 bg-slate-950/80 border border-slate-800 p-2.5 rounded font-mono text-[9px] text-gray-400 max-w-xs space-y-1">
-                            <div className="text-emerald-400 font-bold">Grad-CAM Gradient Math:</div>
+                          <div className="absolute right-3 bottom-3 border p-2.5 rounded font-mono text-[9px] max-w-xs space-y-1" style={{ backgroundColor: 'rgba(15, 23, 42, 0.8)', borderColor: COLORS.border, color: 'var(--text-secondary)' }}>
+                            <div className="font-bold" style={{ color: 'var(--accent-green)' }}>Grad-CAM Gradient Math:</div>
                             <div>L_CAM = ReLU(Σ_k α_k * A_k)</div>
                             <div>where α_k = 1/Z Σ_i Σ_j ∂y^c / ∂A_i,j^k</div>
-                            <div className="text-[8px] text-gray-500">Derivative channel weighting applied to Conv Layer 11</div>
+                            <div className="text-[8px]" style={{ color: 'var(--text-muted)' }}>Derivative channel weighting applied to Conv Layer 11</div>
                           </div>
                         </>
                       )}
@@ -1373,8 +1620,8 @@ export default function App() {
                       {activeOverlayMode === 'thermal' && (
                         <div className="absolute inset-0 pointer-events-none mix-blend-color-dodge opacity-65 bg-gradient-to-br from-indigo-950 via-purple-900 to-amber-700">
                           {/* Simulated warm pixel areas around detected coordinates */}
-                          <div className="absolute inset-0 flex items-center justify-center font-mono text-[9px] text-emerald-400 p-3 bg-slate-950/20">
-                            <div className="absolute top-4 left-4 bg-slate-950/80 border border-slate-800 px-2 py-1 rounded">
+                          <div className="absolute inset-0 flex items-center justify-center font-mono text-[9px] p-3" style={{ backgroundColor: 'rgba(15, 23, 42, 0.2)', color: 'var(--accent-green)' }}>
+                            <div className="absolute top-4 left-4 px-2 py-1 rounded" style={{ backgroundColor: 'rgba(15, 23, 42, 0.8)', borderColor: COLORS.border }}>
                               CTR THERMAL: UNLOCK FUSION CHL-08
                             </div>
                           </div>
@@ -1390,41 +1637,41 @@ export default function App() {
 
                     {/* HUD CORNER DETAILS GRID */}
                     {selectedDetection && (
-                      <div className="rounded-xl border bg-slate-950 p-4 border-slate-800" id="detection-pipeline-hud">
-                        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-3 mb-3">
+                      <div className="border p-4" style={{ backgroundColor: 'var(--bg-card)', borderColor: COLORS.border, borderRadius: 'var(--border-radius)' }} id="detection-pipeline-hud">
+                        <div className="flex flex-wrap items-center justify-between gap-2 border-b pb-3 mb-3" style={{ borderColor: COLORS.border }}>
                           <div>
-                            <div className="text-[10px] text-emerald-500 font-bold uppercase tracking-wider font-mono">MITIGATION REPORT LOCKED</div>
-                            <h3 className="text-sm font-bold text-white">{selectedDetection.threatType}</h3>
+                            <div className="text-[10px] font-bold uppercase tracking-wider font-mono" style={{ color: 'var(--accent-green)' }}>MITIGATION REPORT LOCKED</div>
+                            <h3 className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{selectedDetection.threatType}</h3>
                           </div>
-                          <span className="bg-red-950 text-red-400 font-bold font-mono px-2.5 py-1 text-xs border border-red-900 uppercase">
+                          <span className="font-bold font-mono px-2.5 py-1 text-xs border uppercase" style={{ backgroundColor: 'rgba(127, 29, 29, 0.5)', color: '#f87171', borderColor: 'rgba(239, 68, 68, 0.3)' }}>
                             THREAT: {selectedDetection.tacticalAnalysis?.threatRating || 'HIGH'}
                           </span>
                         </div>
 
                         <div className="grid gap-4 sm:grid-cols-3 text-xs">
-                          <div className="p-3 bg-slate-900/40 rounded border border-slate-800">
-                            <div className="text-[9px] uppercase tracking-wider text-gray-500 font-mono mb-1">CONCEALMENT METRIC</div>
-                            <div className="font-mono text-base font-black text-white">
+                          <div className="p-3 rounded border" style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border }}>
+                            <div className="text-[9px] uppercase tracking-wider font-mono mb-1" style={{ color: 'var(--text-muted)' }}>CONCEALMENT METRIC</div>
+                            <div className="font-mono text-base font-black" style={{ color: 'var(--text-primary)' }}>
                               {selectedDetection.tacticalAnalysis?.concealmentScore}%
                             </div>
-                            <p className="text-[10px] text-gray-400">YOLO visual camou match ratio</p>
+                            <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>YOLO visual camou match ratio</p>
                           </div>
 
-                          <div className="p-3 bg-slate-900/40 rounded border border-slate-800">
-                            <div className="text-[9px] uppercase tracking-wider text-gray-500 font-mono mb-1">SENSOR FUSION ASSIGN</div>
-                            <div className="font-mono text-base font-bold text-sky-400">
+                          <div className="p-3 rounded border" style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border }}>
+                            <div className="text-[9px] uppercase tracking-wider font-mono mb-1" style={{ color: 'var(--text-muted)' }}>SENSOR FUSION ASSIGN</div>
+                            <div className="font-mono text-base font-bold" style={{ color: '#38bdf8' }}>
                               {selectedDetection.tacticalAnalysis?.fusionRatio || '80% VS / 20% TH'}
                             </div>
-                            <p className="text-[10px] text-gray-400">Dual spectrum alignment balance</p>
+                            <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Dual spectrum alignment balance</p>
                           </div>
 
-                          <div className="p-3 bg-slate-900/40 rounded border border-slate-800">
-                            <div className="text-[9px] uppercase tracking-wider text-gray-500 font-mono mb-1">BLOCK SECURITY STAMP</div>
-                            <div className="font-mono text-[10px] truncate text-indigo-400 hover:underline cursor-pointer flex items-center gap-1">
-                              <Lock className="h-3 w-3 inline text-indigo-500 shrink-0" />
+                          <div className="p-3 rounded border" style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border }}>
+                            <div className="text-[9px] uppercase tracking-wider font-mono mb-1" style={{ color: 'var(--text-muted)' }}>BLOCK SECURITY STAMP</div>
+                            <div className="font-mono text-[10px] truncate hover:underline cursor-pointer flex items-center gap-1" style={{ color: '#818cf8' }}>
+                              <Lock className="h-3 w-3 inline shrink-0" style={{ color: '#6366f1' }} />
                               <span className="truncate">{selectedDetection.blockchainHash}</span>
                             </div>
-                            <p className="text-[10px] text-gray-400">Secure record reference ledger</p>
+                            <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Secure record reference ledger</p>
                           </div>
                         </div>
 
@@ -1452,13 +1699,13 @@ export default function App() {
           {activeTab === 'video' && (
             <div className="space-y-6 animate-fade-in" id="video-analysis-view">
               
-              <div className="rounded-xl border bg-slate-950/60 p-4 shadow-md" style={{ borderColor: COLORS.border }}>
+              <div className="border p-4" style={{ backgroundColor: 'var(--bg-card)', borderColor: COLORS.border, borderRadius: 'var(--border-radius)', boxShadow: 'var(--shadow-card)' }}>
                 <div>
-                  <h2 className="text-sm font-black uppercase tracking-widest text-white flex items-center gap-2">
-                    <Play className="h-5 w-5 text-emerald-500" />
+                  <h2 className="text-sm font-bold uppercase tracking-widest flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+                    <Play className="h-5 w-5" style={{ color: 'var(--accent-green)' }} />
                     <span>COSMOSPACE SATELLITE DRONE FRAME FEED</span>
                   </h2>
-                  <p className="text-xs text-gray-400">Simulate specialized real-time object tracking over a 60-frame optical sweep. CAM-YOLO11 executes per-frame edge categorization.</p>
+                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Simulate specialized real-time object tracking over a 60-frame optical sweep. CAM-YOLO11 executes per-frame edge categorization.</p>
                 </div>
 
                 <div className="mt-4 grid gap-6 lg:grid-cols-12">
@@ -1467,10 +1714,10 @@ export default function App() {
                   <div className="lg:col-span-8 flex flex-col gap-4">
                     
                     {/* VIDEO CONTAINER */}
-                    <div className="relative w-full h-[320px] rounded-xl border bg-slate-950 flex flex-col items-center justify-center overflow-hidden" style={{ borderColor: COLORS.border }}>
+                    <div className="relative w-full h-[320px] border flex flex-col items-center justify-center overflow-hidden" style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border, borderRadius: 'var(--border-radius)' }}>
                       
                       {/* Top Overlay Camera Info HUD */}
-                      <div className="absolute top-3 left-3 right-3 flex justify-between text-[10px] font-mono p-2 bg-slate-950/80 rounded border border-slate-800 z-10">
+                      <div className="absolute top-3 left-3 right-3 flex justify-between text-[10px] font-mono p-2 rounded border z-10" style={{ backgroundColor: 'rgba(15, 23, 42, 0.8)', borderColor: COLORS.border }}>
                         <div className="flex gap-4">
                           <span className="text-red-500 font-bold flex items-center gap-1 uppercase">
                             <span className="h-2 w-2 rounded-full bg-red-500 animate-ping inline-block" />
@@ -1630,7 +1877,16 @@ export default function App() {
                                 }
                               }
                             }}
-                            className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-600 text-black hover:bg-emerald-500"
+                            className="flex items-center justify-center text-black transition-all"
+                            style={{
+                              backgroundColor: 'var(--accent-green)',
+                              borderRadius: '10px',
+                              height: '44px',
+                              width: '44px',
+                              transition: 'all 0.2s ease'
+                            }}
+                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--accent-green-hover)'}
+                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--accent-green)'}
                             id="btn-play-pause"
                           >
                             {isVideoPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
@@ -1668,7 +1924,8 @@ export default function App() {
                                   videoRef.current.currentTime = val;
                                 }
                               }}
-                              className="w-full accent-emerald-500 h-1.5 bg-slate-950 rounded" 
+                              className="w-full h-1.5 rounded" 
+                              style={{ accentColor: 'var(--accent-green)', backgroundColor: 'var(--bg-sidebar)' }}
                             />
                           ) : (
                             <input 
@@ -1677,15 +1934,16 @@ export default function App() {
                               max="59" 
                               value={videoFrame}
                               onChange={(e) => setVideoFrame(Number(e.target.value))}
-                              className="w-full accent-emerald-500 h-1.5 bg-slate-950 rounded" 
+                              className="w-full h-1.5 rounded" 
+                              style={{ accentColor: 'var(--accent-green)', backgroundColor: 'var(--bg-sidebar)' }}
                             />
                           )}
                         </div>
 
                         <div className="flex gap-2">
-                          <button onClick={() => setDroneZoom(1)} className={`px-2 py-1 text-[10px] uppercase rounded border ${droneZoom === 1 ? 'bg-emerald-950/25 border-emerald-500 text-emerald-400' : 'bg-slate-950 border-transparent text-gray-400'}`}>1x</button>
-                          <button onClick={() => setDroneZoom(2)} className={`px-2 py-1 text-[10px] uppercase rounded border ${droneZoom === 2 ? 'bg-emerald-950/25 border-emerald-500 text-emerald-400' : 'bg-slate-950 border-transparent text-gray-400'}`}>2x</button>
-                          <button onClick={() => setDroneZoom(4)} className={`px-2 py-1 text-[10px] uppercase rounded border ${droneZoom === 4 ? 'bg-emerald-950/25 border-emerald-500 text-emerald-400' : 'bg-slate-950 border-transparent text-gray-400'}`}>4x</button>
+                          <button onClick={() => setDroneZoom(1)} className="px-2 py-1 text-[10px] uppercase rounded border" style={droneZoom === 1 ? { backgroundColor: 'var(--accent-green-subtle)', borderColor: 'var(--accent-green)', color: 'var(--accent-green)' } : { backgroundColor: 'var(--bg-sidebar)', borderColor: 'transparent', color: 'var(--text-secondary)' }}>1x</button>
+                          <button onClick={() => setDroneZoom(2)} className="px-2 py-1 text-[10px] uppercase rounded border" style={droneZoom === 2 ? { backgroundColor: 'var(--accent-green-subtle)', borderColor: 'var(--accent-green)', color: 'var(--accent-green)' } : { backgroundColor: 'var(--bg-sidebar)', borderColor: 'transparent', color: 'var(--text-secondary)' }}>2x</button>
+                          <button onClick={() => setDroneZoom(4)} className="px-2 py-1 text-[10px] uppercase rounded border" style={droneZoom === 4 ? { backgroundColor: 'var(--accent-green-subtle)', borderColor: 'var(--accent-green)', color: 'var(--accent-green)' } : { backgroundColor: 'var(--bg-sidebar)', borderColor: 'transparent', color: 'var(--text-secondary)' }}>4x</button>
                         </div>
                       </div>
                     </div>
@@ -1718,16 +1976,16 @@ export default function App() {
                     </div>
 
                     {/* LIVE THREAT FEED ACTIVITY SCORES */}
-                    <div className="rounded-lg bg-slate-900/50 p-3 border border-slate-800 flex-1 flex flex-col justify-between">
+                    <div className="rounded-lg p-3 border flex-1 flex flex-col justify-between" style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border }}>
                       <div>
-                        <div className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">RUNNING ANALYSIS LOG</div>
-                        <div className="font-mono text-[10px] text-gray-400 space-y-2 max-h-[140px] overflow-y-auto">
+                        <div className="text-[10px] font-black uppercase tracking-widest mb-2" style={{ color: 'var(--text-muted)' }}>RUNNING ANALYSIS LOG</div>
+                        <div className="font-mono text-[10px] space-y-2 max-h-[140px] overflow-y-auto" style={{ color: 'var(--text-secondary)' }}>
                           <div>[f_01-f_11] Terrain matching: 0 threats detected.</div>
                           {videoFrame >= 12 && (
                             <div className="text-red-400 font-bold">[f_12-f_25] lock on "Sniper (foliage coverage)" at coordinates [48, 40].</div>
                           )}
                           {videoFrame >= 26 && videoFrame <= 34 && (
-                            <div className="text-gray-500">[f_26-f_34] Target zone cleared. Re-establishing visual tracking matrices.</div>
+                            <div style={{ color: 'var(--text-muted)' }}>[f_26-f_34] Target zone cleared. Re-establishing visual tracking matrices.</div>
                           )}
                           {videoFrame >= 35 && (
                             <div className="text-red-400 font-bold">[f_35-f_50] lock on APC Heavy Armor (T-80 Variant) at [30, 25].</div>
@@ -1735,22 +1993,22 @@ export default function App() {
                         </div>
                       </div>
 
-                      <div className="mt-4 pt-3 border-t border-slate-800">
-                        <div className="text-[10px] text-gray-500 font-black uppercase tracking-wide flex items-center gap-1.5">
+                      <div className="mt-4 pt-3 border-t" style={{ borderColor: COLORS.border }}>
+                        <div className="text-[10px] font-black uppercase tracking-wide flex items-center gap-1.5" style={{ color: 'var(--text-muted)' }}>
                           <Clock className="h-3.5 w-3.5" />
                           <span>DETECTION TIMELINE SPANS</span>
                         </div>
-                        <div className="mt-2 h-16 w-full flex items-end gap-0.5 bg-slate-950 p-1.5 rounded border border-slate-800/60 font-mono text-[9px]">
+                        <div className="mt-2 h-16 w-full flex items-end gap-0.5 p-1.5 rounded border font-mono text-[9px]" style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: 'rgba(55, 65, 81, 0.6)' }}>
                           {Array.from({ length: 30 }).map((_, i) => {
                             const isZoneA = i >= 6 && i <= 12;
                             const isZoneB = i >= 17 && i <= 25;
-                            const h = isZoneA ? 'h-10 bg-red-500/80' : isZoneB ? 'h-14 bg-red-600' : 'h-1.5 bg-emerald-500/30';
+                            const h = isZoneA ? 'h-10 bg-red-500/80' : isZoneB ? 'h-14 bg-red-600' : 'h-1.5';
                             return (
                               <div key={i} className={`flex-1 rounded-t transition-all ${h}`} title={`Interval ${i}`} />
                             );
                           })}
                         </div>
-                        <div className="flex justify-between text-[8px] text-gray-500 font-mono mt-1">
+                        <div className="flex justify-between text-[8px] font-mono mt-1" style={{ color: 'var(--text-muted)' }}>
                           <span>Frame 1</span>
                           <span>Frame 30</span>
                           <span>Frame 60</span>
@@ -1771,11 +2029,11 @@ export default function App() {
           {activeTab === 'blockchain' && (
             <div className="space-y-6 animate-fade-in" id="blockchain-ledger-view">
               
-              <div className="rounded-xl border bg-slate-950/60 p-4 shadow-md" style={{ borderColor: COLORS.border }}>
-                <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-4 mb-4">
+              <div className="border p-4" style={{ backgroundColor: 'var(--bg-card)', borderColor: COLORS.border, borderRadius: 'var(--border-radius)', boxShadow: 'var(--shadow-card)' }}>
+                <div className="flex flex-wrap items-center justify-between gap-4 border-b pb-4 mb-4" style={{ borderColor: COLORS.border }}>
                   <div>
-                    <h2 className="text-sm font-black uppercase tracking-widest text-white flex items-center gap-2">
-                      <Shield className="h-5 w-5 text-emerald-500" />
+                    <h2 className="text-sm font-bold uppercase tracking-widest flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+                      <Shield className="h-5 w-5" style={{ color: 'var(--accent-green)' }} />
                       <span>CRYPTOGRAPHIC IMMUTABILITY SURVEILLANCE LEDGER</span>
                     </h2>
                     <p className="text-xs text-gray-400">Zero-trust network architecture ledger. All YOLOv11 detections are mined into blocks with SHA-256 links to prevent unauthorized record erasure.</p>
@@ -1833,15 +2091,21 @@ export default function App() {
                           {/* Block Card Container */}
                           <div 
                             onClick={() => setSelectedBlockForTamper(block.index)}
-                            className={`w-56 p-4 rounded-xl border transition-all cursor-pointer relative ${
+                            className={`w-56 p-4 border transition-all cursor-pointer relative ${
                               selectedBlockForTamper === block.index 
                                 ? 'ring-2 ring-emerald-400' 
                                 : ''
-                            } ${
-                              isBlockInvalid 
-                                ? 'bg-red-950/60 border-red-800 text-red-200 shadow-[0_0_15px_rgba(239,68,68,0.2)]' 
-                                : 'bg-slate-900/80 border-slate-800 hover:border-slate-700'
                             }`}
+                            style={isBlockInvalid 
+                              ? { backgroundColor: 'rgba(127, 29, 29, 0.6)', borderColor: '#991b1b', color: '#fca5a5', boxShadow: '0 0 15px rgba(239, 68, 68, 0.2)' } 
+                              : { backgroundColor: 'rgba(15, 23, 42, 0.8)', borderColor: COLORS.border }
+                            }
+                            onMouseEnter={(e) => {
+                              if (!isBlockInvalid) e.currentTarget.style.borderColor = COLORS.borderLight;
+                            }}
+                            onMouseLeave={(e) => {
+                              if (!isBlockInvalid) e.currentTarget.style.borderColor = COLORS.border;
+                            }}
                           >
                             <div className="flex items-center justify-between border-b pb-2 mb-2" style={{ borderColor: isBlockInvalid ? '#ef444433' : '#33415555' }}>
                               <span className="text-[10px] font-mono font-black uppercase">
@@ -1885,7 +2149,7 @@ export default function App() {
 
                             {/* Tampering overlay warning status */}
                             {isBlockInvalid && (
-                              <div className="absolute inset-0 bg-red-950/10 pointer-events-none rounded-xl border border-red-500/30 animate-pulse" />
+                              <div className="absolute inset-0 bg-red-950/10 pointer-events-none border border-red-500/30 animate-pulse" style={{ borderRadius: 'var(--border-radius)' }} />
                             )}
                           </div>
                         </div>
@@ -1897,9 +2161,9 @@ export default function App() {
 
                 {/* CYBER SECURITY OVERWRITE PANEL TRG */}
                 {selectedBlockForTamper !== null && (
-                  <div className="mt-6 p-4 rounded-xl border bg-slate-950 border-slate-800 grid gap-6 md:grid-cols-2">
+                  <div className="mt-6 p-4 border grid gap-6 md:grid-cols-2" style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border, borderRadius: 'var(--border-radius)' }}>
                     <div>
-                      <h4 className="text-xs font-black uppercase tracking-widest text-[#ef4444] flex items-center gap-1.5">
+                      <h4 className="text-xs font-bold uppercase tracking-widest flex items-center gap-1.5" style={{ color: '#ef4444' }}>
                         <AlertTriangle className="h-4 w-4" />
                         <span>TACTICAL SENSORS INTRUSION SANDBOX (BLOCK #{selectedBlockForTamper})</span>
                       </h4>
@@ -1912,7 +2176,8 @@ export default function App() {
                           type="text"
                           value={tamperThreatType}
                           onChange={(e) => setTamperThreatType(e.target.value)}
-                          className="flex-1 bg-slate-900 border border-slate-800 rounded px-2.5 py-1.5 text-xs text-white uppercase focus:outline-none focus:border-red-500" 
+                          className="flex-1 rounded px-2.5 py-1.5 text-xs uppercase focus:outline-none transition-colors"
+                          style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border, color: 'var(--text-primary)' }}
                         />
                         <button
                           onClick={executeTamperSimulation}
@@ -1923,10 +2188,10 @@ export default function App() {
                       </div>
                     </div>
 
-                    <div className="bg-slate-900/40 p-4 rounded border border-slate-800 text-xs flex flex-col justify-between font-mono">
+                    <div className="p-4 rounded border text-xs flex flex-col justify-between font-mono" style={{ backgroundColor: 'rgba(15, 23, 42, 0.4)', borderColor: COLORS.border }}>
                       <div>
-                        <div className="text-[10px] font-black uppercase tracking-widest text-emerald-500">CHAIN LINK VERIFICATION METRICS</div>
-                        <div className="mt-2 text-gray-400 space-y-1">
+                        <div className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'var(--accent-green)' }}>CHAIN LINK VERIFICATION METRICS</div>
+                        <div className="mt-2 space-y-1" style={{ color: 'var(--text-secondary)' }}>
                           <div className="flex justify-between">
                             <span>Block rec validation:</span>
                             <span className={isChainCompromised ? 'text-red-400 font-bold' : 'text-emerald-400 font-bold'}>
@@ -1961,10 +2226,10 @@ export default function App() {
           {activeTab === 'quantum' && (
             <div className="space-y-6 animate-fade-in" id="quantum-module-view">
               
-              <div className="rounded-xl border bg-slate-950/60 p-4 shadow-md" style={{ borderColor: COLORS.border }}>
-                <div className="border-b border-slate-800 pb-4 mb-4">
-                  <h2 className="text-sm font-black uppercase tracking-widest text-white flex items-center gap-2">
-                    <Cpu className="h-5 w-5 text-emerald-500" />
+              <div className="border p-4" style={{ backgroundColor: 'var(--bg-card)', borderColor: COLORS.border, borderRadius: 'var(--border-radius)', boxShadow: 'var(--shadow-card)' }}>
+                <div className="border-b pb-4 mb-4" style={{ borderColor: COLORS.border }}>
+                  <h2 className="text-sm font-bold uppercase tracking-widest flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+                    <Cpu className="h-5 w-5" style={{ color: 'var(--accent-green)' }} />
                     <span>QUANTUM HYPERPARAMETER OPTIMIZATION TUNER</span>
                   </h2>
                   <p className="text-xs text-gray-400">Evaluate optimal convolution grids, fusion layouts, and backplane parameters using modeled quantum-annealing superpositions, avoiding manual SGD bottlenecks.</p>
@@ -1973,9 +2238,9 @@ export default function App() {
                 <div className="grid gap-6 lg:grid-cols-12">
                   
                   {/* SLIDERS MODULE */}
-                  <div className="lg:col-span-4 rounded-lg bg-slate-900/50 p-4 border border-slate-800 flex flex-col justify-between">
+                  <div className="lg:col-span-4 rounded-lg p-4 border flex flex-col justify-between" style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border }}>
                     <div className="space-y-5">
-                      <div className="text-[10px] font-black uppercase tracking-widest text-gray-400">HYPERPARAMETER MULTI-TUNERS</div>
+                      <div className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>HYPERPARAMETER MULTI-TUNERS</div>
                       
                       {/* Slider A */}
                       <div className="space-y-1.5">
@@ -2034,7 +2299,17 @@ export default function App() {
                     <button
                       onClick={runQuantumOptimization}
                       disabled={quantumSimulating}
-                      className="mt-6 w-full rounded bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 text-black py-2.5 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2"
+                      className="mt-6 w-full text-black font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all"
+                      style={quantumSimulating
+                        ? { backgroundColor: 'var(--bg-hover)', color: 'var(--text-muted)', borderRadius: '10px', height: '44px', cursor: 'not-allowed' }
+                        : { backgroundColor: 'var(--accent-green)', borderRadius: '10px', height: '44px', transition: 'all 0.2s ease' }
+                      }
+                      onMouseEnter={(e) => {
+                        if (!quantumSimulating) e.currentTarget.style.backgroundColor = 'var(--accent-green-hover)';
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!quantumSimulating) e.currentTarget.style.backgroundColor = 'var(--accent-green)';
+                      }}
                     >
                       {quantumSimulating && <RefreshCw className="h-4 w-4 animate-spin" />}
                       <span>{quantumSimulating ? 'Annealing Weights...' : 'ANNEAL WEIGHTS IN QUANTUM UNIT'}</span>
@@ -2043,10 +2318,10 @@ export default function App() {
 
                   {/* HIGH-END CHART DISPLAY COMPARISON */}
                   <div className="lg:col-span-8 flex flex-col gap-4">
-                    <div className="rounded-lg bg-slate-950 p-4 border border-slate-800">
+                    <div className="rounded-lg p-4 border" style={{ backgroundColor: 'var(--bg-card)', borderColor: COLORS.border }}>
                       <div className="flex items-center justify-between gap-4 mb-3">
-                        <div className="text-[10px] font-black uppercase tracking-widest text-[#10b981]">MODEL ACCURACY mAP COMPARISON</div>
-                        <span className="text-[9px] font-mono text-gray-500">mAP [IoU=0.50:0.95] • CAM-YOLO11 vs Benchmark</span>
+                        <div className="text-[10px] font-black uppercase tracking-widest" style={{ color: '#10b981' }}>MODEL ACCURACY mAP COMPARISON</div>
+                        <span className="text-[9px] font-mono" style={{ color: 'var(--text-muted)' }}>mAP [IoU=0.50:0.95] • CAM-YOLO11 vs Benchmark</span>
                       </div>
 
                       {/* CHART */}
@@ -2073,9 +2348,9 @@ export default function App() {
 
                     {/* DYNAMIC RESULTS SUMMARY KPI */}
                     <div className="grid gap-4 sm:grid-cols-2">
-                      <div className="p-3 rounded-lg bg-slate-900 border border-slate-800 font-mono text-[11px] text-gray-300">
-                        <div className="font-bold text-gray-400 uppercase text-[9px] mb-1">OPTIMIZED MODEL mAP MAX</div>
-                        <div className="text-xl font-black text-emerald-400">
+                      <div className="p-3 rounded-lg border font-mono text-[11px]" style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border, color: 'var(--text-primary)' }}>
+                        <div className="font-bold uppercase text-[9px] mb-1" style={{ color: 'var(--text-muted)' }}>OPTIMIZED MODEL mAP MAX</div>
+                        <div className="text-xl font-black" style={{ color: 'var(--accent-green)' }}>
                           {dynamicQuantumData[dynamicQuantumData.length - 1].CAM_YOLO11_Quantum}%
                         </div>
                         <div className="text-[10px] text-gray-500 mt-1">
@@ -2083,9 +2358,9 @@ export default function App() {
                         </div>
                       </div>
 
-                      <div className="p-3 rounded-lg bg-slate-900 border border-slate-800 font-mono text-[11px] text-gray-300">
-                        <div className="font-bold text-gray-400 uppercase text-[9px] mb-1">STOCHASTIC SHIFT OVERHEAD</div>
-                        <div className="text-xl font-black text-sky-400">
+                      <div className="p-3 rounded-lg border font-mono text-[11px]" style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border, color: 'var(--text-primary)' }}>
+                        <div className="font-bold uppercase text-[9px] mb-1" style={{ color: 'var(--text-muted)' }}>STOCHASTIC SHIFT OVERHEAD</div>
+                        <div className="text-xl font-black" style={{ color: '#38bdf8' }}>
                           -74.8% REDUCTION
                         </div>
                         <div className="text-[10px] text-gray-500 mt-1">Eliminated hyperparameter gradient drift</div>
@@ -2105,11 +2380,11 @@ export default function App() {
           {activeTab === 'history' && (
             <div className="space-y-6 animate-fade-in" id="history-archives-view">
               
-              <div className="rounded-xl border bg-slate-950/60 p-4 shadow-md" style={{ borderColor: COLORS.border }}>
-                <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-4 mb-4">
+              <div className="border p-4" style={{ backgroundColor: 'var(--bg-card)', borderColor: COLORS.border, borderRadius: 'var(--border-radius)', boxShadow: 'var(--shadow-card)' }}>
+                <div className="flex flex-wrap items-center justify-between gap-4 border-b pb-4 mb-4" style={{ borderColor: COLORS.border }}>
                   <div>
-                    <h2 className="text-sm font-black uppercase tracking-widest text-white flex items-center gap-2">
-                      <History className="h-5 w-5 text-emerald-500" />
+                    <h2 className="text-sm font-bold uppercase tracking-widest flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+                      <History className="h-5 w-5" style={{ color: 'var(--accent-green)' }} />
                       <span>SURVEILLANCE ARCHIVE DATABASE QUERY</span>
                     </h2>
                     <p className="text-xs text-gray-400">Search and sort historical camouflaged soldier and armored detections stored securely in SQLite.</p>
@@ -2124,14 +2399,16 @@ export default function App() {
                         placeholder="Search logs..." 
                         value={historySearch}
                         onChange={(e) => setHistorySearch(e.target.value)}
-                        className="bg-slate-900 border border-slate-800 rounded pl-8 pr-3 py-1.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500 w-44"
+                        className="rounded pl-8 pr-3 py-1.5 text-xs w-44 focus:outline-none transition-colors"
+                        style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border, color: 'var(--text-primary)' }}
                       />
                     </div>
 
                     <select
                       value={historyFilter}
                       onChange={(e) => setHistoryFilter(e.target.value)}
-                      className="bg-slate-900 border border-slate-800 rounded px-2 py-1.5 text-xs text-gray-300 focus:outline-none focus:border-emerald-500"
+                      className="rounded px-2 py-1.5 text-xs focus:outline-none transition-colors"
+                      style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border, color: 'var(--text-secondary)' }}
                     >
                       <option value="ALL">All Threat Levels</option>
                       <option value="CRITICAL">Critical threat Rating</option>
@@ -2142,10 +2419,10 @@ export default function App() {
                 </div>
 
                 {/* ARCHIVE LOG DATA GRID */}
-                <div className="overflow-x-auto rounded-lg border border-slate-800">
+                <div className="overflow-x-auto rounded-lg border" style={{ borderColor: COLORS.border }}>
                   <table className="w-full text-left border-collapse text-xs">
                     <thead>
-                      <tr className="bg-slate-900 border-b border-slate-800 text-gray-400 font-bold uppercase tracking-wider text-[10px]">
+                      <tr className="border-b font-bold uppercase tracking-wider text-[10px]" style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border, color: 'var(--text-muted)' }}>
                         <th className="p-3">Threat type category</th>
                         <th className="p-3 text-center">Confidence</th>
                         <th className="p-3">Concealment Rating</th>
@@ -2168,9 +2445,12 @@ export default function App() {
                               setSelectedDetection(item);
                               setActiveTab('analysis'); // warp to view details
                             }}
-                            className="hover:bg-slate-900/50 cursor-pointer transition-colors"
+                            className="cursor-pointer transition-colors"
+                            style={{ backgroundColor: 'transparent' }}
+                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--bg-hover)'}
+                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                           >
-                            <td className="p-3 font-bold text-white flex items-center gap-2">
+                            <td className="p-3 font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
                               <span className={`h-2 w-2 rounded-full ${
                                 item.tacticalAnalysis?.threatRating === 'CRITICAL' ? 'bg-red-500' :
                                 item.tacticalAnalysis?.threatRating === 'HIGH' ? 'bg-orange-500' :
@@ -2208,10 +2488,10 @@ export default function App() {
           {activeTab === 'analytics' && (
             <div className="space-y-6 animate-fade-in" id="analytics-grid-view">
               
-              <div className="rounded-xl border bg-slate-950/60 p-4 shadow-md" style={{ borderColor: COLORS.border }}>
-                <div className="border-b border-slate-800 pb-4 mb-4">
-                  <h2 className="text-sm font-black uppercase tracking-widest text-white flex items-center gap-2">
-                    <BarChart3 className="h-5 w-5 text-emerald-500" />
+              <div className="border p-4" style={{ backgroundColor: 'var(--bg-card)', borderColor: COLORS.border, borderRadius: 'var(--border-radius)', boxShadow: 'var(--shadow-card)' }}>
+                <div className="border-b pb-4 mb-4" style={{ borderColor: COLORS.border }}>
+                  <h2 className="text-sm font-bold uppercase tracking-widest flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+                    <BarChart3 className="h-5 w-5" style={{ color: 'var(--accent-green)' }} />
                     <span>MULTISPECTRAL HISTORICAL STATISTICAL PANELS</span>
                   </h2>
                   <p className="text-xs text-gray-400">Core analytics charts compiling target classifications, sensor distributions, and classification accuracy curves.</p>
@@ -2220,8 +2500,8 @@ export default function App() {
                 <div className="grid gap-6 md:grid-cols-2">
                   
                   {/* BAR CHART: DAILY SCANS TREND */}
-                  <div className="rounded-lg bg-slate-950 p-4 border border-slate-800">
-                    <div className="text-[10px] font-black tracking-widest uppercase text-gray-400 mb-3">TELEMETRY SCANS PROCESS RATE</div>
+                  <div className="rounded-lg p-4 border" style={{ backgroundColor: 'var(--bg-card)', borderColor: COLORS.border }}>
+                    <div className="text-[10px] font-black tracking-widest uppercase mb-3" style={{ color: 'var(--text-muted)' }}>TELEMETRY SCANS PROCESS RATE</div>
                     <div className="h-[200px] w-full text-xs font-mono">
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={[
@@ -2236,7 +2516,7 @@ export default function App() {
                           <CartesianGrid strokeDasharray="3" stroke="#27272a" />
                           <XAxis dataKey="day" stroke="#52525b" />
                           <YAxis stroke="#52525b" />
-                          <Tooltip contentStyle={{ backgroundColor: '#090d16', borderColor: '#1e293b' }} />
+                          <Tooltip contentStyle={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border }} />
                           <Bar dataKey="Scans" fill="#10b981">
                             {Array.from({ length: 7 }).map((_, i) => (
                               <Cell key={i} fill={i === 6 ? '#0ea5e9' : '#10b981'} />
@@ -2248,8 +2528,8 @@ export default function App() {
                   </div>
 
                   {/* RADAR CHART: THREAT CLASSIFICATIONS WEIGHT */}
-                  <div className="rounded-lg bg-slate-950 p-4 border border-slate-800">
-                    <div className="text-[10px] font-black tracking-widest uppercase text-gray-400 mb-3">SENSOR THREAT MULTI-FACET CLASSIFICATIONS</div>
+                  <div className="rounded-lg p-4 border" style={{ backgroundColor: 'var(--bg-card)', borderColor: COLORS.border }}>
+                    <div className="text-[10px] font-black tracking-widest uppercase mb-3" style={{ color: 'var(--text-muted)' }}>SENSOR THREAT MULTI-FACET CLASSIFICATIONS</div>
                     <div className="h-[200px] w-full text-xs font-mono">
                       <ResponsiveContainer width="100%" height="100%">
                         <RadarChart cx="50%" cy="50%" outerRadius="80%" data={[
@@ -2269,8 +2549,8 @@ export default function App() {
                   </div>
 
                   {/* LINE CHART: SENSOR ACCURACY CONFORMANCE */}
-                  <div className="rounded-lg bg-slate-950 p-4 border border-slate-800">
-                    <div className="text-[10px] font-black tracking-widest uppercase text-gray-400 mb-3">Ffusion YOLOv11 CONFIDENCE CONFORMANCE</div>
+                  <div className="rounded-lg p-4 border" style={{ backgroundColor: 'var(--bg-card)', borderColor: COLORS.border }}>
+                    <div className="text-[10px] font-black tracking-widest uppercase mb-3" style={{ color: 'var(--text-muted)' }}>Ffusion YOLOv11 CONFIDENCE CONFORMANCE</div>
                     <div className="h-[200px] w-full text-xs font-mono">
                       <ResponsiveContainer width="100%" height="100%">
                         <LineChart data={[
@@ -2284,7 +2564,7 @@ export default function App() {
                           <CartesianGrid strokeDasharray="3" stroke="#27272a" />
                           <XAxis dataKey="sample" stroke="#52525b" />
                           <YAxis domain={[75, 100]} stroke="#52525b" />
-                          <Tooltip contentStyle={{ backgroundColor: '#090d16', borderColor: '#1e293b' }} />
+                          <Tooltip contentStyle={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border }} />
                           <Line type="monotone" dataKey="conf" stroke="#f97316" strokeWidth={2.5} />
                         </LineChart>
                       </ResponsiveContainer>
@@ -2292,9 +2572,9 @@ export default function App() {
                   </div>
 
                   {/* STATISTICAL SUMMARY KPI OVERLAYS */}
-                  <div className="rounded-lg bg-slate-950 p-4 border border-slate-800 flex flex-col justify-between">
+                  <div className="rounded-lg p-4 border flex flex-col justify-between" style={{ backgroundColor: 'var(--bg-card)', borderColor: COLORS.border }}>
                     <div>
-                      <div className="text-[10px] font-black tracking-widest uppercase text-gray-400">MULTISPECTRAL PERFORMANCE EVALUATION</div>
+                      <div className="text-[10px] font-black tracking-widest uppercase" style={{ color: 'var(--text-muted)' }}>MULTISPECTRAL PERFORMANCE EVALUATION</div>
                       <p className="text-xs text-gray-400 mt-1 leading-relaxed">
                         Surveillance records metrics evaluate optimal thermal fusion convergence averages of <span className="text-emerald-400 font-bold font-mono">94.8% OPT</span>. Classification precision levels are locked into zero-trust secure block chains, completely mitigating record loss.
                       </p>
@@ -2317,10 +2597,10 @@ export default function App() {
             <div className="space-y-6 animate-fade-in" id="academic-research-view">
               
               {/* RESEARCH OVERVOLT DETAILS */}
-              <div className="rounded-xl border bg-slate-950/60 p-6 shadow-md font-sans" style={{ borderColor: COLORS.border }}>
+              <div className="border p-6 shadow-md font-sans" style={{ backgroundColor: 'var(--bg-card)', borderColor: COLORS.border, borderRadius: 'var(--border-radius)', boxShadow: 'var(--shadow-card)' }}>
                 
                 {/* PAPER FRONTPAGE TITLE */}
-                <div className="text-center space-y-2 border-b border-slate-800 pb-6 mb-6">
+                <div className="text-center space-y-2 border-b pb-6 mb-6" style={{ borderColor: COLORS.border }}>
                   <span className="text-xs text-sky-400 font-mono tracking-widest uppercase font-black">
                     UNDERGRADUATE RESEARCH OPPORTUNITIES PROGRAM (UROP) EVALUATION DEMOTRACK
                   </span>
@@ -2335,7 +2615,7 @@ export default function App() {
                 {/* ABSTRACT */}
                 <div className="space-y-4">
                   <div>
-                    <h3 className="text-xs font-black uppercase tracking-widest text-emerald-400 font-mono">ABSTRACT</h3>
+                    <h3 className="text-xs font-bold uppercase tracking-widest font-mono" style={{ color: 'var(--accent-green)' }}>ABSTRACT</h3>
                     <p className="mt-1.5 text-xs text-gray-300 leading-relaxed font-sans text-justify">
                       Standard computer vision detectors (YOLOv8, SSD) operate on pixel-level feature contrasts, resulting in massive miss-detection ratios when targets leverage visual camouflage. This paper presents CAM-YOLO11, a multispectral surveillance framework incorporating custom derivative gradient activations (Grad-CAM) to generate real-time local thermal overlay priorities. Detections are compiled and mined using SHA-256 blocks directly into a tamper-proof blockchain ledger, ensuring evidence immutability. Hyperparameters are fine-tuned utilizing modeled quantum annealing superpositions. Numerical validation archives prove mAP enhancements of +8.9% over classical convolutional architectures.
                     </p>
@@ -2345,12 +2625,12 @@ export default function App() {
 
                   {/* MATHEMATICAL FOUNDATIONS */}
                   <div>
-                    <h3 className="text-xs font-black uppercase tracking-widest text-emerald-400 font-mono">MATHEMATICAL MODEL REPRESENTATION</h3>
+                    <h3 className="text-xs font-bold uppercase tracking-widest font-mono" style={{ color: 'var(--accent-green)' }}>MATHEMATICAL MODEL REPRESENTATION</h3>
                     
                     <div className="mt-3 grid gap-4 sm:grid-cols-2 text-xs font-mono">
-                      <div className="p-3 bg-slate-900 border border-slate-800 rounded">
-                        <span className="text-[10px] text-gray-500">Derivative Activation channel weight:</span>
-                        <div className="text-white text-sm my-2 text-center bg-slate-950 p-2 rounded">
+                      <div className="p-3 rounded border" style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border }}>
+                        <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Derivative Activation channel weight:</span>
+                        <div className="text-sm my-2 text-center p-2 rounded" style={{ backgroundColor: 'var(--bg-card)', color: 'var(--text-primary)' }}>
                           α_k^c = 1/Z * Σ_i Σ_j (∂y^c / ∂A_i,j^k)
                         </div>
                         <p className="text-[10px] text-gray-400 leading-relaxed">
@@ -2358,9 +2638,9 @@ export default function App() {
                         </p>
                       </div>
 
-                      <div className="p-3 bg-slate-900 border border-slate-800 rounded">
-                        <span className="text-[10px] text-gray-500">Quantum Annealing convergence factor:</span>
-                        <div className="text-white text-sm my-2 text-center bg-slate-950 p-2 rounded">
+                      <div className="p-3 rounded border" style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border }}>
+                        <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Quantum Annealing convergence factor:</span>
+                        <div className="text-sm my-2 text-center p-2 rounded" style={{ backgroundColor: 'var(--bg-card)', color: 'var(--text-primary)' }}>
                           H(s) = A(s)H_D + B(s)H_P
                         </div>
                         <p className="text-[10px] text-gray-400 leading-relaxed">
@@ -2374,70 +2654,70 @@ export default function App() {
 
                   {/* ARCHITECTURE DIAGRAM */}
                   <div>
-                    <h3 className="text-xs font-black uppercase tracking-widest text-[#10b981] font-mono">SYSTEM TOPOLOGY PIPELINE OVERVIEW</h3>
+                    <h3 className="text-xs font-bold uppercase tracking-widest font-mono" style={{ color: '#10b981' }}>SYSTEM TOPOLOGY PIPELINE OVERVIEW</h3>
                     
-                    <div className="mt-3 p-4 rounded-lg bg-slate-900/40 border border-slate-800/80 font-mono text-[11px] text-gray-300">
+                    <div className="mt-3 p-4 rounded-lg font-mono text-[11px]" style={{ backgroundColor: 'rgba(15, 23, 42, 0.4)', borderColor: COLORS.border, color: 'var(--text-primary)' }}>
                       <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-center">
-                        <div className="flex flex-col items-center p-2 border border-slate-800 bg-slate-950 rounded w-full sm:w-28">
-                          <Eye className="h-5 w-5 text-sky-400" />
-                          <span className="font-bold text-[10px] truncate uppercase mt-1">1.Drone Multispectral Feed</span>
+                        <div className="flex flex-col items-center p-2 border rounded w-full sm:w-28" style={{ borderColor: COLORS.border, backgroundColor: 'var(--bg-card)' }}>
+                          <Eye className="h-5 w-5" style={{ color: '#38bdf8' }} />
+                          <span className="font-bold text-[10px] truncate uppercase mt-1" style={{ color: 'var(--text-primary)' }}>1.Drone Multispectral Feed</span>
                         </div>
-                        <span className="text-gray-500">→</span>
-                        <div className="flex flex-col items-center p-2 border border-emerald-500/50 bg-emerald-950/10 rounded w-full sm:w-28 shadow-md">
-                          <Cpu className="h-5 w-5 text-emerald-400" />
-                          <span className="font-bold text-[10px] uppercase mt-1">2.CAM-YOLO11 Backbone</span>
+                        <span style={{ color: 'var(--text-muted)' }}>→</span>
+                        <div className="flex flex-col items-center p-2 border rounded w-full sm:w-28" style={{ borderColor: 'rgba(16, 185, 129, 0.5)', backgroundColor: 'var(--accent-green-subtle)' }}>
+                          <Cpu className="h-5 w-5" style={{ color: 'var(--accent-green)' }} />
+                          <span className="font-bold text-[10px] uppercase mt-1" style={{ color: 'var(--text-primary)' }}>2.CAM-YOLO11 Backbone</span>
                         </div>
-                        <span className="text-gray-500">→</span>
-                        <div className="flex flex-col items-center p-2 border border-slate-800 bg-slate-950 rounded w-full sm:w-28">
-                          <Layers className="h-5 w-5 text-orange-400" />
-                          <span className="font-bold text-[10px] uppercase mt-1">3.Grad-CAM Overlays</span>
+                        <span style={{ color: 'var(--text-muted)' }}>→</span>
+                        <div className="flex flex-col items-center p-2 border rounded w-full sm:w-28" style={{ borderColor: COLORS.border, backgroundColor: 'var(--bg-card)' }}>
+                          <Layers className="h-5 w-5" style={{ color: '#f97316' }} />
+                          <span className="font-bold text-[10px] uppercase mt-1" style={{ color: 'var(--text-primary)' }}>3.Grad-CAM Overlays</span>
                         </div>
-                        <span className="text-gray-500">→</span>
-                        <div className="flex flex-col items-center p-2 border border-indigo-500/50 bg-indigo-950/10 rounded w-full sm:w-28 shadow-md">
-                          <Shield className="h-5 w-5 text-indigo-400" />
-                          <span className="font-bold text-[10px] uppercase mt-1">4.Secure Blockchain</span>
+                        <span style={{ color: 'var(--text-muted)' }}>→</span>
+                        <div className="flex flex-col items-center p-2 border rounded w-full sm:w-28" style={{ borderColor: 'rgba(99, 102, 241, 0.5)', backgroundColor: 'rgba(99, 102, 241, 0.1)' }}>
+                          <Shield className="h-5 w-5" style={{ color: '#818cf8' }} />
+                          <span className="font-bold text-[10px] uppercase mt-1" style={{ color: 'var(--text-primary)' }}>4.Secure Blockchain</span>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  <hr className="border-slate-800 my-6" />
+                  <hr className="my-6" style={{ borderColor: COLORS.border }} />
 
                   {/* YOLOv8 CORE VERIFICATION PANEL & TESTING SUITE */}
                   <div className="grid gap-6 md:grid-cols-2 mt-6">
                     
                     {/* VERIFICATION PANEL */}
-                    <div className="rounded-lg bg-slate-950 border border-slate-800 p-4 space-y-4">
-                      <h3 className="text-xs font-black uppercase tracking-widest text-[#10b981] font-mono flex items-center gap-1.5">
+                    <div className="rounded-lg p-4 space-y-4" style={{ backgroundColor: 'var(--bg-card)', borderColor: COLORS.border }}>
+                      <h3 className="text-xs font-bold uppercase tracking-widest font-mono flex items-center gap-1.5" style={{ color: '#10b981' }}>
                         <Cpu className="h-4 w-4" />
                         <span>YOLOv8 CORE VERIFICATION PANEL</span>
                       </h3>
                       
                       <div className="grid grid-cols-2 gap-4 text-xs font-mono">
-                        <div className="bg-slate-900 p-2.5 rounded border border-slate-800">
-                          <div className="text-[10px] text-gray-500">Model Loaded:</div>
-                          <div className="text-sky-400 font-bold mt-0.5">YOLOv8n</div>
+                        <div className="p-2.5 rounded border" style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border }}>
+                          <div className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Model Loaded:</div>
+                          <div className="font-bold mt-0.5" style={{ color: '#38bdf8' }}>YOLOv8n</div>
                         </div>
-                        <div className="bg-slate-900 p-2.5 rounded border border-slate-800">
-                          <div className="text-[10px] text-gray-500">Confidence Threshold:</div>
-                          <div className="text-sky-400 font-bold mt-0.5">{confThreshold.toFixed(2)}</div>
+                        <div className="p-2.5 rounded border" style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border }}>
+                          <div className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Confidence Threshold:</div>
+                          <div className="font-bold mt-0.5" style={{ color: '#38bdf8' }}>{confThreshold.toFixed(2)}</div>
                         </div>
-                        <div className="bg-slate-900 p-2.5 rounded border border-slate-800">
-                          <div className="text-[10px] text-gray-500">Active Detections:</div>
-                          <div className="text-emerald-400 font-bold mt-0.5">
+                        <div className="p-2.5 rounded border" style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border }}>
+                          <div className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Active Detections:</div>
+                          <div className="font-bold mt-0.5" style={{ color: 'var(--accent-green)' }}>
                             {detections.filter(d => d.detected !== false).length}
                           </div>
                         </div>
-                        <div className="bg-slate-900 p-2.5 rounded border border-slate-800">
-                          <div className="text-[10px] text-gray-500">Rejected Scans:</div>
-                          <div className="text-orange-400 font-bold mt-0.5">
+                        <div className="p-2.5 rounded border" style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border }}>
+                          <div className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Rejected Scans:</div>
+                          <div className="font-bold mt-0.5" style={{ color: '#f97316' }}>
                             {detections.filter(d => d.detected === false).length}
                           </div>
                         </div>
                       </div>
 
-                      <div className="bg-slate-900/60 p-3 rounded border border-slate-800/80 space-y-1">
-                        <div className="text-[10px] font-mono text-gray-400 uppercase">Decision Protocol Override:</div>
+                      <div className="p-3 rounded border space-y-1" style={{ backgroundColor: 'rgba(15, 23, 42, 0.6)', borderColor: COLORS.border }}>
+                        <div className="text-[10px] font-mono uppercase" style={{ color: 'var(--text-secondary)' }}>Decision Protocol Override:</div>
                         <p className="text-[11px] text-gray-300 leading-relaxed font-sans">
                           Designed in accordance with research metrics. The system prioritizes <strong>computational correctness</strong> over aesthetic performance. If no valid target belongs to the allowed military classes (person, truck, car, bus, motorcycle, bicycle) above threshold, the pipeline automatically rejects detection:
                           <code className="block bg-slate-950 text-red-400 p-1.5 rounded mt-1.5 font-mono text-[10px]">{"{\"detected\": false, \"message\": \"No valid target detected.\"}"}</code>
@@ -2446,8 +2726,8 @@ export default function App() {
                     </div>
 
                     {/* FALSE POSITIVE TESTING SUITE */}
-                    <div className="rounded-lg bg-slate-950 border border-slate-800 p-4 space-y-4">
-                      <h3 className="text-xs font-black uppercase tracking-widest text-[#10b981] font-mono flex items-center gap-1.5">
+                    <div className="rounded-lg p-4 space-y-4" style={{ backgroundColor: 'var(--bg-card)', borderColor: COLORS.border }}>
+                      <h3 className="text-xs font-bold uppercase tracking-widest font-mono flex items-center gap-1.5" style={{ color: '#10b981' }}>
                         <AlertTriangle className="h-4 w-4" />
                         <span>FALSE POSITIVE TRUST & PRECISION TESTING</span>
                       </h3>
@@ -2460,54 +2740,60 @@ export default function App() {
                         <button
                           onClick={runValidationSuite}
                           disabled={isTestingSuiteRunning}
-                          className={`flex-1 rounded font-black tracking-wider text-xs py-2.5 uppercase transition-all flex items-center justify-center gap-2 ${
-                            isTestingSuiteRunning
-                              ? 'bg-slate-800 text-gray-500 cursor-not-allowed'
-                              : 'bg-emerald-600 text-black hover:bg-emerald-500 hover:shadow-[0_0_15px_rgba(16,185,129,0.3)]'
-                          }`}
+                          className="flex-1 rounded font-black tracking-wider text-xs py-2.5 uppercase transition-all flex items-center justify-center gap-2"
+                          style={isTestingSuiteRunning
+                            ? { backgroundColor: 'var(--bg-hover)', color: 'var(--text-muted)', cursor: 'not-allowed' }
+                            : { backgroundColor: 'var(--accent-green)', color: '#000' }
+                          }
+                          onMouseEnter={(e) => {
+                            if (!isTestingSuiteRunning) e.currentTarget.style.backgroundColor = 'var(--accent-green-hover)';
+                          }}
+                          onMouseLeave={(e) => {
+                            if (!isTestingSuiteRunning) e.currentTarget.style.backgroundColor = 'var(--accent-green)';
+                          }}
                         >
                           {isTestingSuiteRunning ? 'Calibrating Test Trials...' : 'Run Automated Validation Suite'}
                         </button>
                       </div>
 
                       {testSuiteReport ? (
-                        <div className="bg-slate-900/60 p-3.5 rounded border border-slate-800/80 font-mono text-xs space-y-3">
-                          <div className="flex justify-between items-center border-b border-slate-800 pb-1.5">
-                            <span className="font-bold text-emerald-400 text-[10px]">ACADEMIC VERIFICATION METRICS</span>
-                            <span className="text-[9px] text-gray-500">{new Date(testSuiteReport.timestamp).toLocaleTimeString()}</span>
+                        <div className="p-3.5 rounded border font-mono text-xs space-y-3" style={{ backgroundColor: 'rgba(15, 23, 42, 0.6)', borderColor: COLORS.border }}>
+                          <div className="flex justify-between items-center border-b pb-1.5" style={{ borderColor: COLORS.border }}>
+                            <span className="font-bold text-[10px]" style={{ color: 'var(--accent-green)' }}>ACADEMIC VERIFICATION METRICS</span>
+                            <span className="text-[9px]" style={{ color: 'var(--text-muted)' }}>{new Date(testSuiteReport.timestamp).toLocaleTimeString()}</span>
                           </div>
 
                           <div className="grid grid-cols-3 gap-2 text-center">
-                            <div className="p-1 bg-slate-950 rounded">
-                              <div className="text-[9px] text-gray-500">Precision</div>
-                              <div className="text-white font-black">{testSuiteReport.precision}%</div>
+                            <div className="p-1 rounded" style={{ backgroundColor: 'var(--bg-card)' }}>
+                              <div className="text-[9px]" style={{ color: 'var(--text-muted)' }}>Precision</div>
+                              <div className="font-black" style={{ color: 'var(--text-primary)' }}>{testSuiteReport.precision}%</div>
                             </div>
-                            <div className="p-1 bg-slate-950 rounded">
-                              <div className="text-[9px] text-gray-500">Recall</div>
-                              <div className="text-white font-black">{testSuiteReport.recall}%</div>
+                            <div className="p-1 rounded" style={{ backgroundColor: 'var(--bg-card)' }}>
+                              <div className="text-[9px]" style={{ color: 'var(--text-muted)' }}>Recall</div>
+                              <div className="font-black" style={{ color: 'var(--text-primary)' }}>{testSuiteReport.recall}%</div>
                             </div>
-                            <div className="p-1 bg-slate-950 rounded">
-                              <div className="text-[9px] text-gray-500">FP Rate</div>
-                              <div className="text-orange-400 font-bold">{testSuiteReport.falsePositiveRate}%</div>
+                            <div className="p-1 rounded" style={{ backgroundColor: 'var(--bg-card)' }}>
+                              <div className="text-[9px]" style={{ color: 'var(--text-muted)' }}>FP Rate</div>
+                              <div className="font-bold" style={{ color: '#f97316' }}>{testSuiteReport.falsePositiveRate}%</div>
                             </div>
                           </div>
 
                           <div className="space-y-1">
-                            <div className="text-[9px] text-gray-500 uppercase">TEST MATRIX COUNT DETAILS:</div>
-                            <div className="grid grid-cols-4 gap-1 text-[10px] text-center text-gray-300">
-                              <div className="bg-slate-950 p-1.5 rounded">TP: {testSuiteReport.truePositives}</div>
-                              <div className="bg-slate-950 p-1.5 rounded text-orange-400">FP: {testSuiteReport.falsePositives}</div>
-                              <div className="bg-slate-950 p-1.5 rounded">TN: {testSuiteReport.trueNegatives}</div>
-                              <div className="bg-slate-950 p-1.5 rounded text-orange-400">FN: {testSuiteReport.falseNegatives}</div>
+                            <div className="text-[9px] uppercase" style={{ color: 'var(--text-muted)' }}>TEST MATRIX COUNT DETAILS:</div>
+                            <div className="grid grid-cols-4 gap-1 text-[10px] text-center" style={{ color: 'var(--text-primary)' }}>
+                              <div className="p-1.5 rounded" style={{ backgroundColor: 'var(--bg-card)' }}>TP: {testSuiteReport.truePositives}</div>
+                              <div className="p-1.5 rounded" style={{ backgroundColor: 'var(--bg-card)', color: '#f97316' }}>FP: {testSuiteReport.falsePositives}</div>
+                              <div className="p-1.5 rounded" style={{ backgroundColor: 'var(--bg-card)' }}>TN: {testSuiteReport.trueNegatives}</div>
+                              <div className="p-1.5 rounded" style={{ backgroundColor: 'var(--bg-card)', color: '#f97316' }}>FN: {testSuiteReport.falseNegatives}</div>
                             </div>
                           </div>
 
-                          <div className="space-y-1.5 text-[10px] border-t border-slate-800 pt-2 text-gray-400">
-                            <div className="font-bold text-gray-300">Individual Trials:</div>
+                          <div className="space-y-1.5 text-[10px] border-t pt-2" style={{ borderColor: COLORS.border, color: 'var(--text-secondary)' }}>
+                            <div className="font-bold" style={{ color: 'var(--text-primary)' }}>Individual Trials:</div>
                             {testSuiteReport.testDetails.map((td: any, idx: number) => (
                               <div key={idx} className="flex justify-between text-[9px] font-mono leading-none py-1">
                                 <span className="truncate max-w-[200px]">{td.caseName}</span>
-                                <span className={td.passed ? 'text-emerald-400 font-bold' : 'text-red-400 font-bold'}>
+                                <span className="font-bold" style={{ color: td.passed ? 'var(--accent-green)' : '#f87171' }}>
                                   {td.passed ? 'PASSED (0% FP)' : 'REJECTED'}
                                 </span>
                               </div>
@@ -2515,7 +2801,7 @@ export default function App() {
                           </div>
                         </div>
                       ) : (
-                        <div className="p-4 rounded border border-slate-800 bg-slate-900/30 text-center text-gray-500 text-xs font-mono">
+                        <div className="p-4 rounded border text-center text-xs font-mono" style={{ backgroundColor: 'rgba(15, 23, 42, 0.3)', borderColor: COLORS.border, color: 'var(--text-muted)' }}>
                           Awaiting Trial Invocation. Click above to trigger system-wide verification scan.
                         </div>
                       )}
@@ -2536,10 +2822,10 @@ export default function App() {
       </main>
 
       {/* FOOTER BLOCK SIGNATURE */}
-      <footer className="mt-8 border-t bg-slate-950 py-6 text-center text-xs text-gray-500" style={{ borderColor: COLORS.border }} id="footer-signature">
+      <footer className="mt-8 border-t py-6 text-center text-xs" style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border, color: 'var(--text-muted)' }} id="footer-signature">
         <div className="mx-auto max-w-7xl px-4 space-y-1 font-mono">
           <p>CAM-YOLO11 Tactical surveillance network dashboard prototype.</p>
-          <p className="text-[10px] text-gray-600">Built in accordance with secure database, blockchain, and defense AI research mandates.</p>
+          <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Built in accordance with secure database, blockchain, and defense AI research mandates.</p>
         </div>
       </footer>
 
