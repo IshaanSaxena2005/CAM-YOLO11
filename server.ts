@@ -1,6 +1,9 @@
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { CONFIG, ensureStartupPaths } from './config';
+import { execSync } from 'child_process';
+import fs from 'fs';
 import { 
   dbServiceInstance, 
   blockchainInstance, 
@@ -17,10 +20,13 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = CONFIG.PORT;
 
-// Enable JSON bodies with 10MB limit for base64 drone frames uploading
-app.use(express.json({ limit: '10mb' }));
+// Ensure startup directories and warnings
+ensureStartupPaths();
+
+// Enable JSON bodies with configurable limit
+app.use(express.json({ limit: CONFIG.MAX_UPLOAD_SIZE }));
 
 // --- API ENDPOINTS ---
 
@@ -58,7 +64,7 @@ app.get('/api/logs', (req, res) => {
 // 1c. Trigger False Positive Testing Suite
 app.post('/api/test-suite/run', async (req, res) => {
   try {
-    const threshold = req.body.threshold !== undefined ? Number(req.body.threshold) : 0.70;
+    const threshold = req.body.threshold !== undefined ? Number(req.body.threshold) : CONFIG.CONFIDENCE_THRESHOLD;
     const report = await runFPTestSuite(threshold);
     res.json({ success: true, data: report });
   } catch (err: any) {
@@ -81,7 +87,7 @@ app.post('/api/detect', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Missing image payload', error: 'Base64 is required' });
     }
 
-    const confThreshold = threshold !== undefined ? Number(threshold) : 0.70;
+    const confThreshold = threshold !== undefined ? Number(threshold) : CONFIG.CONFIDENCE_THRESHOLD;
 
     addSurveillanceLog(`Image uploaded: ${fileName || 'image.jpg'}`);
     addSurveillanceLog('Detection request received');
@@ -143,6 +149,24 @@ app.get('/api/blockchain', (req, res) => {
 app.post('/api/blockchain/verify', (req, res) => {
   const audit = blockchainInstance.validateChain();
   res.json({ success: true, data: audit });
+});
+
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  let pythonAvailable = false;
+  try { execSync('python3 --version', { stdio: 'ignore' }); pythonAvailable = true; } catch { pythonAvailable = false; }
+  const health = {
+    success: true,
+    data: {
+      server: 'running',
+      database: fs.existsSync(CONFIG.DATABASE_PATH) ? 'connected' : 'missing',
+      blockchain: blockchainInstance.validateChain().isValid ? 'valid' : 'corrupt',
+      python: pythonAvailable ? 'available' : 'unavailable',
+      modelConfigured: fs.existsSync(CONFIG.MODEL_PATH),
+      modelPath: CONFIG.MODEL_PATH
+    }
+  };
+  res.json(health);
 });
 
 // 6. Deliberately tamper with a block to demonstrate security safeguards
