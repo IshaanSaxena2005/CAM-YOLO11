@@ -1,0 +1,12 @@
+path: datasets/MHCD2022/MHCD2022ForYolo
+
+train: images/training
+val: images/validation
+test: images/testing
+
+names:
+  0: person
+  1: militaryvehicle
+  2: tank
+  3: aeroplane
+  4: warship
