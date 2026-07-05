@@ -53,6 +53,8 @@ mlruns/
 *.engine
 *.torchscript
 
+!models/best.pt
+
 # =========================
 # Python Cache
 # =========================
