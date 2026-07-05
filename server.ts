@@ -410,10 +410,12 @@ if (process.env.NODE_ENV === 'production') {
   app.get('*', (_req, res) => {
     res.sendFile(path.join(distPath, 'index.html'));
   });
-
-  app.listen(PORT, () => {
-    console.log(`CAM-YOLO11 backend running on port ${PORT} (production)`);
-  });
 }
+
+// ─── Server startup ───────────────────────────────────────────────────────────
+app.listen(PORT, () => {
+  const env = process.env.NODE_ENV || 'development';
+  console.log(`CAM-YOLO11 backend running on port ${PORT} (${env})`);
+});
 
 export default app;
