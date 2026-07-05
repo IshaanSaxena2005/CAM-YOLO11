@@ -11,7 +11,7 @@ function getEnv(key: string, defaultValue: string): string {
 
 export const CONFIG = {
   PORT: Number(getEnv('PORT', '3000')),
-  MODEL_PATH: getEnv('MODEL_PATH', path.resolve('best.pt')),
+  MODEL_PATH: getEnv('MODEL_PATH', path.resolve('models/best.pt')),
   DATABASE_PATH: getEnv('DATABASE_PATH', path.resolve('database')),
   LOG_DIRECTORY: getEnv('LOG_DIRECTORY', path.resolve('logs')),
   CONFIDENCE_THRESHOLD: Number(getEnv('CONFIDENCE_THRESHOLD', '0.70')),

@@ -2,6 +2,7 @@ import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
 import { execSync } from 'child_process';
+import { CONFIG } from '../config';
 
 // --- DATA STRUCTURES & CLASS DEFINITIONS ---
 
@@ -302,9 +303,9 @@ export const dbServiceInstance = new DatabaseService();
 
 // --- AI MODEL INTEGRATOR (YOLOv11) ---
 
-// Configurable model path - later replace best.pt here
+// Configurable model path - uses trained best.pt from models folder
 const DEFAULT_MODEL_NAME = 'yolov11n';
-const DEFAULT_MODEL_PATH = 'best.pt';
+const DEFAULT_MODEL_PATH = CONFIG.MODEL_PATH;
 
 export async function processCamouflageImageAI(
   base64Data: string,

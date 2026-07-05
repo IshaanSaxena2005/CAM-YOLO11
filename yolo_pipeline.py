@@ -274,10 +274,19 @@ def main():
             pass
             
     # Parse configurable model path
-    model_path = "best.pt"
+    model_path = "models/best.pt"
     if len(sys.argv) >= 4:
         if sys.argv[3] != "mock_positive_control":
             model_path = sys.argv[3]
+    
+    # Check if model file exists
+    if not os.path.exists(model_path):
+        print(json.dumps({
+            "detected": False,
+            "message": f"Model file not found at {model_path}. Please ensure the trained model exists.",
+            "boundingBoxes": []
+        }))
+        sys.exit(1)
 
     # Check for custom mock tag parameters to support test controls
     is_mock_positive = False
