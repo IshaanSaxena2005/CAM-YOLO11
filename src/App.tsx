@@ -1528,8 +1528,38 @@ export default function App() {
                         ))}
                       </div>
 
+                      {/* Loading State */}
+                      {isAnalyzing && (
+                        <div className="absolute inset-0 flex items-center justify-center" style={{ backgroundColor: 'rgba(15, 23, 42, 0.8)' }}>
+                          <div className="text-center">
+                            <RefreshCw className="h-8 w-8 mx-auto animate-spin mb-2" style={{ color: 'var(--accent-green)' }} />
+                            <div className="font-mono text-xs" style={{ color: 'var(--text-primary)' }}>Running YOLOv11 Analysis...</div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Error State */}
+                      {uploadError && !customImage && (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="text-center px-4">
+                            <AlertTriangle className="h-8 w-8 mx-auto mb-2" style={{ color: '#ef4444' }} />
+                            <div className="font-mono text-xs" style={{ color: 'var(--text-primary)' }}>{uploadError}</div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* No Image State */}
+                      {!customImage && !isAnalyzing && !uploadError && (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="text-center px-4">
+                            <Upload className="h-8 w-8 mx-auto mb-2 opacity-50" style={{ color: 'var(--text-muted)' }} />
+                            <div className="font-mono text-xs" style={{ color: 'var(--text-muted)' }}>Upload an image to begin analysis</div>
+                          </div>
+                        </div>
+                      )}
+
                       {/* Dynamic Scenery Drawing or custom Base64 image display */}
-                      {customImage ? (
+                      {customImage && !isAnalyzing && (
                         <img 
                           src={customImage} 
                           alt="Surveillance analysis" 
@@ -1537,30 +1567,22 @@ export default function App() {
                             activeOverlayMode === 'thermal' ? 'hue-rotate-180 invert brightness-110 saturate-150' : ''
                           }`} 
                         />
-                      ) : (
-                        <div className="absolute inset-0 flex items-center justify-center" style={{ backgroundColor: SCENARIOS[selectedScenario].baseColor }}>
-                          {/* Artistic Abstract Battlefield SVG vector */}
-                          <svg className="w-full h-full opacity-60" viewBox="0 0 400 300" preserveAspectRatio="none">
-                            <path d="M 0,250 Q 150,180 280,240 T 400,210 L 400,300 L 0,300 Z" fill="#2d3748" opacity="0.3" />
-                            <path d="M 0,200 Q 100,240 220,180 T 400,240 L 400,300 L 0,300 Z" fill="#1a202c" opacity="0.5" />
-                            {/* Forest trees icons scattered */}
-                            <g fill="#1a231b" opacity="0.4">
-                              <polygon points="120,160 110,190 130,190" />
-                              <polygon points="260,170 250,200 270,200" />
-                              <polygon points="340,150 330,185 350,185" />
-                            </g>
-                          </svg>
-                        </div>
                       )}
 
                       {/* 1. YOLO BOUNDING BOX COORDINATES OVERLAY */}
-                      {activeOverlayMode === 'yolo' && (
+                      {activeOverlayMode === 'yolo' && selectedDetection && selectedDetection.boundingBoxes && selectedDetection.boundingBoxes.length > 0 && (
                         <>
-                          {(customImage && selectedDetection && selectedDetection.boundingBoxes ? selectedDetection.boundingBoxes : SCENARIOS[selectedScenario].detections).map((boxObj: any, idx: number) => {
+                          {selectedDetection.boundingBoxes.map((boxObj: any, idx: number) => {
                             const [ymin, xmin, ymax, xmax] = boxObj.box;
+                            // Generate different colors for each bounding box
+                            const colors = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'];
+                            const boxColor = colors[idx % colors.length];
+                            const bgColor = boxColor + '1A'; // 10% opacity
+                            const shadowColor = boxColor + '33'; // 20% opacity
+                            
                             return (
                               <div 
-                                key={idx} 
+                                key={boxObj.id || idx} 
                                 className="absolute border-2 flex flex-col justify-between"
                                 style={{
                                   top: `${ymin}%`,
@@ -1568,24 +1590,33 @@ export default function App() {
                                   height: `${ymax - ymin}%`,
                                   width: `${xmax - xmin}%`,
                                   transition: 'all 0.3s ease',
-                                  borderColor: 'var(--accent-green)',
-                                  backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                                  boxShadow: '0 0 15px rgba(16, 185, 129, 0.15)'
+                                  borderColor: boxColor,
+                                  backgroundColor: bgColor,
+                                  boxShadow: `0 0 15px ${shadowColor}`
                                 }}
                               >
-                                <div className="absolute -top-5 left-0 text-black text-[9px] font-black uppercase font-mono px-1 py-0.5 whitespace-nowrap rounded" style={{ backgroundColor: 'var(--accent-green)' }}>
-                                  {boxObj.label} • {(boxObj.confidence * 100).toFixed(0)}%
+                                <div className="absolute -top-5 left-0 text-black text-[9px] font-black uppercase font-mono px-1 py-0.5 whitespace-nowrap rounded" style={{ backgroundColor: boxColor }}>
+                                  {boxObj.label} • {(boxObj.confidence * 100).toFixed(1)}%
                                 </div>
-                                <div className="p-1 border-b border-r font-mono text-[9px] self-start" style={{ borderColor: 'rgba(16, 185, 129, 0.3)', color: 'var(--accent-green)', backgroundColor: 'rgba(15, 23, 42, 0.6)' }}>
-                                  L_LOC: [{xmin}%, {ymin}%]
+                                <div className="p-1 border-b border-r font-mono text-[9px] self-start" style={{ borderColor: boxColor, color: boxColor, backgroundColor: 'rgba(15, 23, 42, 0.6)' }}>
+                                  [{xmin.toFixed(1)}%, {ymin.toFixed(1)}%]
                                 </div>
-                                <div className="absolute bottom-0 right-0 p-1 border-t border-l font-mono text-[8px]" style={{ borderColor: 'rgba(16, 185, 129, 0.3)', color: 'var(--accent-green)', backgroundColor: 'rgba(15, 23, 42, 0.6)' }}>
-                                  YOLOv11
+                                <div className="absolute bottom-0 right-0 p-1 border-t border-l font-mono text-[8px]" style={{ borderColor: boxColor, color: boxColor, backgroundColor: 'rgba(15, 23, 42, 0.6)' }}>
+                                  {boxObj.class_name || 'Unknown'}
                                 </div>
                               </div>
                             );
                           })}
                         </>
+                      )}
+
+                      {/* No detections message */}
+                      {activeOverlayMode === 'yolo' && selectedDetection && (!selectedDetection.boundingBoxes || selectedDetection.boundingBoxes.length === 0) && (
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                          <div className="font-mono text-xs px-4 py-2 rounded-lg" style={{ backgroundColor: 'rgba(15, 23, 42, 0.9)', borderColor: COLORS.border, color: 'var(--text-muted)' }}>
+                            {selectedDetection.detected === false ? 'No detections found' : 'No bounding boxes available'}
+                          </div>
+                        </div>
                       )}
 
                       {/* 2. GRAD-CAM ACTIVATION ATTENTION OVERLAY */}
@@ -1647,6 +1678,33 @@ export default function App() {
                             THREAT: {selectedDetection.tacticalAnalysis?.threatRating || 'HIGH'}
                           </span>
                         </div>
+
+                        {/* Detection Summary Panel */}
+                        {selectedDetection.boundingBoxes && selectedDetection.boundingBoxes.length > 0 && (
+                          <div className="mb-4 p-3 rounded border" style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border }}>
+                            <div className="text-[9px] uppercase tracking-wider font-mono mb-2" style={{ color: 'var(--text-muted)' }}>DETECTION SUMMARY</div>
+                            <div className="grid grid-cols-3 gap-3 text-xs">
+                              <div>
+                                <div className="text-[8px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Total Objects</div>
+                                <div className="font-mono text-lg font-black" style={{ color: 'var(--accent-green)' }}>
+                                  {selectedDetection.boundingBoxes.length}
+                                </div>
+                              </div>
+                              <div>
+                                <div className="text-[8px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Highest Confidence</div>
+                                <div className="font-mono text-lg font-black" style={{ color: '#3b82f6' }}>
+                                  {(Math.max(...selectedDetection.boundingBoxes.map((b: any) => b.confidence)) * 100).toFixed(1)}%
+                                </div>
+                              </div>
+                              <div>
+                                <div className="text-[8px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Average Confidence</div>
+                                <div className="font-mono text-lg font-black" style={{ color: '#f59e0b' }}>
+                                  {(selectedDetection.boundingBoxes.reduce((sum: number, b: any) => sum + b.confidence, 0) / selectedDetection.boundingBoxes.length * 100).toFixed(1)}%
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
 
                         <div className="grid gap-4 sm:grid-cols-3 text-xs">
                           <div className="p-3 rounded border" style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border }}>
