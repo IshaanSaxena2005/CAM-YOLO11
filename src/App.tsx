@@ -1031,10 +1031,10 @@ export default function App() {
 
                     {/* MODEL ENGINE CHOOSER & TRIGGER */}
                     <div className="rounded-lg p-3 border space-y-4" style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border }}>
-                          <option value="yolov8n">YOLOv8n (Core Real-time Edge Backbone)</option>
-                          <option value="yolov8s">YOLOv8s (Enhanced Feature Fusion Backbone)</option>
-                        </select>
-                      </div>
+                       <div className="text-[10px] tracking-wide font-black uppercase mb-1" style={{ color: 'var(--text-muted)' }}>ANALYSIS MODEL ENGINE</div>
+                       <p className="text-xs" style={{ color: 'var(--text-primary)' }}>YOLOv11 Military Camouflage Detector</p>
+                       <p className="text-xs" style={{ color: 'var(--text-primary)' }}>Model file: models/best.pt</p>
+                     </div>
 
                       <div>
                         <div className="flex items-center justify-between text-[10px] tracking-wide font-black uppercase mb-1" style={{ color: 'var(--text-muted)' }}>
@@ -1489,7 +1489,7 @@ export default function App() {
 
               </div>
 
-            </div>
+
           )}
 
           {/* ----- MODULE 3: REAL-TIME DRONEsurveillance DRONE VIDEO FEED ----- */}
