@@ -88,10 +88,30 @@ export default function App() {
   const [blockchain, setBlockchain] = useState<any[]>([]);
   const [selectedDetection, setSelectedDetection] = useState<any | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [systemAlert, setSystemAlert] = useState<{ type: 'sync' | 'tamper' | 'error' | 'success'; message: string } | null>({
-    type: 'success',
-    message: 'Multispectral sensor array online. COSPAS-SARSAT orbiters telemetry established.'
-  });
+  interface Toast {
+    id: string;
+    type: 'success' | 'error' | 'warning' | 'info';
+    message: string;
+  }
+  const [toasts, setToasts] = useState<Toast[]>([
+    {
+      id: 'startup',
+      type: 'success',
+      message: 'Multispectral sensor array online. COSPAS-SARSAT orbiters telemetry established.'
+    }
+  ]);
+
+  const addToast = (type: 'success' | 'error' | 'warning' | 'info', message: string) => {
+    const id = Math.random().toString(36).substring(2, 9);
+    setToasts((prev) => [...prev, { id, type, message }]);
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, 4000);
+  };
+
+  const removeToast = (id: string) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  };
 
   // Image Upload Analysis State
   const [customImage, setCustomImage] = useState<string | null>(null);
@@ -201,22 +221,16 @@ export default function App() {
       if (json.success && json.data) {
         const audit = json.data;
         if (audit.isValid) {
-          setSystemAlert({
-            type: 'success',
-            message: 'Cryptographic security audit fully green! Ledger chains verified to block zero.'
-          });
+          addToast('success', 'Cryptographic security audit fully green! Ledger chains verified to block zero.');
           setIsChainCompromised(false);
         } else {
-          setSystemAlert({
-            type: 'tamper',
-            message: `CRITICAL SEC CODE ERROR: Cryptographic link corruption detected starting at Block #${audit.errorBlockIndex}! Evidence logs are compromised.`
-          });
+          addToast('error', `CRITICAL SEC CODE ERROR: Cryptographic link corruption detected starting at Block #${audit.errorBlockIndex}! Evidence logs are compromised.`);
           setIsChainCompromised(true);
         }
         fetchStats();
       }
     } catch (e) {
-      setSystemAlert({ type: 'error', message: 'Failed to broadcast secure blockchain validation sweep.' });
+      addToast('error', 'Failed to broadcast secure blockchain validation sweep.');
     }
   };
 
@@ -229,16 +243,12 @@ export default function App() {
         body: JSON.stringify({ index: selectedBlockForTamper, modifiedThreatType: tamperThreatType })
       });
       const data = await res.json();
-      
-      setSystemAlert({
-        type: 'tamper',
-        message: data.message
-      });
+            addToast('warning', data.message);
       setIsChainCompromised(true);
       fetchStats();
       fetchBlockchain();
     } catch (e) {
-      setSystemAlert({ type: 'error', message: 'Unauthorized sandbox intrusion packet failed.' });
+      addToast('error', 'Unauthorized sandbox intrusion packet failed.');
     }
   };
 
@@ -246,17 +256,14 @@ export default function App() {
     try {
       const res = await fetch('/api/blockchain/reset', { method: 'POST' });
       const data = await res.json();
-      setSystemAlert({
-        type: 'success',
-        message: data.message
-      });
+          addToast('success', data.message);
       setIsChainCompromised(false);
       setSelectedBlockForTamper(null);
       fetchStats();
       fetchBlockchain();
       fetchHistory();
     } catch (e) {
-      setSystemAlert({ type: 'error', message: 'Reset protocol denied.' });
+      addToast('error', 'Reset protocol denied.');
     }
   };
 
@@ -285,7 +292,7 @@ export default function App() {
     const validationError = validateFile(file);
     if (validationError) {
       setUploadError(validationError);
-      setSystemAlert({ type: 'error', message: validationError });
+      addToast('error', validationError);
       return;
     }
 
@@ -294,7 +301,7 @@ export default function App() {
     reader.onload = () => {
       setCustomImage(reader.result as string);
       setCustomFileName(file.name);
-      setSystemAlert({ type: 'success', message: `Multispectral feed loaded: ${file.name}. Ready for CAM-YOLO11 analysis.` });
+      addToast('success', `Multispectral feed loaded: ${file.name}. Ready for CAM-YOLO11 analysis.`);
     };
     reader.readAsDataURL(file);
   };
@@ -311,7 +318,7 @@ export default function App() {
     const validationError = validateFile(file);
     if (validationError) {
       setUploadError(validationError);
-      setSystemAlert({ type: 'error', message: validationError });
+      addToast('error', validationError);
       return;
     }
 
@@ -320,19 +327,19 @@ export default function App() {
     reader.onload = () => {
       setCustomImage(reader.result as string);
       setCustomFileName(file.name);
-      setSystemAlert({ type: 'success', message: `Physical source dropped: ${file.name}. Configured for optical analysis.` });
+      addToast('success', `Physical source dropped: ${file.name}. Configured for optical analysis.`);
     };
     reader.readAsDataURL(file);
   };
 
   const runYoloAnalysis = async () => {
     if (!customImage) {
-      setSystemAlert({ type: 'error', message: 'Please upload an image to analyze.' });
+      addToast('error', 'Please upload an image to analyze.');
       return;
     }
 
     setIsAnalyzing(true);
-    setSystemAlert({ type: 'sync', message: 'Initializing specialized CAM-YOLO11 backbone on target frame...' });
+    addToast('info', 'Initializing specialized CAM-YOLO11 backbone on target frame...');
 
     try {
       let base64Part = customImage.split(',')[1];
@@ -371,12 +378,9 @@ export default function App() {
         if (responseRecord.detected !== false) {
           const count = responseRecord.boundingBoxes?.length ?? 0;
           const targetText = count === 1 ? 'target' : 'targets';
-          setSystemAlert({ type: 'success', message: `Analysis completed! Detections: ${count} ${targetText} locked.` });
+          addToast('success', `Analysis completed! Detections: ${count} ${targetText} locked.`);
         } else {
-          setSystemAlert({
-            type: 'error',
-            message: `Inference completed. No valid target detected above ${confThreshold.toFixed(2)} threshold.`
-          });
+          addToast('warning', `Inference completed. No valid target detected above ${confThreshold.toFixed(2)} threshold.`);
         }
         fetchStats();
         fetchHistory();
@@ -394,7 +398,7 @@ export default function App() {
         errorMessage = err.message;
       }
       
-      setSystemAlert({ type: 'error', message: errorMessage });
+      addToast('error', errorMessage);
     } finally {
       setIsAnalyzing(false);
     }
@@ -450,10 +454,7 @@ export default function App() {
       setCustomVideo(base64);
 
       try {
-        setSystemAlert({
-          type: 'sync',
-          message: `Uploading tactical footprint vector of ${file.name} to CAM-YOLO11 real-time frame parser...`
-        });
+        addToast('info', `Uploading tactical footprint vector of ${file.name} to CAM-YOLO11 real-time frame parser...`);
 
         const res = await fetch('/api/detect-video', {
           method: 'POST',
@@ -476,10 +477,7 @@ export default function App() {
           setVideoTrackingData(json.data);
           setIsVideoAnalyzing(false);
 
-          setSystemAlert({
-            type: 'success',
-            message: `Camouflage targeting network mapped! Blockchain block mined and locked for video stream ${file.name}. Click Play to watch tracking overlays.`
-          });
+          addToast('success', `Camouflage targeting network mapped! Blockchain block mined and locked for video stream ${file.name}. Click Play to watch tracking overlays.`);
           fetchStats();
           fetchHistory();
           fetchBlockchain();
@@ -488,10 +486,7 @@ export default function App() {
         }
       } catch (err: any) {
         setIsVideoAnalyzing(false);
-        setSystemAlert({
-          type: 'error',
-          message: `Video surveillance compile error: ${err.message}`
-        });
+        addToast('error', `Video surveillance compile error: ${err.message}`);
       }
     };
     reader.readAsDataURL(file);
@@ -554,25 +549,72 @@ export default function App() {
         </div>
       </header>
 
-      {/* SYSTEM WARNING BANNER */}
-      {systemAlert && (
-        <div className={`border-b px-4 py-2 text-xs transition-all ${
-          systemAlert.type === 'tamper' ? 'bg-red-950/70 border-red-900/60 text-red-300' :
-          systemAlert.type === 'sync' ? 'bg-indigo-950/70 border-indigo-900/60 text-indigo-300' :
-          systemAlert.type === 'error' ? 'bg-amber-950/70 border-amber-900/60 text-amber-300' :
-          'bg-emerald-950/45 border-emerald-900/50 text-emerald-300'
-        }`} id="system-alert-banner">
-          <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <AlertTriangle className={`h-4 w-4 shrink-0 ${systemAlert.type === 'tamper' ? 'text-red-400 animate-bounce' : 'text-emerald-400'}`} />
-              <span className="font-mono tracking-tight">{systemAlert.message}</span>
+      {/* TOAST NOTIFICATIONS CONTAINER */}
+      <div className="fixed top-6 right-6 z-50 flex flex-col gap-3 max-w-sm w-full pointer-events-none">
+        <style>{`
+          @keyframes slideIn {
+            from {
+              transform: translateX(120%);
+              opacity: 0;
+            }
+            to {
+              transform: translateX(0);
+              opacity: 1;
+            }
+          }
+          .animate-slide-in {
+            animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          }
+        `}</style>
+        {toasts.map((toast) => {
+          let bg = 'bg-slate-900 border-slate-800';
+          let border = 'border-l-4';
+          let iconColor = 'text-blue-400';
+          let borderColor = 'border-l-blue-500';
+          
+          if (toast.type === 'success') {
+            bg = 'bg-emerald-950/95 border-emerald-900/50';
+            iconColor = 'text-emerald-400';
+            borderColor = 'border-l-emerald-500';
+          } else if (toast.type === 'error') {
+            bg = 'bg-red-950/95 border-red-900/50';
+            iconColor = 'text-red-400';
+            borderColor = 'border-l-red-500';
+          } else if (toast.type === 'warning') {
+            bg = 'bg-amber-950/95 border-amber-900/50';
+            iconColor = 'text-amber-400';
+            borderColor = 'border-l-amber-500';
+          } else if (toast.type === 'info') {
+            bg = 'bg-sky-950/95 border-sky-900/50';
+            iconColor = 'text-sky-400';
+            borderColor = 'border-l-sky-500';
+          }
+
+          return (
+            <div
+              key={toast.id}
+              className={`flex items-start justify-between gap-3 p-4 rounded-lg border shadow-2xl ${bg} ${border} ${borderColor} transition-all duration-300 animate-slide-in pointer-events-auto`}
+              style={{ backdropFilter: 'blur(8px)' }}
+            >
+              <div className="flex gap-2.5">
+                <span className={`mt-0.5 font-bold ${iconColor}`}>
+                  {toast.type === 'success' && '✓'}
+                  {toast.type === 'error' && '✗'}
+                  {toast.type === 'warning' && '⚠'}
+                  {toast.type === 'info' && 'ℹ'}
+                </span>
+                <p className="text-xs font-semibold text-gray-200 font-mono leading-relaxed">{toast.message}</p>
+              </div>
+              <button
+                onClick={() => removeToast(toast.id)}
+                className="text-gray-400 hover:text-gray-200 transition-colors shrink-0"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
             </div>
-            <button onClick={() => setSystemAlert(null)} className="rounded p-1 hover:bg-white/10">
-              <X className="h-3 w-3" />
-            </button>
-          </div>
-        </div>
-      )}
+          );
+        })}
+      </div>
 
       {/* 2. MAIN GRID LAYOUT */}
       <main className="mx-auto flex max-w-7xl flex-col gap-6 p-4 lg:flex-row lg:p-6" id="main-content-layout" style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
