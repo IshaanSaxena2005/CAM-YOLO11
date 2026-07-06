@@ -17,6 +17,14 @@
 ### Overview
 CAM‑YOLO11 is an end‑to‑end reconnaissance platform that detects camouflaged military objects in aerial or ground imagery. The system combines a React + TypeScript frontend, an Express + Node.js backend, a Python inference pipeline powered by Ultralytics YOLOv11, and a blockchain‑backed audit log. Users can upload images or video, view detection overlays, explore analytics, and securely store evidence for later review.
 
+## ✨ Highlights
+- **YOLOv11‑powered camouflaged object detection** tailored for military monitoring.
+- **Real‑time inference** with visual overlays and confidence scores.
+- **Secure, immutable audit trail** via a custom blockchain ledger.
+- **Comprehensive analytics dashboard** showing active threats, detection trends, and system health.
+- **Cross‑platform support** (Windows, macOS, Linux) with Docker‑friendly setup.
+- **Modular architecture** separating UI, API, AI pipeline, and data persistence for easy extensibility.
+
 ---
 
 ## Features
@@ -31,27 +39,18 @@ CAM‑YOLO11 is an end‑to‑end reconnaissance platform that detects camouflag
 ---
 
 ## System Architecture
-```mermaid
-flowchart TD
-    A[User] --> B[React + TypeScript Dashboard]
-    B --> C[Express REST API]
-    C --> D[Python YOLOv11 Inference]
-    C --> E[SQLite DB]
-    D --> F[Blockchain Ledger]
-    F --> G[Detection Results]
-    G --> B
-```
+![CAM‑YOLO11 Architecture](./docs/architecture.png)
 
 ---
 
 ## Tech Stack
-| Layer | Technology |
-|-------|------------|
-| Front‑end | React, TypeScript, Vite, Tailwind CSS |
-| Back‑end | Node.js, Express, TypeScript |
-| AI / CV | Python, Ultralytics YOLOv11, OpenCV |
-| Data | SQLite |
-| Security | Blockchain ledger (custom implementation) |
+| Layer      | Technology                                 |
+|------------|--------------------------------------------|
+| Front‑end  | React, TypeScript, Vite, Tailwind CSS      |
+| Back‑end   | Node.js, Express, TypeScript               |
+| AI / CV    | Python, Ultralytics YOLOv11, OpenCV        |
+| Data       | SQLite                                     |
+| Security   | Blockchain ledger (custom implementation) |
 
 ---
 
@@ -77,17 +76,35 @@ CAM‑YOLO11/
 ---
 
 ## Installation
+### Prerequisites
+- **Node.js** (v18 or later)
+- **Python** (3.11 or later)
+- **Git**
+
+### Step‑by‑step
 ```bash
 # Clone the repository
 git clone https://github.com/your‑org/CAM-YOLO11.git
 cd CAM‑YOLO11
 
-# Node dependencies
+# Install Node dependencies
 npm install
+```
+#### Windows
+```bash
+# Create and activate a virtual environment
+python -m venv venv && venv\Scripts\activate
 
-# Python environment (recommended venv)
-python -m venv venv && source venv/bin/activate
-pip install -r requirements.txt   # contains ultralytics, torch, opencv-python, etc.
+# Install Python requirements
+pip install -r requirements.txt
+```
+#### macOS / Linux
+```bash
+# Create and activate a virtual environment
+python3 -m venv venv && source venv/bin/activate
+
+# Install Python requirements
+pip install -r requirements.txt
 ```
 
 ---
@@ -98,10 +115,25 @@ pip install -r requirements.txt   # contains ultralytics, torch, opencv-python, 
 cp .env.example .env
 # Edit .env as needed (PORT, MODEL_PATH, DATABASE_PATH, CONFIDENCE_THRESHOLD)
 
-# 2. Start the backend (Express)
-npm run dev   # Vite dev server also proxies API calls
+# 2. Start the development server (Vite proxies API calls to Express)
+npm run dev
 ```
 The dashboard will be available at `http://localhost:5173` (Vite default).
+
+---
+
+## Project Workflow
+```mermaid
+flowchart LR
+    A[User] --> B[React Dashboard]
+    B --> C[Express REST API]
+    C --> D[Python YOLOv11 Inference]
+    C --> E[SQLite DB]
+    D --> F[Blockchain Ledger]
+    F --> G[Detection Results]
+    G --> B
+```
+*The diagram above illustrates the data flow from user interaction to final result presentation.*
 
 ---
 
@@ -120,22 +152,23 @@ The system is evaluated with the **MHCD2022** dataset, which contains labeled ca
 ---
 
 ## Screenshots
-| View | Placeholder |
-|------|-------------|
-| Dashboard | ![Dashboard](./screenshots/dashboard.png) |
-| Image Analysis | ![Image Analysis](./screenshots/image_analysis.png) |
-| Detection Result | ![Detection Result](./screenshots/detection_result.png) |
-| Analytics | ![Analytics](./screenshots/analytics.png) |
-| Blockchain | ![Blockchain](./screenshots/blockchain.png) |
-| History | ![History](./screenshots/history.png) |
+| View            | Placeholder |
+|-----------------|-------------|
+| Dashboard       | ![Dashboard](./screenshots/dashboard.png) |
+| Image Analysis  | ![Image Analysis](./screenshots/image_analysis.png) |
+| Detection Result| ![Detection Result](./screenshots/detection_result.png) |
+| Analytics       | ![Analytics](./screenshots/analytics.png) |
+| Blockchain      | ![Blockchain](./screenshots/blockchain.png) |
+| History         | ![History](./screenshots/history.png) |
 
 ---
 
-## Future Improvements
+## Future Roadmap
 - 📈 Incorporate additional camouflage datasets to improve robustness.
 - 🛡️ Add role‑based access control for the dashboard.
 - ⚡ Optimize inference latency with TensorRT or ONNX runtime.
 - 📱 Provide a mobile‑friendly view of the analytics dashboard.
+- 🧪 Implement automated end‑to‑end tests for CI pipelines.
 
 ---
 
