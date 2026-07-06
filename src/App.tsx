@@ -369,7 +369,9 @@ export default function App() {
         // Update states
         setSelectedDetection(responseRecord);
         if (responseRecord.detected !== false) {
-          setSystemAlert({ type: 'success', message: `Analysis completed! Detections: ${responseRecord.detections?.length ?? 0} targets locked. Added to security blockchain.` });
+          const count = responseRecord.boundingBoxes?.length ?? 0;
+          const targetText = count === 1 ? 'target' : 'targets';
+          setSystemAlert({ type: 'success', message: `Analysis completed! Detections: ${count} ${targetText} locked.` });
         } else {
           setSystemAlert({
             type: 'error',
@@ -607,8 +609,8 @@ export default function App() {
                   }
                 }}
                 id="tab-dashboard">
-                <Database className="h-4 w-4" style={{ color: activeTab === 'dashboard' ? 'var(--accent-green)' : 'var(--text-secondary)' }} />
-                <span>Command Deck HUD</span>
+                <Database className="h-4 w-4 shrink-0" style={{ color: activeTab === 'dashboard' ? 'var(--accent-green)' : 'var(--text-secondary)' }} />
+                <span className="truncate">Command Deck HUD</span>
               </button>
 
               <button 
@@ -638,8 +640,8 @@ export default function App() {
                   }
                 }}
                 id="tab-analysis">
-                <Eye className="h-4 w-4" style={{ color: activeTab === 'analysis' ? 'var(--accent-green)' : 'var(--text-secondary)' }} />
-                <span>CAM-YOLO11 Analyzer</span>
+                <Eye className="h-4 w-4 shrink-0" style={{ color: activeTab === 'analysis' ? 'var(--accent-green)' : 'var(--text-secondary)' }} />
+                <span className="truncate">CAM-YOLO11 Analyzer</span>
               </button>
 
               <button 
@@ -669,8 +671,8 @@ export default function App() {
                   }
                 }}
                 id="tab-video">
-                <Play className="h-4 w-4" style={{ color: activeTab === 'video' ? 'var(--accent-green)' : 'var(--text-secondary)' }} />
-                <span>Real-Time Drone Feed</span>
+                <Play className="h-4 w-4 shrink-0" style={{ color: activeTab === 'video' ? 'var(--accent-green)' : 'var(--text-secondary)' }} />
+                <span className="truncate">Real-Time Drone Feed</span>
               </button>
 
               <button 
@@ -700,8 +702,8 @@ export default function App() {
                   }
                 }}
                 id="tab-blockchain">
-                <Shield className="h-4 w-4" style={{ color: activeTab === 'blockchain' ? 'var(--accent-green)' : 'var(--text-secondary)' }} />
-                <span>Evidence Integrity Ledger</span>
+                <Shield className="h-4 w-4 shrink-0" style={{ color: activeTab === 'blockchain' ? 'var(--accent-green)' : 'var(--text-secondary)' }} />
+                <span className="truncate">Evidence Integrity Ledger</span>
               </button>
 
               <button 
@@ -732,8 +734,8 @@ export default function App() {
                 }}
                 id="tab-history"
               >
-                <History className="h-4 w-4" style={{ color: activeTab === 'history' ? 'var(--accent-green)' : 'var(--text-secondary)' }} />
-                <span>Archive & Logs</span>
+                <History className="h-4 w-4 shrink-0" style={{ color: activeTab === 'history' ? 'var(--accent-green)' : 'var(--text-secondary)' }} />
+                <span className="truncate">Archive & Logs</span>
               </button>
 
               <button 
@@ -764,8 +766,8 @@ export default function App() {
                 }}
                 id="tab-analytics"
               >
-                <BarChart3 className="h-4 w-4" style={{ color: activeTab === 'analytics' ? 'var(--accent-green)' : 'var(--text-secondary)' }} />
-                <span>Analytics Grid</span>
+                <BarChart3 className="h-4 w-4 shrink-0" style={{ color: activeTab === 'analytics' ? 'var(--accent-green)' : 'var(--text-secondary)' }} />
+                <span className="truncate">Analytics Grid</span>
               </button>
 
             </nav>
@@ -794,14 +796,14 @@ export default function App() {
               </div>
               
               {/* LEDGER FORCE VALIDATION SENSORS */}
-              <button 
+              <button
                 onClick={triggerAudit}
-                className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg border py-2 text-xs font-bold transition-colors"
+                className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg border px-3 py-2.5 text-xs font-bold transition-colors"
                 style={{ borderColor: 'rgba(14, 165, 233, 0.3)', backgroundColor: 'rgba(15, 23, 42, 0.4)', color: '#38bdf8' }}
                 onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(15, 23, 42, 0.6)'}
                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(15, 23, 42, 0.4)'}
               >
-                <Shield className="h-3.5 w-3.5" />
+                <Shield className="h-3.5 w-3.5 shrink-0" />
                 <span>Trigger security Audit</span>
               </button>
 
@@ -817,13 +819,13 @@ export default function App() {
               
               {/* TOP PERFORMANCE METRIC OVERLAYS */}
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-                <div className="border transition-all" style={{ backgroundColor: 'var(--bg-card)', borderColor: COLORS.border, borderRadius: 'var(--border-radius)', padding: 'var(--card-padding)', boxShadow: 'var(--shadow-card)' }} onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = 'var(--shadow-hover)'; e.currentTarget.style.backgroundColor = 'var(--bg-hover)'; }} onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'var(--shadow-card)'; e.currentTarget.style.backgroundColor = 'var(--bg-card)'; }}>
+                <div className="border transition-all h-24 flex flex-col justify-between" style={{ backgroundColor: 'var(--bg-card)', borderColor: COLORS.border, borderRadius: 'var(--border-radius)', padding: 'var(--card-padding)', boxShadow: 'var(--shadow-card)' }} onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = 'var(--shadow-hover)'; e.currentTarget.style.backgroundColor = 'var(--bg-hover)'; }} onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'var(--shadow-card)'; e.currentTarget.style.backgroundColor = 'var(--bg-card)'; }}>
                   <div className="text-[10px] font-bold tracking-widest uppercase" style={{ color: 'var(--accent-green)' }}>SYS SCANS CARRIED</div>
                   <div className="mt-1 font-mono text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>{stats.totalDetections}</div>
                   <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Archived in persistent DB</p>
                 </div>
-                
-                <div className="border transition-all" style={{ backgroundColor: 'var(--bg-card)', borderColor: COLORS.border, borderRadius: 'var(--border-radius)', padding: 'var(--card-padding)', boxShadow: 'var(--shadow-card)' }} onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = 'var(--shadow-hover)'; e.currentTarget.style.backgroundColor = 'var(--bg-hover)'; }} onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'var(--shadow-card)'; e.currentTarget.style.backgroundColor = 'var(--bg-card)'; }}>
+
+                <div className="border transition-all h-24 flex flex-col justify-between" style={{ backgroundColor: 'var(--bg-card)', borderColor: COLORS.border, borderRadius: 'var(--border-radius)', padding: 'var(--card-padding)', boxShadow: 'var(--shadow-card)' }} onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = 'var(--shadow-hover)'; e.currentTarget.style.backgroundColor = 'var(--bg-hover)'; }} onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'var(--shadow-card)'; e.currentTarget.style.backgroundColor = 'var(--bg-card)'; }}>
                   <div className="flex items-center gap-2 text-[10px] font-bold tracking-widest text-red-500 uppercase">
                     <span className="h-2.5 w-2.5 rounded-full bg-red-500 animate-ping inline-block" />
                     <span>ACTIVE TARGETS</span>
@@ -832,13 +834,13 @@ export default function App() {
                   <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>High / Critical threat rating</p>
                 </div>
 
-                <div className="border transition-all" style={{ backgroundColor: 'var(--bg-card)', borderColor: COLORS.border, borderRadius: 'var(--border-radius)', padding: 'var(--card-padding)', boxShadow: 'var(--shadow-card)' }} onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = 'var(--shadow-hover)'; e.currentTarget.style.backgroundColor = 'var(--bg-hover)'; }} onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'var(--shadow-card)'; e.currentTarget.style.backgroundColor = 'var(--bg-card)'; }}>
+                <div className="border transition-all h-24 flex flex-col justify-between" style={{ backgroundColor: 'var(--bg-card)', borderColor: COLORS.border, borderRadius: 'var(--border-radius)', padding: 'var(--card-padding)', boxShadow: 'var(--shadow-card)' }} onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = 'var(--shadow-hover)'; e.currentTarget.style.backgroundColor = 'var(--bg-hover)'; }} onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'var(--shadow-card)'; e.currentTarget.style.backgroundColor = 'var(--bg-card)'; }}>
                   <div className="text-[10px] font-bold tracking-widest text-sky-500 uppercase">SCANS COMPLETED (24H)</div>
                   <div className="mt-1 font-mono text-2xl font-bold text-sky-400">{stats.todaysScans}</div>
                   <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Tactical orbits sweep</p>
                 </div>
 
-                <div className="border transition-all" style={{ backgroundColor: 'var(--bg-card)', borderColor: COLORS.border, borderRadius: 'var(--border-radius)', padding: 'var(--card-padding)', boxShadow: 'var(--shadow-card)' }} onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = 'var(--shadow-hover)'; e.currentTarget.style.backgroundColor = 'var(--bg-hover)'; }} onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'var(--shadow-card)'; e.currentTarget.style.backgroundColor = 'var(--bg-card)'; }}>
+                <div className="border transition-all h-24 flex flex-col justify-between" style={{ backgroundColor: 'var(--bg-card)', borderColor: COLORS.border, borderRadius: 'var(--border-radius)', padding: 'var(--card-padding)', boxShadow: 'var(--shadow-card)' }} onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = 'var(--shadow-hover)'; e.currentTarget.style.backgroundColor = 'var(--bg-hover)'; }} onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'var(--shadow-card)'; e.currentTarget.style.backgroundColor = 'var(--bg-card)'; }}>
                   <div className="text-[10px] font-bold tracking-widest text-orange-500 uppercase">AI CONFIDENCE OVERALL</div>
                   <div className="mt-1 font-mono text-2xl font-bold text-orange-400">{stats.aiConfidence}%</div>
                   <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Mean probability score</p>
@@ -914,7 +916,7 @@ export default function App() {
                     </div>
                     <button 
                       onClick={() => setActiveTab('analysis')}
-                      className="rounded px-4 py-2 text-xs font-bold tracking-wider uppercase transition-all"
+                      className="rounded-lg px-4 py-2.5 text-xs font-bold tracking-wider uppercase transition-all"
                       style={{ backgroundColor: 'var(--accent-green)', color: '#000' }}
                       onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--accent-green-hover)'}
                       onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--accent-green)'}
@@ -935,7 +937,7 @@ export default function App() {
                   </div>
 
                   {/* LOG ENTRIES */}
-                  <div className="flex-1 space-y-2 overflow-y-auto max-h-[220px] font-mono text-[11px]" style={{ color: 'var(--text-primary)' }}>
+                  <div className="flex-1 space-y-2 overflow-y-auto max-h-[220px] font-mono text-[11px] scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent" style={{ color: 'var(--text-primary)' }}>
                     {systemLogs.length > 0 ? (
                       systemLogs.map((item: any, idx: number) => (
                         <div key={idx} className="border-b pb-1.5 flex gap-2" style={{ borderColor: COLORS.border }}>
@@ -981,7 +983,7 @@ export default function App() {
                     </div>
                     <button 
                       onClick={() => setActiveTab('blockchain')}
-                      className="mt-3 w-full rounded py-1.5 text-center text-xs font-bold transition-colors"
+                      className="mt-3 w-full rounded-lg px-3 py-2.5 text-center text-xs font-bold transition-colors"
                       style={{ backgroundColor: 'var(--bg-hover)', color: 'var(--text-secondary)' }}
                       onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--bg-card)'; e.currentTarget.style.color = 'var(--text-primary)'; }}
                       onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--bg-hover)'; e.currentTarget.style.color = 'var(--text-secondary)'; }}
@@ -1034,9 +1036,7 @@ export default function App() {
                        <div className="text-[10px] tracking-wide font-black uppercase mb-1" style={{ color: 'var(--text-muted)' }}>ANALYSIS MODEL ENGINE</div>
                        <p className="text-xs" style={{ color: 'var(--text-primary)' }}>YOLOv11 Military Camouflage Detector</p>
                        <p className="text-xs" style={{ color: 'var(--text-primary)' }}>Model file: models/best.pt</p>
-                     </div>
-
-                      <div>
+                       <div className="border-t pt-4" style={{ borderColor: COLORS.border }}>
                         <div className="flex items-center justify-between text-[10px] tracking-wide font-black uppercase mb-1" style={{ color: 'var(--text-muted)' }}>
                           <span>CONFIDENCE THRESHOLD</span>
                           <span className="font-bold" style={{ color: confThreshold >= 0.70 ? 'var(--accent-green)' : '#f97316' }}>
@@ -1193,7 +1193,6 @@ export default function App() {
                         </div>
                       </div>
                     </div>
-
                   </div>
 
                   {/* RIGHT MONITOR PREVIEW COMPONENT */}
@@ -1489,7 +1488,7 @@ export default function App() {
 
               </div>
 
-
+            </div>
           )}
 
           {/* ----- MODULE 3: REAL-TIME DRONEsurveillance DRONE VIDEO FEED ----- */}
@@ -1776,7 +1775,7 @@ export default function App() {
                     <div className="rounded-lg p-3 border flex-1 flex flex-col justify-between" style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border }}>
                       <div>
                         <div className="text-[10px] font-black uppercase tracking-widest mb-2" style={{ color: 'var(--text-muted)' }}>RUNNING ANALYSIS LOG</div>
-                        <div className="font-mono text-[10px] space-y-2 max-h-[140px] overflow-y-auto" style={{ color: 'var(--text-secondary)' }}>
+                        <div className="font-mono text-[10px] space-y-2 max-h-[140px] overflow-y-auto scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent" style={{ color: 'var(--text-secondary)' }}>
                           <div>[f_01-f_11] Terrain matching: 0 threats detected.</div>
                           {videoFrame >= 12 && (
                             <div className="text-red-400 font-bold">[f_12-f_25] lock on "Sniper (foliage coverage)" at coordinates [48, 40].</div>
@@ -1840,13 +1839,13 @@ export default function App() {
                   <div className="flex gap-2">
                     <button
                       onClick={triggerAudit}
-                      className="rounded bg-sky-950/80 border border-sky-800 px-3 py-1.5 text-xs font-bold text-sky-400 hover:bg-sky-900"
+                      className="rounded-lg bg-sky-950/80 border border-sky-800 px-3 py-2.5 text-xs font-bold text-sky-400 hover:bg-sky-900 transition-colors"
                     >
                       Audit ledger Verification
                     </button>
                     <button
                       onClick={resetBlockchainChain}
-                      className="rounded bg-slate-800 px-3 py-1.5 text-xs font-bold text-gray-300 hover:bg-slate-700"
+                      className="rounded-lg bg-slate-800 border border-slate-700 px-3 py-2.5 text-xs font-bold text-gray-300 hover:bg-slate-700 transition-colors"
                     >
                       Reset Ledger Blocks
                     </button>
@@ -1973,12 +1972,12 @@ export default function App() {
                           type="text"
                           value={tamperThreatType}
                           onChange={(e) => setTamperThreatType(e.target.value)}
-                          className="flex-1 rounded px-2.5 py-1.5 text-xs uppercase focus:outline-none transition-colors"
+                          className="flex-1 rounded-lg px-3 py-2 text-xs uppercase focus:outline-none transition-colors"
                           style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border, color: 'var(--text-primary)' }}
                         />
                         <button
                           onClick={executeTamperSimulation}
-                          className="rounded bg-red-600 hover:bg-red-500 text-black px-4 py-1.5 font-bold text-xs uppercase"
+                          className="rounded-lg bg-red-600 hover:bg-red-500 text-black px-4 py-2.5 font-bold text-xs uppercase transition-colors"
                         >
                           Inject Alteration!
                         </button>
@@ -2006,7 +2005,7 @@ export default function App() {
 
                       <button
                         onClick={resetBlockchainChain}
-                        className="mt-4 w-full rounded border border-emerald-500/30 bg-emerald-950/20 py-2 text-center text-[10px] font-mono uppercase text-emerald-400 hover:bg-emerald-950/40"
+                        className="mt-4 w-full rounded-lg border border-emerald-500/30 bg-emerald-950/20 px-3 py-2.5 text-center text-[10px] font-mono uppercase text-emerald-400 hover:bg-emerald-950/40 transition-colors"
                       >
                         REKINK LOGS / RECONSTRUCT GENESIS CHAIN
                       </button>
@@ -2044,7 +2043,7 @@ export default function App() {
                         placeholder="Search logs..." 
                         value={historySearch}
                         onChange={(e) => setHistorySearch(e.target.value)}
-                        className="rounded pl-8 pr-3 py-1.5 text-xs w-44 focus:outline-none transition-colors"
+                        className="rounded-lg pl-8 pr-3 py-2 text-xs w-44 focus:outline-none transition-colors"
                         style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border, color: 'var(--text-primary)' }}
                       />
                     </div>
@@ -2052,7 +2051,7 @@ export default function App() {
                     <select
                       value={historyFilter}
                       onChange={(e) => setHistoryFilter(e.target.value)}
-                      className="rounded px-2 py-1.5 text-xs focus:outline-none transition-colors"
+                      className="rounded-lg px-3 py-2 text-xs focus:outline-none transition-colors"
                       style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border, color: 'var(--text-secondary)' }}
                     >
                       <option value="ALL">All Threat Levels</option>
@@ -2065,15 +2064,15 @@ export default function App() {
 
                 {/* ARCHIVE LOG DATA GRID */}
                 <div className="overflow-x-auto rounded-lg border" style={{ borderColor: COLORS.border }}>
-                  <table className="w-full text-left border-collapse text-xs">
+                  <table className="w-full text-left border-collapse text-xs min-w-[600px]">
                     <thead>
                       <tr className="border-b font-bold uppercase tracking-wider text-[10px]" style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border, color: 'var(--text-muted)' }}>
-                        <th className="p-3">Threat type category</th>
-                        <th className="p-3 text-center">Confidence</th>
-                        <th className="p-3">Concealment Rating</th>
-                        <th className="p-3">Tactical timestamp</th>
-                        <th className="p-3">Ledger block ID</th>
-                        <th className="p-3 text-right">Ledger Verification</th>
+                        <th className="p-3 whitespace-nowrap">Threat type category</th>
+                        <th className="p-3 text-center whitespace-nowrap">Confidence</th>
+                        <th className="p-3 whitespace-nowrap">Concealment Rating</th>
+                        <th className="p-3 whitespace-nowrap">Tactical timestamp</th>
+                        <th className="p-3 whitespace-nowrap">Ledger block ID</th>
+                        <th className="p-3 text-right whitespace-nowrap">Ledger Verification</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-900 text-gray-300 font-mono">
@@ -2084,8 +2083,8 @@ export default function App() {
                           return matchesSearch && matchesFilter;
                         })
                         .map((item, idx) => (
-                          <tr 
-                            key={idx} 
+                          <tr
+                            key={idx}
                             onClick={() => {
                               setSelectedDetection(item);
                               setActiveTab('analysis'); // warp to view details
@@ -2096,18 +2095,18 @@ export default function App() {
                             onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                           >
                             <td className="p-3 font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-                              <span className={`h-2 w-2 rounded-full ${
+                              <span className={`h-2 w-2 rounded-full shrink-0 ${
                                 item.tacticalAnalysis?.threatRating === 'CRITICAL' ? 'bg-red-500' :
                                 item.tacticalAnalysis?.threatRating === 'HIGH' ? 'bg-orange-500' :
                                 'bg-sky-500'
                               }`} />
-                              <span>{item.threatType}</span>
+                              <span className="truncate">{item.threatType}</span>
                             </td>
-                            <td className="p-3 text-center text-emerald-400 font-bold">{(item.confidence * 100).toFixed(1)}%</td>
-                            <td className="p-3">{item.tacticalAnalysis?.concealmentScore || 80}% score</td>
-                            <td className="p-3 text-gray-400">{new Date(item.timestamp).toLocaleString()}</td>
-                            <td className="p-3 text-indigo-400">Block #{item.blocIndex || idx + 1}</td>
-                            <td className="p-3 text-right">
+                            <td className="p-3 text-center text-emerald-400 font-bold whitespace-nowrap">{(item.confidence * 100).toFixed(1)}%</td>
+                            <td className="p-3 whitespace-nowrap">{item.tacticalAnalysis?.concealmentScore || 80}% score</td>
+                            <td className="p-3 text-gray-400 whitespace-nowrap">{new Date(item.timestamp).toLocaleString()}</td>
+                            <td className="p-3 text-indigo-400 whitespace-nowrap">Block #{item.blocIndex || idx + 1}</td>
+                            <td className="p-3 text-right whitespace-nowrap">
                               <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-950/40 px-2 py-0.5 text-[9px] font-bold text-emerald-400 border border-emerald-900/50 uppercase">
                                 <CheckCircle2 className="h-3 w-3" />
                                 <span>SECURE</span>
@@ -2244,17 +2243,12 @@ export default function App() {
                       <span className="font-mono text-emerald-400 font-bold text-sm">--</span>
                     </div>
                   </div>
-
                 </div>
-
               </div>
 
             </div>
           )}
-
-
         </section>
-
       </main>
 
       {/* FOOTER BLOCK SIGNATURE */}
