@@ -1085,7 +1085,7 @@ export default function App() {
                         ) : (
                           <Zap className="h-4 w-4" />
                         )}
-                        <span>{isAnalyzing ? 'Running Model Analysis...' : 'RUN PIPELINE ANALYSIS'}</span>
+                        <span>{isAnalyzing ? 'Running YOLOv11 Inference...' : 'RUN PIPELINE ANALYSIS'}</span>
                       </button>
                     </div>
 
