@@ -1,50 +1,45 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { 
-  Shield, 
-  Eye, 
-  Cpu, 
-  Database, 
-  History, 
-  BarChart3, 
-  BookOpen, 
-  Play, 
-  Pause, 
-  AlertTriangle, 
-  CheckCircle2, 
-  X, 
-  Upload, 
-  Clock, 
-  Layers, 
-  TrendingUp, 
-  Zap, 
-  Terminal, 
-  RefreshCw, 
-  Lock, 
-  Unlock, 
-  Sliders, 
-  Search, 
-  Filter, 
-  FileText, 
-  Crosshair, 
+import {
+  Shield,
+  Eye,
+  Database,
+  History,
+  BarChart3,
+  Play,
+  Pause,
+  AlertTriangle,
+  CheckCircle2,
+  X,
+  Upload,
+  Clock,
+  TrendingUp,
+  Zap,
+  Terminal,
+  RefreshCw,
+  Lock,
+  Unlock,
+  Sliders,
+  Search,
+  Filter,
+  FileText,
+  Crosshair,
   Radar,
   Info
 } from 'lucide-react';
-import { 
-  ResponsiveContainer, 
-  LineChart, 
-  Line, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  Legend, 
-  BarChart, 
-  Bar, 
-  PieChart, 
-  Pie, 
-  Cell, 
-  AreaChart, 
-  Area,
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
   RadarChart,
   PolarGrid,
   PolarAngleAxis,
@@ -74,18 +69,18 @@ const COLORS = {
 export default function App() {
   const videoRef = useRef<HTMLVideoElement>(null);
   // Navigation
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'analysis' | 'video' | 'blockchain' | 'quantum' | 'history' | 'analytics' | 'research'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'analysis' | 'video' | 'blockchain' | 'history' | 'analytics'>('dashboard');
 
   // Stats State
   const [stats, setStats] = useState({
-    totalDetections: 4,
-    activeThreats: 2,
-    todaysScans: 4,
+    totalDetections: 0,
+    activeThreats: 0,
+    todaysScans: 0,
     systemIntegrity: true,
-    aiConfidence: 91.5,
-    blockchainBlocks: 5,
+    aiConfidence: 0,
+    blockchainBlocks: 0,
     databaseStatus: 'ONLINE (PERSISTENT)',
-    sensorFusionDepth: '94.8% OPTIMAL'
+    sensorFusionDepth: '--'
   });
 
   // Data State
@@ -99,17 +94,14 @@ export default function App() {
   });
 
   // Image Upload Analysis State
-  const [selectedScenario, setSelectedScenario] = useState<number>(0);
   const [customImage, setCustomImage] = useState<string | null>(null);
   const [customFileName, setCustomFileName] = useState('');
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [activeOverlayMode, setActiveOverlayMode] = useState<'raw' | 'yolo' | 'gradcam' | 'thermal'>('yolo');
   const [gradcamAlpha, setGradcamAlpha] = useState<number>(75);
-  const [selectedModel, setSelectedModel] = useState<string>('yolov8n');
+  const selectedModel = 'yolo11'; // model name fixed, selector removed
   const [confThreshold, setConfThreshold] = useState<number>(0.70);
   const [systemLogs, setSystemLogs] = useState<any[]>([]);
-  const [isTestingSuiteRunning, setIsTestingSuiteRunning] = useState<boolean>(false);
-  const [testSuiteReport, setTestSuiteReport] = useState<any | null>(null);
 
   const fetchLogs = async () => {
     try {
@@ -120,28 +112,6 @@ export default function App() {
       }
     } catch (e) {
       console.error('Failed to sync logs', e);
-    }
-  };
-
-  const runValidationSuite = async () => {
-    setIsTestingSuiteRunning(true);
-    setTestSuiteReport(null);
-    try {
-      const res = await fetch('/api/test-suite/run', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ threshold: confThreshold })
-      });
-      const json = await res.json();
-      if (json.success && json.data) {
-        setTestSuiteReport(json.data);
-        fetchStats();
-        fetchLogs();
-      }
-    } catch (err) {
-      console.error('Test suite failed', err);
-    } finally {
-      setIsTestingSuiteRunning(false);
     }
   };
 
@@ -158,12 +128,6 @@ export default function App() {
   const [videoTrackingData, setVideoTrackingData] = useState<any[] | null>(null);
   const [isVideoAnalyzing, setIsVideoAnalyzing] = useState(false);
 
-  // Quantum Optimization State
-  const [quantumFusionDepth, setQuantumFusionDepth] = useState(5);
-  const [quantumLearningRate, setQuantumLearningRate] = useState(0.015);
-  const [quantumEpochs, setQuantumEpochs] = useState(60);
-  const [quantumSimulating, setQuantumSimulating] = useState(false);
-
   // Blockchain Interactivity State
   const [selectedBlockForTamper, setSelectedBlockForTamper] = useState<number | null>(null);
   const [tamperThreatType, setTamperThreatType] = useState('DECRYPTED_SAFE_VEHICLE');
@@ -172,52 +136,6 @@ export default function App() {
   // Filters for History
   const [historySearch, setHistorySearch] = useState('');
   const [historyFilter, setHistoryFilter] = useState('ALL');
-
-  // --- PRELOADED SCENARIO IMAGES (RENDERED IN CUSTOM DYNAMIC SVGS) ---
-  const SCENARIOS = [
-    {
-      title: 'Woodland Sentry Camp',
-      location: 'Sector 4 Ridge',
-      terrain: 'Forest / Spruce Canopy',
-      baseColor: '#1b321f',
-      targets: 'Hidden Infantry Unit & Stealth Outpost',
-      detections: [
-        { label: 'Camo Sniper Alpha', confidence: 0.94, box: [32, 50, 48, 62], desc: 'Personnel utilizing synthetic cedar branch shroud.' },
-        { label: 'Sentry Bunker Roof', confidence: 0.91, box: [60, 15, 85, 38], desc: 'Infiltration structure with thermal dispersion canvas nets.' }
-      ]
-    },
-    {
-      title: 'Desert Scrub Dune',
-      location: 'Sector 9 Basin',
-      terrain: 'Arid Sand / Mesquite Shrubs',
-      baseColor: '#4f3e2a',
-      targets: 'Concealed Heavy APC (Armored Personnel Carrier)',
-      detections: [
-        { label: 'Camo Vehicle T-72', confidence: 0.89, box: [28, 20, 68, 75], desc: 'Armored carrier concealed with high-spectral scattering canvas.' }
-      ]
-    },
-    {
-      title: 'Tropical Operations Depot',
-      location: 'Sector 2 Canopy',
-      terrain: 'Broadleaf Dense Rainforest',
-      baseColor: '#0a231c',
-      targets: 'Under-Canopy Garrison & Ammo Bundles',
-      detections: [
-        { label: 'Logistics Supply Tent', confidence: 0.91, box: [18, 40, 52, 70], desc: 'Fabric shelter under triple-tier canopy foliage.' },
-        { label: 'Generators Placement', confidence: 0.86, box: [58, 48, 74, 59], desc: 'Engine set masked behind visual tree branches.' }
-      ]
-    },
-    {
-      title: 'Rocky Ridge Garrison',
-      location: 'Sector 7 Canyon',
-      terrain: 'Scree Slope / Basalt Rocks',
-      baseColor: '#2d3748',
-      targets: 'Anti-Aircraft Radar & SAM Site launcher',
-      detections: [
-        { label: 'SAM Battery Launcher', confidence: 0.87, box: [35, 30, 60, 68], desc: 'Concealed air defence launcher unit mimicking rock forms.' }
-      ]
-    }
-  ];
 
   // --- DATA SYNCING ---
   const fetchStats = async () => {
@@ -342,19 +260,6 @@ export default function App() {
     }
   };
 
-  // --- DYNAMIC QUANTUM SIMULATOR UPDATE ---
-  const runQuantumOptimization = () => {
-    setQuantumSimulating(true);
-    setSystemAlert({ type: 'sync', message: 'Coupling optical feature grids with quantum-annealing weights...' });
-    setTimeout(() => {
-      setQuantumSimulating(false);
-      setSystemAlert({
-        type: 'success',
-        message: `CAM-YOLO11 weights successfully optimized: Spatial resolution enhanced +8.9%. Feature fusion balance: ${(quantumFusionDepth * 10).toFixed(0)}% Depth.`
-      });
-    }, 1800);
-  };
-
   // Validate uploaded file
   const validateFile = (file: File): string | null => {
     const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
@@ -421,31 +326,17 @@ export default function App() {
   };
 
   const runYoloAnalysis = async () => {
+    if (!customImage) {
+      setSystemAlert({ type: 'error', message: 'Please upload an image to analyze.' });
+      return;
+    }
+
     setIsAnalyzing(true);
-    setSystemAlert({ type: 'sync', message: `Initializing specialized CAM-YOLO11 backbone on target frame ${customImage ? 'Custom upload' : SCENARIOS[selectedScenario].title}...` });
+    setSystemAlert({ type: 'sync', message: 'Initializing specialized CAM-YOLO11 backbone on target frame...' });
 
     try {
-      let base64Part = '';
-      let fName = customFileName || 'military_scenario_recon.jpg';
-
-      if (customImage) {
-        base64Part = customImage.split(',')[1];
-      } else {
-        // Create base64 of dummy scene for API
-        const dummyCanvas = document.createElement('canvas');
-        dummyCanvas.width = 400;
-        dummyCanvas.height = 300;
-        const ctx = dummyCanvas.getContext('2d');
-        if (ctx) {
-          ctx.fillStyle = SCENARIOS[selectedScenario].baseColor;
-          ctx.fillRect(0, 0, 400, 300);
-          ctx.font = '14px monospace';
-          ctx.fillStyle = '#fff';
-          ctx.fillText(`Tactical Analysis Scenario: ${SCENARIOS[selectedScenario].title}`, 20, 150);
-        }
-        base64Part = dummyCanvas.toDataURL('image/jpeg').split(',')[1];
-        fName = `recon_${SCENARIOS[selectedScenario].title.toLowerCase().replace(/\s/g, '_')}.jpg`;
-      }
+      let base64Part = customImage.split(',')[1];
+      let fName = customFileName || 'uploaded_image.jpg';
 
       // Create abort controller for timeout (30 seconds)
       const controller = new AbortController();
@@ -604,39 +495,11 @@ export default function App() {
     reader.readAsDataURL(file);
   };
 
-  // --- QUANTUM PARAMETERS CHART MATH ---
-  const standardYoloData = [
-    { epoch: 10, classical: 72.1, quantum: 79.5 },
-    { epoch: 20, classical: 76.5, quantum: 84.8 },
-    { epoch: 30, classical: 79.8, quantum: 89.2 },
-    { epoch: 40, classical: 82.3, quantum: 92.4 },
-    { epoch: 50, classical: 84.5, quantum: 94.6 },
-    { epoch: 60, classical: 86.1, quantum: 96.2 },
-    { epoch: 80, classical: 87.8, quantum: 97.9 },
-    { epoch: 100, classical: 88.5, quantum: 99.1 }
-  ];
-
-  // Dynamically calculate optimized quantum curve mapping with sliders
-  const dynamicQuantumData = standardYoloData.map(item => {
-    const fusionFactor = (quantumFusionDepth - 5) * 1.2; 
-    const learnFactor = (quantumLearningRate - 0.01) * 35;
-    const epochFactor = (quantumEpochs / 100);
-    
-    let quantumVal = item.quantum + fusionFactor - learnFactor + (epochFactor * 2);
-    quantumVal = Math.min(100, Math.max(70, quantumVal));
-
-    return {
-      epoch: item.epoch,
-      Classical_YOLO11: parseFloat(item.classical.toFixed(1)),
-      CAM_YOLO11_Quantum: parseFloat(quantumVal.toFixed(1))
-    };
-  });
-
   // --- SYSTEM LOGS TICKERS ---
   const SYSTEM_LOGS = [
     { time: '15:21:04', log: 'Orbit telemetry lock: BEIDOU-3 constellation sync completed.' },
     { time: '15:21:08', log: 'FLIR infra-red channels combined with optical spectrum layers.' },
-    { time: '15:21:12', log: 'Quantum state register loaded. Phase parameters calibrated.' },
+    { time: '15:21:12', log: 'YOLOv11 model loaded. Detection pipeline initialized.' },
     { time: '15:21:20', log: 'Tamper watchdogs verified. Node #0 (Genesis) validated: 100% OK.' }
   ];
 
@@ -654,11 +517,8 @@ export default function App() {
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-sm font-bold tracking-widest uppercase sm:text-base" style={{ color: 'var(--text-primary)' }}>CAM-YOLO11</h1>
-                <span className="rounded px-2 py-0.5 text-[10px] font-bold tracking-tight border" style={{ backgroundColor: 'rgba(14, 165, 233, 0.2)', color: '#38bdf8', borderColor: 'rgba(14, 165, 233, 0.3)' }}>
-                  UROP PROTOTYPE v2.4
-                </span>
+                
               </div>
-              <p className="text-[10px] sm:text-xs" style={{ color: 'var(--text-muted)' }}>Military Command Suite & Camouflage Detection Portal</p>
             </div>
           </div>
 
@@ -718,7 +578,6 @@ export default function App() {
         {/* SIDE BAR DASHBOARD NAVIGATION */}
         <aside className="w-full shrink-0 lg:w-72" id="sidebar-navigation">
           <div className="sticky top-6 flex flex-col gap-4 border p-3" style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: 'var(--border-color)', borderRadius: 'var(--border-radius)', boxShadow: 'var(--shadow-card)' }}>
-            <div className="px-3 py-2 text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-secondary)' }}>SURVEILLANCE MODULES</div>
             
             <nav className="flex flex-col gap-1">
               <button 
@@ -748,7 +607,7 @@ export default function App() {
                   }
                 }}
                 id="tab-dashboard">
-                <Layers className="h-4 w-4" style={{ color: activeTab === 'dashboard' ? 'var(--accent-green)' : 'var(--text-secondary)' }} />
+                <Database className="h-4 w-4" style={{ color: activeTab === 'dashboard' ? 'var(--accent-green)' : 'var(--text-secondary)' }} />
                 <span>Command Deck HUD</span>
               </button>
 
@@ -846,37 +705,6 @@ export default function App() {
               </button>
 
               <button 
-                onClick={() => setActiveTab('quantum')}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-xs tracking-wide transition-all ${
-                  activeTab === 'quantum' 
-                    ? 'border-l-4' 
-                    : ''
-                }`} 
-                style={activeTab === 'quantum' ? {
-                  backgroundColor: 'var(--accent-green-subtle)',
-                  color: 'var(--accent-green)',
-                  borderColor: 'var(--accent-green)',
-                  fontWeight: 600
-                } : {
-                  color: 'var(--text-secondary)',
-                  fontWeight: 400
-                }}
-                onMouseEnter={(e) => {
-                  if (activeTab !== 'quantum') {
-                    e.currentTarget.style.backgroundColor = 'var(--bg-hover)';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (activeTab !== 'quantum') {
-                    e.currentTarget.style.backgroundColor = 'transparent';
-                  }
-                }}
-                id="tab-quantum">
-                <Cpu className="h-4 w-4" style={{ color: activeTab === 'quantum' ? 'var(--accent-green)' : 'var(--text-secondary)' }} />
-                <span>Quantum Optimization Engine</span>
-              </button>
-
-              <button 
                 onClick={() => setActiveTab('history')}
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-xs tracking-wide transition-all ${
                   activeTab === 'history' 
@@ -939,39 +767,6 @@ export default function App() {
                 <BarChart3 className="h-4 w-4" style={{ color: activeTab === 'analytics' ? 'var(--accent-green)' : 'var(--text-secondary)' }} />
                 <span>Analytics Grid</span>
               </button>
-
-              <button 
-                onClick={() => setActiveTab('research')}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-xs tracking-wide transition-all ${
-                  activeTab === 'research' 
-                    ? 'border-l-4' 
-                    : ''
-                }`}
-                style={activeTab === 'research' ? {
-                  backgroundColor: 'var(--accent-green-subtle)',
-                  color: 'var(--accent-green)',
-                  borderColor: 'var(--accent-green)',
-                  fontWeight: 600
-                } : {
-                  color: 'var(--text-secondary)',
-                  fontWeight: 400
-                }}
-                onMouseEnter={(e) => {
-                  if (activeTab !== 'research') {
-                    e.currentTarget.style.backgroundColor = 'var(--bg-hover)';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (activeTab !== 'research') {
-                    e.currentTarget.style.backgroundColor = 'transparent';
-                  }
-                }}
-                id="tab-research"
-              >
-                <BookOpen className="h-4 w-4" style={{ color: activeTab === 'research' ? 'var(--accent-green)' : 'var(--text-secondary)' }} />
-                <span>Academic Research</span>
-              </button>
-
 
             </nav>
 
@@ -1205,9 +1000,9 @@ export default function App() {
                     <Info className="h-5 w-5" />
                   </div>
                   <div>
-                    <h4 className="text-xs font-bold uppercase tracking-widest" style={{ color: 'var(--text-primary)' }}>CAM-YOLO11 SURVEILLANCE RESEARCH BACKBONE</h4>
+
                     <p className="mt-1 text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-                      Classical algorithms like YOLOv8 suffer from high miss-detection ratios when targets possess military visual camouflage. By implementing Grad-CAM gradient overlays coupled with custom multiphase backpropagation models, the CAM-YOLO11 prototype identifies localized heat maps and isolates hidden edges. Results are validated in a zero-trust blockchain architecture, guaranteeing unalterable defense surveillance logs.
+
                     </p>
                   </div>
                 </div>
@@ -1226,72 +1021,16 @@ export default function App() {
                     <Eye className="h-5 w-5" style={{ color: 'var(--accent-green)' }} />
                     <span>CAM-YOLO11 INTELLIGENCE COMPILATION PIPELINE</span>
                   </h2>
-                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Upload drone recon frames or select academic scenarios for multispectral camouflage classification.</p>
+                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Upload drone recon frames for multispectral camouflage classification.</p>
                 </div>
 
                 <div className="mt-4 grid gap-6 lg:grid-cols-12">
-                  
+
                   {/* LEFT CONTROLS PANEL */}
                   <div className="lg:col-span-4 flex flex-col gap-4">
-                    
-                    {/* SCENARIOS CHOOSER */}
-                    <div className="rounded-lg p-3 border" style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border }}>
-                      <div className="text-[10px] tracking-wide font-black uppercase mb-2" style={{ color: 'var(--text-muted)' }}>SCENARIO TEMPLATES</div>
-                      <div className="space-y-1.5">
-                        {SCENARIOS.map((sc, index) => (
-                          <button
-                            key={index}
-                            onClick={() => {
-                              setSelectedScenario(index);
-                              setCustomImage(null); // Clear custom upload when template selected
-                            }}
-                            className={`w-full text-left p-2.5 rounded text-xs transition-all flex items-center justify-between border ${
-                              selectedScenario === index && !customImage
-                                ? ''
-                                : ''
-                            }`}
-                            style={selectedScenario === index && !customImage ? {
-                              backgroundColor: 'var(--accent-green-subtle)',
-                              color: 'var(--accent-green)',
-                              borderColor: 'rgba(16, 185, 129, 0.3)'
-                            } : {
-                              backgroundColor: 'var(--bg-sidebar)',
-                              color: 'var(--text-secondary)',
-                              borderColor: 'transparent'
-                            }}
-                            onMouseEnter={(e) => {
-                              if (!(selectedScenario === index && !customImage)) {
-                                e.currentTarget.style.backgroundColor = 'var(--bg-hover)';
-                                e.currentTarget.style.color = 'var(--text-primary)';
-                              }
-                            }}
-                            onMouseLeave={(e) => {
-                              if (!(selectedScenario === index && !customImage)) {
-                                e.currentTarget.style.backgroundColor = 'var(--bg-sidebar)';
-                                e.currentTarget.style.color = 'var(--text-secondary)';
-                              }
-                            }}
-                          >
-                            <div>
-                              <div className="font-bold">{sc.title}</div>
-                              <div className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{sc.location} • {sc.terrain}</div>
-                            </div>
-                            <CheckCircle2 className={`h-4 w-4 ${selectedScenario === index && !customImage ? 'opacity-100' : 'opacity-0'}`} style={selectedScenario === index && !customImage ? { color: 'var(--accent-green)' } : {}} />
-                          </button>
-                        ))}
-                      </div>
-                    </div>
 
                     {/* MODEL ENGINE CHOOSER & TRIGGER */}
                     <div className="rounded-lg p-3 border space-y-4" style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border }}>
-                      <div>
-                        <div className="text-[10px] tracking-wide font-black uppercase mb-1" style={{ color: 'var(--text-muted)' }}>ANALYSIS MODEL ENGINE</div>
-                        <select 
-                          value={selectedModel}
-                          onChange={(e) => setSelectedModel(e.target.value)}
-                          className="w-full text-xs rounded px-2.5 py-1.5 focus:outline-none transition-colors"
-                          style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border, color: 'var(--text-primary)' }}
-                        >
                           <option value="yolov8n">YOLOv8n (Core Real-time Edge Backbone)</option>
                           <option value="yolov8s">YOLOv8s (Enhanced Feature Fusion Backbone)</option>
                         </select>
@@ -1423,7 +1162,7 @@ export default function App() {
                         </div>
                         <div>
                           <span style={{ color: 'var(--text-muted)' }}>SPEC WEIGHTS:</span>
-                          <span className="block break-all" style={{ color: 'var(--accent-green)' }}>yolov11x_camo_military_v4.2.pt</span>
+                          <span className="block break-all" style={{ color: 'var(--accent-green)' }}>models/best.pt</span>
                         </div>
                         <div>
                           <span style={{ color: 'var(--text-muted)' }}>IMAGE ENDPOINT:</span>
@@ -2280,159 +2019,7 @@ export default function App() {
             </div>
           )}
 
-          {/* ----- MODULE 6: QUANTUM OPTIMIZATION TUNING MODULE ----- */}
-          {activeTab === 'quantum' && (
-            <div className="space-y-6 animate-fade-in" id="quantum-module-view">
-              
-              <div className="border p-4" style={{ backgroundColor: 'var(--bg-card)', borderColor: COLORS.border, borderRadius: 'var(--border-radius)', boxShadow: 'var(--shadow-card)' }}>
-                <div className="border-b pb-4 mb-4" style={{ borderColor: COLORS.border }}>
-                  <h2 className="text-sm font-bold uppercase tracking-widest flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-                    <Cpu className="h-5 w-5" style={{ color: 'var(--accent-green)' }} />
-                    <span>QUANTUM HYPERPARAMETER OPTIMIZATION TUNER</span>
-                  </h2>
-                  <p className="text-xs text-gray-400">Evaluate optimal convolution grids, fusion layouts, and backplane parameters using modeled quantum-annealing superpositions, avoiding manual SGD bottlenecks.</p>
-                </div>
-
-                <div className="grid gap-6 lg:grid-cols-12">
-                  
-                  {/* SLIDERS MODULE */}
-                  <div className="lg:col-span-4 rounded-lg p-4 border flex flex-col justify-between" style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border }}>
-                    <div className="space-y-5">
-                      <div className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>HYPERPARAMETER MULTI-TUNERS</div>
-                      
-                      {/* Slider A */}
-                      <div className="space-y-1.5">
-                        <div className="flex justify-between text-xs font-mono text-gray-300">
-                          <span>Feature Fusion Depth:</span>
-                          <span className="text-emerald-400 font-bold">Lvl {quantumFusionDepth}</span>
-                        </div>
-                        <input 
-                          type="range"
-                          min="2"
-                          max="10"
-                          value={quantumFusionDepth}
-                          onChange={(e) => setQuantumFusionDepth(Number(e.target.value))}
-                          className="w-full accent-emerald-500 h-1 bg-slate-950 rounded cursor-pointer" 
-                        />
-                        <div className="text-[9px] text-gray-500">Controls weighted skip connection layers ratios</div>
-                      </div>
-
-                      {/* Slider B */}
-                      <div className="space-y-1.5">
-                        <div className="flex justify-between text-xs font-mono text-gray-300">
-                          <span>Superposition Learning rate:</span>
-                          <span className="text-sky-400 font-bold">{quantumLearningRate.toFixed(4)}</span>
-                        </div>
-                        <input 
-                          type="range"
-                          min="0.005"
-                          max="0.05"
-                          step="0.001"
-                          value={quantumLearningRate}
-                          onChange={(e) => setQuantumLearningRate(parseFloat(e.target.value))}
-                          className="w-full accent-sky-400 h-1 bg-slate-950 rounded cursor-pointer" 
-                        />
-                        <div className="text-[9px] text-gray-500">Quantum optimizer learning convergence rate</div>
-                      </div>
-
-                      {/* Slider C */}
-                      <div className="space-y-1.5">
-                        <div className="flex justify-between text-xs font-mono text-gray-300">
-                          <span>Epoch Training Limit:</span>
-                          <span className="text-orange-400 font-bold">{quantumEpochs} epochs</span>
-                        </div>
-                        <input 
-                          type="range"
-                          min="30"
-                          max="120"
-                          step="10"
-                          value={quantumEpochs}
-                          onChange={(e) => setQuantumEpochs(Number(e.target.value))}
-                          className="w-full accent-orange-400 h-1 bg-slate-950 rounded cursor-pointer" 
-                        />
-                        <div className="text-[9px] text-gray-500">Maximum classical calibration training counts</div>
-                      </div>
-                    </div>
-
-                    <button
-                      onClick={runQuantumOptimization}
-                      disabled={quantumSimulating}
-                      className="mt-6 w-full text-black font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all"
-                      style={quantumSimulating
-                        ? { backgroundColor: 'var(--bg-hover)', color: 'var(--text-muted)', borderRadius: '10px', height: '44px', cursor: 'not-allowed' }
-                        : { backgroundColor: 'var(--accent-green)', borderRadius: '10px', height: '44px', transition: 'all 0.2s ease' }
-                      }
-                      onMouseEnter={(e) => {
-                        if (!quantumSimulating) e.currentTarget.style.backgroundColor = 'var(--accent-green-hover)';
-                      }}
-                      onMouseLeave={(e) => {
-                        if (!quantumSimulating) e.currentTarget.style.backgroundColor = 'var(--accent-green)';
-                      }}
-                    >
-                      {quantumSimulating && <RefreshCw className="h-4 w-4 animate-spin" />}
-                      <span>{quantumSimulating ? 'Annealing Weights...' : 'ANNEAL WEIGHTS IN QUANTUM UNIT'}</span>
-                    </button>
-                  </div>
-
-                  {/* HIGH-END CHART DISPLAY COMPARISON */}
-                  <div className="lg:col-span-8 flex flex-col gap-4">
-                    <div className="rounded-lg p-4 border" style={{ backgroundColor: 'var(--bg-card)', borderColor: COLORS.border }}>
-                      <div className="flex items-center justify-between gap-4 mb-3">
-                        <div className="text-[10px] font-black uppercase tracking-widest" style={{ color: '#10b981' }}>MODEL ACCURACY mAP COMPARISON</div>
-                        <span className="text-[9px] font-mono" style={{ color: 'var(--text-muted)' }}>mAP [IoU=0.50:0.95] • CAM-YOLO11 vs Benchmark</span>
-                      </div>
-
-                      {/* CHART */}
-                      <div className="h-[240px] w-full text-xs font-mono">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <AreaChart data={dynamicQuantumData}>
-                            <defs>
-                              <linearGradient id="quantum-area" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="#10b981" stopOpacity="0.2"/>
-                                <stop offset="95%" stopColor="#10b981" stopOpacity="0"/>
-                              </linearGradient>
-                            </defs>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
-                            <XAxis dataKey="epoch" stroke="#52525b" />
-                            <YAxis domain={[60, 100]} stroke="#52525b" />
-                            <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b' }} />
-                            <Legend />
-                            <Line type="monotone" dataKey="Classical_YOLO11" stroke="#ef4444" strokeWidth={2} activeDot={{ r: 8 }} />
-                            <Area type="monotone" dataKey="CAM_YOLO11_Quantum" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#quantum-area)" />
-                          </AreaChart>
-                        </ResponsiveContainer>
-                      </div>
-                    </div>
-
-                    {/* DYNAMIC RESULTS SUMMARY KPI */}
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <div className="p-3 rounded-lg border font-mono text-[11px]" style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border, color: 'var(--text-primary)' }}>
-                        <div className="font-bold uppercase text-[9px] mb-1" style={{ color: 'var(--text-muted)' }}>OPTIMIZED MODEL mAP MAX</div>
-                        <div className="text-xl font-black" style={{ color: 'var(--accent-green)' }}>
-                          {dynamicQuantumData[dynamicQuantumData.length - 1].CAM_YOLO11_Quantum}%
-                        </div>
-                        <div className="text-[10px] text-gray-500 mt-1">
-                          Standard: {dynamicQuantumData[dynamicQuantumData.length - 1].Classical_YOLO11}% (+{(dynamicQuantumData[dynamicQuantumData.length - 1].CAM_YOLO11_Quantum - dynamicQuantumData[dynamicQuantumData.length - 1].Classical_YOLO11).toFixed(1)}%)
-                        </div>
-                      </div>
-
-                      <div className="p-3 rounded-lg border font-mono text-[11px]" style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border, color: 'var(--text-primary)' }}>
-                        <div className="font-bold uppercase text-[9px] mb-1" style={{ color: 'var(--text-muted)' }}>STOCHASTIC SHIFT OVERHEAD</div>
-                        <div className="text-xl font-black" style={{ color: '#38bdf8' }}>
-                          -74.8% REDUCTION
-                        </div>
-                        <div className="text-[10px] text-gray-500 mt-1">Eliminated hyperparameter gradient drift</div>
-                      </div>
-                    </div>
-
-                  </div>
-
-                </div>
-
-              </div>
-
-            </div>
-          )}
+          {/* ----- MODULE 6: HISTORY & ANALYTICS ----- */}
 
           {/* ----- MODULE 7: PERSISTENT SEARCH HISTORY ----- */}
           {activeTab === 'history' && (
@@ -2560,62 +2147,71 @@ export default function App() {
                   {/* BAR CHART: DAILY SCANS TREND */}
                   <div className="rounded-lg p-4 border" style={{ backgroundColor: 'var(--bg-card)', borderColor: COLORS.border }}>
                     <div className="text-[10px] font-black tracking-widest uppercase mb-3" style={{ color: 'var(--text-muted)' }}>TELEMETRY SCANS PROCESS RATE</div>
-                    <div className="h-[200px] w-full text-xs font-mono">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={[
-                          { day: 'Mon', Scans: 2 },
-                          { day: 'Tue', Scans: 4 },
-                          { day: 'Wed', Scans: 1 },
-                          { day: 'Thu', Scans: 5 },
-                          { day: 'Fri', Scans: 3 },
-                          { day: 'Sat', Scans: 6 },
-                          { day: 'Sun', Scans: stats.todaysScans }
-                        ]}>
-                          <CartesianGrid strokeDasharray="3" stroke="#27272a" />
-                          <XAxis dataKey="day" stroke="#52525b" />
-                          <YAxis stroke="#52525b" />
-                          <Tooltip contentStyle={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border }} />
-                          <Bar dataKey="Scans" fill="#10b981">
-                            {Array.from({ length: 7 }).map((_, i) => (
-                              <Cell key={i} fill={i === 6 ? '#0ea5e9' : '#10b981'} />
-                            ))}
-                          </Bar>
-                        </BarChart>
-                      </ResponsiveContainer>
+                    <div className="h-[200px] w-full text-xs font-mono flex items-center justify-center" style={{ color: 'var(--text-muted)' }}>
+                      {stats.todaysScans > 0 ? (
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart data={[
+                            { day: 'Mon', Scans: 0 },
+                            { day: 'Tue', Scans: 0 },
+                            { day: 'Wed', Scans: 0 },
+                            { day: 'Thu', Scans: 0 },
+                            { day: 'Fri', Scans: 0 },
+                            { day: 'Sat', Scans: 0 },
+                            { day: 'Sun', Scans: stats.todaysScans }
+                          ]}>
+                            <CartesianGrid strokeDasharray="3" stroke="#27272a" />
+                            <XAxis dataKey="day" stroke="#52525b" />
+                            <YAxis stroke="#52525b" />
+                            <Tooltip contentStyle={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border }} />
+                            <Bar dataKey="Scans" fill="#10b981">
+                              {Array.from({ length: 7 }).map((_, i) => (
+                                <Cell key={i} fill={i === 6 ? '#0ea5e9' : '#10b981'} />
+                              ))}
+                            </Bar>
+                          </BarChart>
+                        </ResponsiveContainer>
+                      ) : (
+                        <div className="text-center">
+                          <div className="text-sm">No scan data available</div>
+                          <div className="text-[10px] mt-1">Upload images to generate telemetry</div>
+                        </div>
+                      )}
                     </div>
                   </div>
 
                   {/* RADAR CHART: THREAT CLASSIFICATIONS WEIGHT */}
                   <div className="rounded-lg p-4 border" style={{ backgroundColor: 'var(--bg-card)', borderColor: COLORS.border }}>
                     <div className="text-[10px] font-black tracking-widest uppercase mb-3" style={{ color: 'var(--text-muted)' }}>SENSOR THREAT MULTI-FACET CLASSIFICATIONS</div>
-                    <div className="h-[200px] w-full text-xs font-mono">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <RadarChart cx="50%" cy="50%" outerRadius="80%" data={[
-                          { label: 'Sniper/Infantry', count: 4 },
-                          { label: 'Mechanized Armor', count: 3 },
-                          { label: 'SAM Launcher', count: 2 },
-                          { label: 'Ammo/Camp Depot', count: 5 },
-                          { label: 'Perimeter Breach', count: 1 }
-                        ]}>
-                          <PolarGrid stroke="#27272a" />
-                          <PolarAngleAxis dataKey="label" stroke="#52525b" />
-                          <PolarRadiusAxis stroke="#27272a" />
-                          <RechartsRadar name="Camo Target Weight" dataKey="count" stroke="#38bdf8" fill="#0ea5e9" fillOpacity={0.3} />
-                        </RadarChart>
-                      </ResponsiveContainer>
+                    <div className="h-[200px] w-full text-xs font-mono flex items-center justify-center" style={{ color: 'var(--text-muted)' }}>
+                      {detections.length > 0 ? (
+                        <ResponsiveContainer width="100%" height="100%">
+                          <RadarChart cx="50%" cy="50%" outerRadius="80%" data={Array.from(new Set(detections.map(d => d.label))).map(label => ({ label, count: detections.filter(d => d.label === label).length }))}>
+                            <PolarGrid stroke="#27272a" />
+                            <PolarAngleAxis dataKey="label" stroke="#52525b" />
+                            <PolarRadiusAxis stroke="#27272a" />
+                            <RechartsRadar name="Camo Target Weight" dataKey="count" stroke="#38bdf8" fill="#0ea5e9" fillOpacity={0.3} />
+                          </RadarChart>
+                        </ResponsiveContainer>
+                      ) : (
+                        <div className="text-center">
+                          <div className="text-sm">No classification data available</div>
+                          <div className="text-[10px] mt-1">Run detections to generate classifications</div>
+                        </div>
+                      )}
                     </div>
                   </div>
 
                   {/* LINE CHART: SENSOR ACCURACY CONFORMANCE */}
                   <div className="rounded-lg p-4 border" style={{ backgroundColor: 'var(--bg-card)', borderColor: COLORS.border }}>
                     <div className="text-[10px] font-black tracking-widest uppercase mb-3" style={{ color: 'var(--text-muted)' }}>Ffusion YOLOv11 CONFIDENCE CONFORMANCE</div>
-                    <div className="h-[200px] w-full text-xs font-mono">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={[
-                          { sample: 'P_01', conf: 84 },
-                          { sample: 'P_02', conf: 91 },
-                          { sample: 'P_03', conf: 88 },
-                          { sample: 'P_04', conf: 95 },
+                    <div className="h-[200px] w-full text-xs font-mono flex items-center justify-center" style={{ color: 'var(--text-muted)' }}>
+                      {detections.length > 0 ? (
+                        <ResponsiveContainer width="100%" height="100%">
+                          <LineChart data={[
+                            { sample: 'P_01', conf: 0 },
+                            { sample: 'P_02', conf: 0 },
+                            { sample: 'P_03', conf: 0 },
+                            { sample: 'P_04', conf: 0 },
                           { sample: 'P_05', conf: 93 },
                           { sample: 'P_06', conf: 96 }
                         ]}>
@@ -2626,6 +2222,12 @@ export default function App() {
                           <Line type="monotone" dataKey="conf" stroke="#f97316" strokeWidth={2.5} />
                         </LineChart>
                       </ResponsiveContainer>
+                      ) : (
+                        <div className="text-center">
+                          <div className="text-sm">No confidence data available</div>
+                          <div className="text-[10px] mt-1">Run detections to generate confidence metrics</div>
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -2634,12 +2236,12 @@ export default function App() {
                     <div>
                       <div className="text-[10px] font-black tracking-widest uppercase" style={{ color: 'var(--text-muted)' }}>MULTISPECTRAL PERFORMANCE EVALUATION</div>
                       <p className="text-xs text-gray-400 mt-1 leading-relaxed">
-                        Surveillance records metrics evaluate optimal thermal fusion convergence averages of <span className="text-emerald-400 font-bold font-mono">94.8% OPT</span>. Classification precision levels are locked into zero-trust secure block chains, completely mitigating record loss.
+                        Surveillance records metrics evaluate optimal thermal fusion convergence averages of <span className="text-emerald-400 font-bold font-mono">--</span>. Classification precision levels are locked into zero-trust secure block chains, completely mitigating record loss.
                       </p>
                     </div>
                     <div className="mt-4 border-t border-slate-900 pt-3 flex justify-between items-center text-xs">
                       <span className="text-gray-500 uppercase font-bold tracking-wider">ANN CONJECTURE PRECISION:</span>
-                      <span className="font-mono text-emerald-400 font-bold text-sm">96.5% LOCK</span>
+                      <span className="font-mono text-emerald-400 font-bold text-sm">--</span>
                     </div>
                   </div>
 
@@ -2650,230 +2252,6 @@ export default function App() {
             </div>
           )}
 
-          {/* ----- MODULE 9: ACADEMIC RESEARCH UROP PANELS ----- */}
-          {activeTab === 'research' && (
-            <div className="space-y-6 animate-fade-in" id="academic-research-view">
-              
-              {/* RESEARCH OVERVOLT DETAILS */}
-              <div className="border p-6 shadow-md font-sans" style={{ backgroundColor: 'var(--bg-card)', borderColor: COLORS.border, borderRadius: 'var(--border-radius)', boxShadow: 'var(--shadow-card)' }}>
-                
-                {/* PAPER FRONTPAGE TITLE */}
-                <div className="text-center space-y-2 border-b pb-6 mb-6" style={{ borderColor: COLORS.border }}>
-                  <span className="text-xs text-sky-400 font-mono tracking-widest uppercase font-black">
-                    UNDERGRADUATE RESEARCH OPPORTUNITIES PROGRAM (UROP) EVALUATION DEMOTRACK
-                  </span>
-                  <h1 className="text-lg sm:text-xl font-black text-white uppercase tracking-tight leading-snug">
-                    Reducing Miss Detection of Camouflaged Objects for Military Monitoring Using YOLOv11
-                  </h1>
-                  <div className="text-xs text-gray-400 font-mono">
-                    Department of Electrical Engineering and Computer Science • Military Cyber-Intelligence Division Labs
-                  </div>
-                </div>
-
-                {/* ABSTRACT */}
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="text-xs font-bold uppercase tracking-widest font-mono" style={{ color: 'var(--accent-green)' }}>ABSTRACT</h3>
-                    <p className="mt-1.5 text-xs text-gray-300 leading-relaxed font-sans text-justify">
-                      Standard computer vision detectors (YOLOv8, SSD) operate on pixel-level feature contrasts, resulting in massive miss-detection ratios when targets leverage visual camouflage. This paper presents CAM-YOLO11, a multispectral surveillance framework incorporating custom derivative gradient activations (Grad-CAM) to generate real-time local thermal overlay priorities. Detections are compiled and mined using SHA-256 blocks directly into a tamper-proof blockchain ledger, ensuring evidence immutability. Hyperparameters are fine-tuned utilizing modeled quantum annealing superpositions. Numerical validation archives prove mAP enhancements of +8.9% over classical convolutional architectures.
-                    </p>
-                  </div>
-
-                  <hr className="border-slate-800 my-4" />
-
-                  {/* MATHEMATICAL FOUNDATIONS */}
-                  <div>
-                    <h3 className="text-xs font-bold uppercase tracking-widest font-mono" style={{ color: 'var(--accent-green)' }}>MATHEMATICAL MODEL REPRESENTATION</h3>
-                    
-                    <div className="mt-3 grid gap-4 sm:grid-cols-2 text-xs font-mono">
-                      <div className="p-3 rounded border" style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border }}>
-                        <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Derivative Activation channel weight:</span>
-                        <div className="text-sm my-2 text-center p-2 rounded" style={{ backgroundColor: 'var(--bg-card)', color: 'var(--text-primary)' }}>
-                          α_k^c = 1/Z * Σ_i Σ_j (∂y^c / ∂A_i,j^k)
-                        </div>
-                        <p className="text-[10px] text-gray-400 leading-relaxed">
-                          Estimates local relative weight of Feature Map A^k with respect to Class Confidence score y^c.
-                        </p>
-                      </div>
-
-                      <div className="p-3 rounded border" style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border }}>
-                        <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Quantum Annealing convergence factor:</span>
-                        <div className="text-sm my-2 text-center p-2 rounded" style={{ backgroundColor: 'var(--bg-card)', color: 'var(--text-primary)' }}>
-                          H(s) = A(s)H_D + B(s)H_P
-                        </div>
-                        <p className="text-[10px] text-gray-400 leading-relaxed">
-                          Determines superposed quantum-level optimizer steps between diffusive and potential parameter registers.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <hr className="border-slate-800 my-4" />
-
-                  {/* ARCHITECTURE DIAGRAM */}
-                  <div>
-                    <h3 className="text-xs font-bold uppercase tracking-widest font-mono" style={{ color: '#10b981' }}>SYSTEM TOPOLOGY PIPELINE OVERVIEW</h3>
-                    
-                    <div className="mt-3 p-4 rounded-lg font-mono text-[11px]" style={{ backgroundColor: 'rgba(15, 23, 42, 0.4)', borderColor: COLORS.border, color: 'var(--text-primary)' }}>
-                      <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-center">
-                        <div className="flex flex-col items-center p-2 border rounded w-full sm:w-28" style={{ borderColor: COLORS.border, backgroundColor: 'var(--bg-card)' }}>
-                          <Eye className="h-5 w-5" style={{ color: '#38bdf8' }} />
-                          <span className="font-bold text-[10px] truncate uppercase mt-1" style={{ color: 'var(--text-primary)' }}>1.Drone Multispectral Feed</span>
-                        </div>
-                        <span style={{ color: 'var(--text-muted)' }}>→</span>
-                        <div className="flex flex-col items-center p-2 border rounded w-full sm:w-28" style={{ borderColor: 'rgba(16, 185, 129, 0.5)', backgroundColor: 'var(--accent-green-subtle)' }}>
-                          <Cpu className="h-5 w-5" style={{ color: 'var(--accent-green)' }} />
-                          <span className="font-bold text-[10px] uppercase mt-1" style={{ color: 'var(--text-primary)' }}>2.CAM-YOLO11 Backbone</span>
-                        </div>
-                        <span style={{ color: 'var(--text-muted)' }}>→</span>
-                        <div className="flex flex-col items-center p-2 border rounded w-full sm:w-28" style={{ borderColor: COLORS.border, backgroundColor: 'var(--bg-card)' }}>
-                          <Layers className="h-5 w-5" style={{ color: '#f97316' }} />
-                          <span className="font-bold text-[10px] uppercase mt-1" style={{ color: 'var(--text-primary)' }}>3.Grad-CAM Overlays</span>
-                        </div>
-                        <span style={{ color: 'var(--text-muted)' }}>→</span>
-                        <div className="flex flex-col items-center p-2 border rounded w-full sm:w-28" style={{ borderColor: 'rgba(99, 102, 241, 0.5)', backgroundColor: 'rgba(99, 102, 241, 0.1)' }}>
-                          <Shield className="h-5 w-5" style={{ color: '#818cf8' }} />
-                          <span className="font-bold text-[10px] uppercase mt-1" style={{ color: 'var(--text-primary)' }}>4.Secure Blockchain</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <hr className="my-6" style={{ borderColor: COLORS.border }} />
-
-                  {/* YOLOv8 CORE VERIFICATION PANEL & TESTING SUITE */}
-                  <div className="grid gap-6 md:grid-cols-2 mt-6">
-                    
-                    {/* VERIFICATION PANEL */}
-                    <div className="rounded-lg p-4 space-y-4" style={{ backgroundColor: 'var(--bg-card)', borderColor: COLORS.border }}>
-                      <h3 className="text-xs font-bold uppercase tracking-widest font-mono flex items-center gap-1.5" style={{ color: '#10b981' }}>
-                        <Cpu className="h-4 w-4" />
-                        <span>YOLOv8 CORE VERIFICATION PANEL</span>
-                      </h3>
-                      
-                      <div className="grid grid-cols-2 gap-4 text-xs font-mono">
-                        <div className="p-2.5 rounded border" style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border }}>
-                          <div className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Model Loaded:</div>
-                          <div className="font-bold mt-0.5" style={{ color: '#38bdf8' }}>YOLOv8n</div>
-                        </div>
-                        <div className="p-2.5 rounded border" style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border }}>
-                          <div className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Confidence Threshold:</div>
-                          <div className="font-bold mt-0.5" style={{ color: '#38bdf8' }}>{confThreshold.toFixed(2)}</div>
-                        </div>
-                        <div className="p-2.5 rounded border" style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border }}>
-                          <div className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Active Detections:</div>
-                          <div className="font-bold mt-0.5" style={{ color: 'var(--accent-green)' }}>
-                            {detections.filter(d => d.detected !== false).length}
-                          </div>
-                        </div>
-                        <div className="p-2.5 rounded border" style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border }}>
-                          <div className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Rejected Scans:</div>
-                          <div className="font-bold mt-0.5" style={{ color: '#f97316' }}>
-                            {detections.filter(d => d.detected === false).length}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="p-3 rounded border space-y-1" style={{ backgroundColor: 'rgba(15, 23, 42, 0.6)', borderColor: COLORS.border }}>
-                        <div className="text-[10px] font-mono uppercase" style={{ color: 'var(--text-secondary)' }}>Decision Protocol Override:</div>
-                        <p className="text-[11px] text-gray-300 leading-relaxed font-sans">
-                          Designed in accordance with research metrics. The system prioritizes <strong>computational correctness</strong> over aesthetic performance. If no valid target belongs to the allowed military classes (person, truck, car, bus, motorcycle, bicycle) above threshold, the pipeline automatically rejects detection:
-                          <code className="block bg-slate-950 text-red-400 p-1.5 rounded mt-1.5 font-mono text-[10px]">{"{\"detected\": false, \"message\": \"No valid target detected.\"}"}</code>
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* FALSE POSITIVE TESTING SUITE */}
-                    <div className="rounded-lg p-4 space-y-4" style={{ backgroundColor: 'var(--bg-card)', borderColor: COLORS.border }}>
-                      <h3 className="text-xs font-bold uppercase tracking-widest font-mono flex items-center gap-1.5" style={{ color: '#10b981' }}>
-                        <AlertTriangle className="h-4 w-4" />
-                        <span>FALSE POSITIVE TRUST & PRECISION TESTING</span>
-                      </h3>
-
-                      <p className="text-xs text-gray-400 leading-relaxed font-sans">
-                        Execute automated validation sweeps over target-less environments (blank canvases, UI screen diagrams, complex mountain terrains, contrast noise) and positive controls.
-                      </p>
-
-                      <div className="flex gap-3">
-                        <button
-                          onClick={runValidationSuite}
-                          disabled={isTestingSuiteRunning}
-                          className="flex-1 rounded font-black tracking-wider text-xs py-2.5 uppercase transition-all flex items-center justify-center gap-2"
-                          style={isTestingSuiteRunning
-                            ? { backgroundColor: 'var(--bg-hover)', color: 'var(--text-muted)', cursor: 'not-allowed' }
-                            : { backgroundColor: 'var(--accent-green)', color: '#000' }
-                          }
-                          onMouseEnter={(e) => {
-                            if (!isTestingSuiteRunning) e.currentTarget.style.backgroundColor = 'var(--accent-green-hover)';
-                          }}
-                          onMouseLeave={(e) => {
-                            if (!isTestingSuiteRunning) e.currentTarget.style.backgroundColor = 'var(--accent-green)';
-                          }}
-                        >
-                          {isTestingSuiteRunning ? 'Calibrating Test Trials...' : 'Run Automated Validation Suite'}
-                        </button>
-                      </div>
-
-                      {testSuiteReport ? (
-                        <div className="p-3.5 rounded border font-mono text-xs space-y-3" style={{ backgroundColor: 'rgba(15, 23, 42, 0.6)', borderColor: COLORS.border }}>
-                          <div className="flex justify-between items-center border-b pb-1.5" style={{ borderColor: COLORS.border }}>
-                            <span className="font-bold text-[10px]" style={{ color: 'var(--accent-green)' }}>ACADEMIC VERIFICATION METRICS</span>
-                            <span className="text-[9px]" style={{ color: 'var(--text-muted)' }}>{new Date(testSuiteReport.timestamp).toLocaleTimeString()}</span>
-                          </div>
-
-                          <div className="grid grid-cols-3 gap-2 text-center">
-                            <div className="p-1 rounded" style={{ backgroundColor: 'var(--bg-card)' }}>
-                              <div className="text-[9px]" style={{ color: 'var(--text-muted)' }}>Precision</div>
-                              <div className="font-black" style={{ color: 'var(--text-primary)' }}>{testSuiteReport.precision}%</div>
-                            </div>
-                            <div className="p-1 rounded" style={{ backgroundColor: 'var(--bg-card)' }}>
-                              <div className="text-[9px]" style={{ color: 'var(--text-muted)' }}>Recall</div>
-                              <div className="font-black" style={{ color: 'var(--text-primary)' }}>{testSuiteReport.recall}%</div>
-                            </div>
-                            <div className="p-1 rounded" style={{ backgroundColor: 'var(--bg-card)' }}>
-                              <div className="text-[9px]" style={{ color: 'var(--text-muted)' }}>FP Rate</div>
-                              <div className="font-bold" style={{ color: '#f97316' }}>{testSuiteReport.falsePositiveRate}%</div>
-                            </div>
-                          </div>
-
-                          <div className="space-y-1">
-                            <div className="text-[9px] uppercase" style={{ color: 'var(--text-muted)' }}>TEST MATRIX COUNT DETAILS:</div>
-                            <div className="grid grid-cols-4 gap-1 text-[10px] text-center" style={{ color: 'var(--text-primary)' }}>
-                              <div className="p-1.5 rounded" style={{ backgroundColor: 'var(--bg-card)' }}>TP: {testSuiteReport.truePositives}</div>
-                              <div className="p-1.5 rounded" style={{ backgroundColor: 'var(--bg-card)', color: '#f97316' }}>FP: {testSuiteReport.falsePositives}</div>
-                              <div className="p-1.5 rounded" style={{ backgroundColor: 'var(--bg-card)' }}>TN: {testSuiteReport.trueNegatives}</div>
-                              <div className="p-1.5 rounded" style={{ backgroundColor: 'var(--bg-card)', color: '#f97316' }}>FN: {testSuiteReport.falseNegatives}</div>
-                            </div>
-                          </div>
-
-                          <div className="space-y-1.5 text-[10px] border-t pt-2" style={{ borderColor: COLORS.border, color: 'var(--text-secondary)' }}>
-                            <div className="font-bold" style={{ color: 'var(--text-primary)' }}>Individual Trials:</div>
-                            {testSuiteReport.testDetails.map((td: any, idx: number) => (
-                              <div key={idx} className="flex justify-between text-[9px] font-mono leading-none py-1">
-                                <span className="truncate max-w-[200px]">{td.caseName}</span>
-                                <span className="font-bold" style={{ color: td.passed ? 'var(--accent-green)' : '#f87171' }}>
-                                  {td.passed ? 'PASSED (0% FP)' : 'REJECTED'}
-                                </span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="p-4 rounded border text-center text-xs font-mono" style={{ backgroundColor: 'rgba(15, 23, 42, 0.3)', borderColor: COLORS.border, color: 'var(--text-muted)' }}>
-                          Awaiting Trial Invocation. Click above to trigger system-wide verification scan.
-                        </div>
-                      )}
-
-                    </div>
-
-                  </div>
-
-                </div>
-
-              </div>
-
-            </div>
-          )}
 
         </section>
 
@@ -2883,7 +2261,7 @@ export default function App() {
       <footer className="mt-8 border-t py-6 text-center text-xs" style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border, color: 'var(--text-muted)' }} id="footer-signature">
         <div className="mx-auto max-w-7xl px-4 space-y-1 font-mono">
           <p>CAM-YOLO11 Tactical surveillance network dashboard prototype.</p>
-          <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Built in accordance with secure database, blockchain, and defense AI research mandates.</p>
+          <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Built in accordance with secure database and blockchain mandates.</p>
         </div>
       </footer>
 

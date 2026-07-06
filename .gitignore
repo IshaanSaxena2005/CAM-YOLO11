@@ -70,6 +70,12 @@ mlruns/
 *.sqlite3
 
 # =========================
+# Runtime database
+database/surveillance_db.json
+database/surveillance_logs.json
+# =========================
+
+# =========================
 # Logs
 # =========================
 logs/

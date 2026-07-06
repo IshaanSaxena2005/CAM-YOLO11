@@ -37,6 +37,12 @@ ensureStartupPaths();
 
 app.use(express.json({ limit: CONFIG.MAX_UPLOAD_SIZE }));
 
+// ─── Security headers ───────────────────────────────────────────────────────────
+app.use((_req, res, next) => {
+  res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' http://localhost:* ws://localhost:*;");
+  next();
+});
+
 // ─── API Endpoints ────────────────────────────────────────────────────────────
 
 /**
@@ -51,7 +57,9 @@ app.get('/api/health', (_req, res) => {
   try {
     let pythonAvailable = false;
     try {
-      execSync('python3 --version', { stdio: 'ignore' });
+      const platform = process.platform as string;
+      const pythonCmd = platform === 'win32' ? 'python' : 'python3';
+      execSync(`${pythonCmd} --version`, { stdio: 'ignore' });
       pythonAvailable = true;
     } catch {
       pythonAvailable = false;

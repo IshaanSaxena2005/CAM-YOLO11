@@ -6,13 +6,15 @@ import base64
 import math
 import time
 
-# Attempt to import PyTorch, OpenCV, NumPy and Ultralytics
+# Import NumPy and OpenCV unconditionally (required for both PyTorch and fallback pipelines)
+import numpy as np
+import cv2
+
+# Attempt to import PyTorch and Ultralytics
 PYTORCH_AVAILABLE = False
 try:
     import torch
     import torch.nn as nn
-    import numpy as np
-    import cv2
     from ultralytics import YOLO
     PYTORCH_AVAILABLE = True
 except ImportError as e:

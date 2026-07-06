@@ -307,6 +307,30 @@ export const dbServiceInstance = new DatabaseService();
 const DEFAULT_MODEL_NAME = 'yolov11n';
 const DEFAULT_MODEL_PATH = CONFIG.MODEL_PATH;
 
+// Cross-platform Python detection
+function getPythonExecutable(): string {
+  const platform = process.platform as string;
+  
+  // On Windows, use 'python'
+  if (platform === 'win32') {
+    return 'python';
+  }
+  
+  // On Linux/macOS, try 'python3' first, then 'python'
+  try {
+    execSync('python3 --version', { stdio: 'ignore' });
+    return 'python3';
+  } catch {
+    try {
+      execSync('python --version', { stdio: 'ignore' });
+      return 'python';
+    } catch {
+      // Fallback to 'python3' if neither works (will fail with clear error)
+      return 'python3';
+    }
+  }
+}
+
 export async function processCamouflageImageAI(
   base64Data: string,
   fileName: string,
@@ -330,7 +354,8 @@ export async function processCamouflageImageAI(
 
     // Call Python core passing configuration threshold and model path
     const mockArg = mockType !== 'none' ? ` "${mockType}"` : '';
-    const stdout = execSync(`python3 yolo_pipeline.py "${tempFilePath}" "${threshold}" "${DEFAULT_MODEL_PATH}"${mockArg}`, {
+    const pythonCmd = getPythonExecutable();
+    const stdout = execSync(`${pythonCmd} yolo_pipeline.py "${tempFilePath}" "${threshold}" "${DEFAULT_MODEL_PATH}"${mockArg}`, {
       encoding: 'utf-8',
       timeout: 30000,
     });
