@@ -1,374 +1,149 @@
-<div align="center">
+# 📦 CAM‑YOLO11
+## Camouflaged Object Detection using YOLOv11 for Military Monitoring
 
-# CAM-YOLO11
-
-### AI-Powered Military Camouflage Detection & Surveillance System
-
-A full-stack computer vision platform for detecting camouflaged military targets using **YOLOv11**, featuring a modern React dashboard, Express backend, Python inference engine, and blockchain-backed detection logging.
-
-![React](https://img.shields.io/badge/React-19-blue?logo=react)
+![React](https://img.shields.io/badge/React-18.2-blue?logo=react)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript)
-![Node.js](https://img.shields.io/badge/Node.js-Express-green?logo=node.js)
+![Vite](https://img.shields.io/badge/Vite-5.0.0-646CFF?logo=vite)
+![Node.js](https://img.shields.io/badge/Node.js-18-green?logo=node.js)
+![Express](https://img.shields.io/badge/Express-4.19-black?logo=express)
 ![Python](https://img.shields.io/badge/Python-3.11-yellow?logo=python)
-![YOLOv11](https://img.shields.io/badge/YOLO-v11-red)
-![OpenCV](https://img.shields.io/badge/OpenCV-Computer%20Vision-orange)
-![License](https://img.shields.io/badge/Academic-UROP-success)
-
-</div>
-
----
-
-# Overview
-
-CAM-YOLO11 is an AI-powered reconnaissance system developed to detect camouflaged military objects from aerial or ground imagery.
-
-The project combines deep learning, computer vision, full-stack web development, and secure logging into one integrated platform. Users can upload reconnaissance images, perform object detection using YOLOv11, visualize detected targets, monitor system statistics, and securely store detection history.
-
-The project is being developed as part of an **Undergraduate Research Opportunity Program (UROP).**
+![YOLOv11](https://img.shields.io/badge/YOLOv11-1.0-red)
+![OpenCV](https://img.shields.io/badge/OpenCV-4.8-orange)
+![SQLite](https://img.shields.io/badge/SQLite-3.45-blue)
+![License](https://img.shields.io/badge/License-MIT-lightgrey)
 
 ---
 
-# Features
-
-### AI Detection
-
-- YOLOv11 object detection
-- Image inference
-- Video inference support
-- Confidence score prediction
-- Multi-object detection
-- Configurable confidence threshold
-
-### Visualization
-
-- Bounding box rendering
-- Detection overlays
-- Grad-CAM visualization (research module)
-- Detection summaries
-- Interactive dashboard
-
-### Backend
-
-- RESTful API architecture
-- Express + TypeScript
-- Python inference pipeline
-- Configurable environment variables
-- Health monitoring endpoint
-
-### Security
-
-- Blockchain-backed detection records
-- Detection history
-- Persistent storage
-- Audit verification
-
-### Dashboard
-
-- Real-time statistics
-- Detection logs
-- Historical records
-- Blockchain viewer
-- Research panel
+### Overview
+CAM‑YOLO11 is an end‑to‑end reconnaissance platform that detects camouflaged military objects in aerial or ground imagery. The system combines a React + TypeScript frontend, an Express + Node.js backend, a Python inference pipeline powered by Ultralytics YOLOv11, and a blockchain‑backed audit log. Users can upload images or video, view detection overlays, explore analytics, and securely store evidence for later review.
 
 ---
 
-# System Architecture
+## Features
+- 🎯 Camouflaged object detection with YOLOv11
+- 📤 Image and video analysis
+- 📊 Detection history and analytics dashboard
+- 🔗 Blockchain‑based evidence logging
+- 🗄️ Secure SQLite storage of detections
+- ⚙️ Real‑time statistics panel
+- 🔒 Confidence threshold configuration
 
-```
-                    User
-                      │
-                      ▼
-          React + TypeScript Dashboard
-                      │
-                      ▼
-               Express REST API
-                      │
-          ┌───────────┴────────────┐
-          ▼                        ▼
-    Python YOLOv11           Blockchain
- Detection Pipeline             Ledger
-          │                        │
-          └───────────┬────────────┘
-                      ▼
-               Detection Results
-                      │
-                      ▼
-             Dashboard Visualization
+---
+
+## System Architecture
+```mermaid
+flowchart TD
+    A[User] --> B[React + TypeScript Dashboard]
+    B --> C[Express REST API]
+    C --> D[Python YOLOv11 Inference]
+    C --> E[SQLite DB]
+    D --> F[Blockchain Ledger]
+    F --> G[Detection Results]
+    G --> B
 ```
 
 ---
 
-# Technology Stack
-
-## Frontend
-
-- React
-- TypeScript
-- Vite
-- Tailwind CSS
-
-## Backend
-
-- Node.js
-- Express
-- TypeScript
-
-## AI & Computer Vision
-
-- YOLOv11
-- PyTorch
-- OpenCV
-- Ultralytics
-
-## Database
-
-- JSON Storage
-
-## Security
-
-- Blockchain Ledger
+## Tech Stack
+| Layer | Technology |
+|-------|------------|
+| Front‑end | React, TypeScript, Vite, Tailwind CSS |
+| Back‑end | Node.js, Express, TypeScript |
+| AI / CV | Python, Ultralytics YOLOv11, OpenCV |
+| Data | SQLite |
+| Security | Blockchain ledger (custom implementation) |
 
 ---
 
-# Project Structure
-
+## Folder Structure
 ```
-CAM-YOLO11
-│
-├── src/
-│   ├── Components
-│   ├── Assets
-│   ├── Types
-│   └── App.tsx
-│
-├── server/
-│   ├── api.ts
-│   └── services
-│
-├── database/
-│   └── surveillance_db.json
-│
-├── yolo_pipeline.py
-├── server.ts
-├── config.ts
-├── .env.example
-└── README.md
+CAM‑YOLO11/
+├─ src/                # React source code
+│   ├─ components/
+│   ├─ assets/
+│   └─ App.tsx
+├─ server/            # Express API
+│   ├─ api.ts
+│   └─ services/
+├─ database/          # SQLite database file
+│   └─ surveillance.db
+├─ models/            # YOLOv11 model files
+│   └─ best.pt
+├─ yolo_pipeline.py   # Python inference script
+├─ .env.example       # Example environment variables
+└─ README.md
 ```
 
 ---
 
-# Installation
-
-Clone the repository
-
+## Installation
 ```bash
-git clone https://github.com/USERNAME/CAM-YOLO11.git
+# Clone the repository
+git clone https://github.com/your‑org/CAM-YOLO11.git
+cd CAM‑YOLO11
 
-cd CAM-YOLO11
-```
-
-Install Node dependencies
-
-```bash
+# Node dependencies
 npm install
+
+# Python environment (recommended venv)
+python -m venv venv && source venv/bin/activate
+pip install -r requirements.txt   # contains ultralytics, torch, opencv-python, etc.
 ```
 
-Install Python packages
+---
 
+## Running the Project
 ```bash
-pip install ultralytics torch torchvision opencv-python
+# 1. Set up environment variables
+cp .env.example .env
+# Edit .env as needed (PORT, MODEL_PATH, DATABASE_PATH, CONFIDENCE_THRESHOLD)
+
+# 2. Start the backend (Express)
+npm run dev   # Vite dev server also proxies API calls
 ```
+The dashboard will be available at `http://localhost:5173` (Vite default).
 
 ---
 
-# Environment Variables
-
-Create a `.env` file.
-
-```env
-PORT=3000
-
-MODEL_PATH=best.pt
-
-DATABASE_PATH=database/surveillance_db.json
-
-CONFIDENCE_THRESHOLD=0.70
-
-MAX_UPLOAD_SIZE=10mb
+## Model Information
+The pretrained YOLOv11 model used for inference is located at:
 ```
-
----
-
-# Running the Project
-
-Start frontend
-
-```bash
-npm run dev
+models/best.pt
 ```
-
-Start backend
-
-```bash
-node --import tsx server.ts
-```
+It was trained on the **MHCD2022** camouflage dataset.
 
 ---
 
-# API Endpoints
-
-| Method | Endpoint | Description |
-|---------|----------|-------------|
-| GET | `/api/health` | Server health |
-| GET | `/api/stats` | Dashboard statistics |
-| GET | `/api/history` | Detection history |
-| GET | `/api/logs` | Activity logs |
-| POST | `/api/detect` | Image detection |
-| POST | `/api/detect-video` | Video detection |
-| GET | `/api/blockchain` | Blockchain records |
-| POST | `/api/blockchain/verify` | Verify blockchain |
-| POST | `/api/test-suite/run` | Validation suite |
+## Dataset
+The system is evaluated with the **MHCD2022** dataset, which contains labeled camouflaged objects in varied terrain and lighting conditions.
 
 ---
 
-# Detection Pipeline
-
-```
-Upload Image
-
-        │
-
-        ▼
-
-React Dashboard
-
-        │
-
-        ▼
-
-Express API
-
-        │
-
-        ▼
-
-Python YOLOv11
-
-        │
-
-        ▼
-
-Target Detection
-
-        │
-
-        ▼
-
-Bounding Boxes
-
-        │
-
-        ▼
-
-Detection Logging
-
-        │
-
-        ▼
-
-Blockchain Storage
-
-        │
-
-        ▼
-
-Dashboard Visualization
-```
+## Screenshots
+| View | Placeholder |
+|------|-------------|
+| Dashboard | ![Dashboard](./screenshots/dashboard.png) |
+| Image Analysis | ![Image Analysis](./screenshots/image_analysis.png) |
+| Detection Result | ![Detection Result](./screenshots/detection_result.png) |
+| Analytics | ![Analytics](./screenshots/analytics.png) |
+| Blockchain | ![Blockchain](./screenshots/blockchain.png) |
+| History | ![History](./screenshots/history.png) |
 
 ---
 
-# Current Status
-
-| Module | Status |
-|---------|--------|
-| Frontend Dashboard | ✅ Completed |
-| Backend APIs | ✅ Completed |
-| Database | ✅ Completed |
-| Blockchain | ✅ Completed |
-| REST API | ✅ Completed |
-| Health Monitoring | ✅ Completed |
-| Logging System | ✅ Completed |
-| Detection Pipeline | ✅ Integrated |
-| YOLOv11 Training | 🚧 In Progress |
-| Grad-CAM | 🚧 In Progress |
+## Future Improvements
+- 📈 Incorporate additional camouflage datasets to improve robustness.
+- 🛡️ Add role‑based access control for the dashboard.
+- ⚡ Optimize inference latency with TensorRT or ONNX runtime.
+- 📱 Provide a mobile‑friendly view of the analytics dashboard.
 
 ---
 
-# Future Work
-
-- Live webcam detection
-- Drone surveillance support
-- Multi-object tracking
-- Cloud deployment
-- Docker support
-- PostgreSQL integration
-- Authentication
-- Model auto-update
-- Edge device deployment
+## Authors
+- **Ishaan Saxena** – Lead Engineer, Front‑end & UI/UX
+- **[Additional contributors]** – Backend, AI pipeline, Security
 
 ---
 
-# Contributors
-
-## Ishaan Saxena
-
-- Frontend Development
-- Backend Development
-- REST APIs
-- React Dashboard
-- Blockchain Integration
-- Database Management
-- System Integration
-
----
-
-## Harpreet Singh
-
-- Dataset Preparation
-- YOLOv11 Training
-- Model Optimization
-- Grad-CAM Integration
-- Experimental Evaluation
-- Performance Metrics
-
----
-
-# Screenshots
-
-> Add screenshots after completing the project.
-
-- Dashboard
-- Detection Interface
-- Bounding Box Results
-- Blockchain Panel
-- Detection History
-- System Logs
-
----
-
-# License
-
-This project was developed for academic research under the **Undergraduate Research Opportunity Program (UROP)**.
-
----
-
-# Acknowledgements
-
-- Ultralytics YOLO
-- OpenCV
-- PyTorch
-- React
-- Node.js
-- Express
-- Tailwind CSS
-- Vite
+## License
+This project is licensed under the **MIT License**. See the `LICENSE` file for details.
