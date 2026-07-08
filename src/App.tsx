@@ -456,6 +456,7 @@ export default function App() {
     }
 
     setUploadError(null);
+    setSelectedDetection(null);
     const reader = new FileReader();
     reader.onload = () => {
       setCustomImage(reader.result as string);
@@ -482,6 +483,9 @@ export default function App() {
     }
 
     setUploadError(null);
+    // Reset previous analysis results
+    setSelectedDetection(null);
+    setActiveOverlayMode('yolo');
     const reader = new FileReader();
     reader.onload = () => {
       setCustomImage(reader.result as string);

@@ -175,14 +175,33 @@ The system is evaluated with the **MHCD2022** dataset, which contains labeled ca
 
 ## Screenshots
 
-| View             | Placeholder                                             |
-| ---------------- | ------------------------------------------------------- |
-| Dashboard        | ![Dashboard](./screenshots/dashboard.png)               |
-| Image Analysis   | ![Image Analysis](./screenshots/image_analysis.png)     |
-| Detection Result | ![Detection Result](./screenshots/detection_result.png) |
-| Analytics        | ![Analytics](./screenshots/analytics.png)               |
-| Blockchain       | ![Blockchain](./screenshots/blockchain.png)             |
-| History          | ![History](./screenshots/history.png)                   |
+### 🏠 Dashboard
+![Dashboard](docs/dashboard.png)
+
+---
+
+### 🎯 CAM-YOLO11 Analyzer
+![Analyzer](docs/analyzer.png)
+
+---
+
+### 🔐 Evidence Integrity Ledger
+![Evidence Ledger](docs/ledger.png)
+
+---
+
+### 📂 Archive & Logs
+![Archive & Logs](docs/archive.png)
+
+---
+
+### 📊 Analytics Dashboard
+![Analytics](docs/analytics.png)
+
+---
+
+### 🔥 Grad-CAM Visualization
+![Grad-CAM](docs/gradcam.png)
 
 ---
 
