@@ -192,7 +192,7 @@ class CamSurveillanceBlockchain {
     const newBlock: Block = {
       index,
       timestamp,
-      prevHash,
+      prevHash, 
       hash,
       nonce,
       data
