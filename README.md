@@ -39,7 +39,7 @@ CAM‑YOLO11 is an end‑to‑end reconnaissance platform that detects camouflag
 ---
 
 ## System Architecture
-![CAM‑YOLO11 Architecture](./docs/architecture.png)
+![CAM‑YOLO11 Architecture](./docs/architecture.jpeg)
 
 ---
 
