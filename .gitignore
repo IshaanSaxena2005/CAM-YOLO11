@@ -114,6 +114,11 @@ desktop.ini
 *.userosscache
 
 # =========================
+# Temporary dataset verification files
+# =========================
+train.txt
+valid.txt
+# =========================
 # Git
 # =========================
 *.orig
