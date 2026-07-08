@@ -1,4 +1,5 @@
 # 📦 CAM‑YOLO11
+
 ## Camouflaged Object Detection using YOLOv11 for Military Monitoring
 
 ![React](https://img.shields.io/badge/React-18.2-blue?logo=react)
@@ -15,9 +16,11 @@
 ---
 
 ### Overview
+
 CAM‑YOLO11 is an end‑to‑end reconnaissance platform that detects camouflaged military objects in aerial or ground imagery. The system combines a React + TypeScript frontend, an Express + Node.js backend, a Python inference pipeline powered by Ultralytics YOLOv11, and a blockchain‑backed audit log. Users can upload images or video, view detection overlays, explore analytics, and securely store evidence for later review.
 
 ## ✨ Highlights
+
 - **YOLOv11‑powered camouflaged object detection** tailored for military monitoring.
 - **Real‑time inference** with visual overlays and confidence scores.
 - **Secure, immutable audit trail** via a custom blockchain ledger.
@@ -28,6 +31,7 @@ CAM‑YOLO11 is an end‑to‑end reconnaissance platform that detects camouflag
 ---
 
 ## Features
+
 - 🎯 Camouflaged object detection with YOLOv11
 - 📤 Image and video analysis
 - 📊 Detection history and analytics dashboard
@@ -39,22 +43,25 @@ CAM‑YOLO11 is an end‑to‑end reconnaissance platform that detects camouflag
 ---
 
 ## System Architecture
-![CAM‑YOLO11 Architecture](./docs/architecture.jpeg)
+
+![CAM‑YOLO11 Architecture](./docs/Architecture.jpeg)
 
 ---
 
 ## Tech Stack
-| Layer      | Technology                                 |
-|------------|--------------------------------------------|
-| Front‑end  | React, TypeScript, Vite, Tailwind CSS      |
-| Back‑end   | Node.js, Express, TypeScript               |
-| AI / CV    | Python, Ultralytics YOLOv11, OpenCV        |
-| Data       | SQLite                                     |
-| Security   | Blockchain ledger (custom implementation) |
+
+| Layer     | Technology                                |
+| --------- | ----------------------------------------- |
+| Front‑end | React, TypeScript, Vite, Tailwind CSS     |
+| Back‑end  | Node.js, Express, TypeScript              |
+| AI / CV   | Python, Ultralytics YOLOv11, OpenCV       |
+| Data      | SQLite                                    |
+| Security  | Blockchain ledger (custom implementation) |
 
 ---
 
 ## Folder Structure
+
 ```
 CAM‑YOLO11/
 ├─ src/                # React source code
@@ -76,12 +83,15 @@ CAM‑YOLO11/
 ---
 
 ## Installation
+
 ### Prerequisites
+
 - **Node.js** (v18 or later)
 - **Python** (3.11 or later)
 - **Git**
 
 ### Step‑by‑step
+
 ```bash
 # Clone the repository
 git clone https://github.com/your‑org/CAM-YOLO11.git
@@ -90,7 +100,9 @@ cd CAM‑YOLO11
 # Install Node dependencies
 npm install
 ```
+
 #### Windows
+
 ```bash
 # Create and activate a virtual environment
 python -m venv venv && venv\Scripts\activate
@@ -98,7 +110,9 @@ python -m venv venv && venv\Scripts\activate
 # Install Python requirements
 pip install -r requirements.txt
 ```
+
 #### macOS / Linux
+
 ```bash
 # Create and activate a virtual environment
 python3 -m venv venv && source venv/bin/activate
@@ -110,6 +124,7 @@ pip install -r requirements.txt
 ---
 
 ## Running the Project
+
 ```bash
 # 1. Set up environment variables
 cp .env.example .env
@@ -118,11 +133,13 @@ cp .env.example .env
 # 2. Start the development server (Vite proxies API calls to Express)
 npm run dev
 ```
+
 The dashboard will be available at `http://localhost:5173` (Vite default).
 
 ---
 
 ## Project Workflow
+
 ```mermaid
 flowchart LR
     A[User] --> B[React Dashboard]
@@ -133,37 +150,44 @@ flowchart LR
     F --> G[Detection Results]
     G --> B
 ```
-*The diagram above illustrates the data flow from user interaction to final result presentation.*
+
+_The diagram above illustrates the data flow from user interaction to final result presentation._
 
 ---
 
 ## Model Information
+
 The pretrained YOLOv11 model used for inference is located at:
+
 ```
 models/best.pt
 ```
+
 It was trained on the **MHCD2022** camouflage dataset.
 
 ---
 
 ## Dataset
+
 The system is evaluated with the **MHCD2022** dataset, which contains labeled camouflaged objects in varied terrain and lighting conditions.
 
 ---
 
 ## Screenshots
-| View            | Placeholder |
-|-----------------|-------------|
-| Dashboard       | ![Dashboard](./screenshots/dashboard.png) |
-| Image Analysis  | ![Image Analysis](./screenshots/image_analysis.png) |
-| Detection Result| ![Detection Result](./screenshots/detection_result.png) |
-| Analytics       | ![Analytics](./screenshots/analytics.png) |
-| Blockchain      | ![Blockchain](./screenshots/blockchain.png) |
-| History         | ![History](./screenshots/history.png) |
+
+| View             | Placeholder                                             |
+| ---------------- | ------------------------------------------------------- |
+| Dashboard        | ![Dashboard](./screenshots/dashboard.png)               |
+| Image Analysis   | ![Image Analysis](./screenshots/image_analysis.png)     |
+| Detection Result | ![Detection Result](./screenshots/detection_result.png) |
+| Analytics        | ![Analytics](./screenshots/analytics.png)               |
+| Blockchain       | ![Blockchain](./screenshots/blockchain.png)             |
+| History          | ![History](./screenshots/history.png)                   |
 
 ---
 
 ## Future Roadmap
+
 - 📈 Incorporate additional camouflage datasets to improve robustness.
 - 🛡️ Add role‑based access control for the dashboard.
 - ⚡ Optimize inference latency with TensorRT or ONNX runtime.
@@ -173,10 +197,12 @@ The system is evaluated with the **MHCD2022** dataset, which contains labeled ca
 ---
 
 ## Authors
+
 - **Ishaan Saxena** – Lead Engineer, Front‑end & UI/UX
 - **[Additional contributors]** – Backend, AI pipeline, Security
 
 ---
 
 ## License
+
 This project is licensed under the **MIT License**. See the `LICENSE` file for details.
