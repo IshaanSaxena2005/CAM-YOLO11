@@ -201,9 +201,6 @@ export default function App() {
       const json = await res.json();
       if (json.success && json.data) {
         setDetections(json.data);
-        if (json.data.length > 0 && !selectedDetection) {
-          setSelectedDetection(json.data[0]);
-        }
       }
     } catch (e) {
       console.error('Failed to sync archives', e);
@@ -827,7 +824,7 @@ export default function App() {
                       <div className="absolute w-[170px] h-[170px] bg-gradient-to-tr from-emerald-500/0 to-emerald-500/15 origin-bottom-left bottom-1/2 left-1/2 animate-radar" style={{ transformOrigin: '0% 100%', backgroundImage: 'linear-gradient(to top right, transparent, rgba(16, 185, 129, 0.15))' }} />
                       
                       {/* Active detected threat blips mapped from selectedDetection boundingBoxes */}
-                      {selectedDetection && selectedDetection.detected !== false && selectedDetection.boundingBoxes && selectedDetection.boundingBoxes.length > 0 ? (
+                      {customImage && selectedDetection && selectedDetection.detected !== false && selectedDetection.boundingBoxes && selectedDetection.boundingBoxes.length > 0 ? (
                         selectedDetection.boundingBoxes.map((boxObj: any, idx: number) => {
                           const [ymin, xmin, ymax, xmax] = boxObj.box;
                           const cx = xmin + (xmax - xmin) / 2;
@@ -1259,7 +1256,7 @@ export default function App() {
                       )}
 
                       {/* 1. YOLO BOUNDING BOX COORDINATES OVERLAY */}
-                      {activeOverlayMode === 'yolo' && selectedDetection && selectedDetection.boundingBoxes && selectedDetection.boundingBoxes.length > 0 && (
+                      {activeOverlayMode === 'yolo' && customImage && selectedDetection && selectedDetection.boundingBoxes && selectedDetection.boundingBoxes.length > 0 && (
                         <>
                           {selectedDetection.boundingBoxes.map((boxObj: any, idx: number) => {
                             const [ymin, xmin, ymax, xmax] = boxObj.box;
@@ -1300,7 +1297,7 @@ export default function App() {
                       )}
 
                       {/* No detections message */}
-                      {activeOverlayMode === 'yolo' && selectedDetection && (!selectedDetection.boundingBoxes || selectedDetection.boundingBoxes.length === 0) && (
+                      {activeOverlayMode === 'yolo' && customImage && selectedDetection && (!selectedDetection.boundingBoxes || selectedDetection.boundingBoxes.length === 0) && (
                         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                           <div className="font-mono text-xs px-4 py-2 rounded-lg" style={{ backgroundColor: 'rgba(15, 23, 42, 0.9)', borderColor: COLORS.border, color: 'var(--text-muted)' }}>
                             {selectedDetection.detected === false ? 'No detections found' : 'No bounding boxes available'}
@@ -1308,8 +1305,17 @@ export default function App() {
                         </div>
                       )}
 
+                      {/* YOLO placeholder before analysis */}
+                      {activeOverlayMode === 'yolo' && !customImage && (
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                          <div className="font-mono text-xs px-4 py-2 rounded-lg" style={{ backgroundColor: 'rgba(15, 23, 42, 0.9)', borderColor: COLORS.border, color: 'var(--text-muted)' }}>
+                            Upload an image to view YOLO coordinates
+                          </div>
+                        </div>
+                      )}
+
                       {/* 2. GRAD-CAM ACTIVATION ATTENTION OVERLAY */}
-                      {activeOverlayMode === 'gradcam' && (
+                      {activeOverlayMode === 'gradcam' && customImage && (
                         <>
                           <div className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{ backgroundColor: 'rgba(15, 23, 42, 0.45)' }}>
                             {selectedDetection && selectedDetection.detected !== false && selectedDetection.gradcamHeatmapUrl ? (
@@ -1336,14 +1342,32 @@ export default function App() {
                         </>
                       )}
 
+                      {/* Grad-CAM placeholder before analysis */}
+                      {activeOverlayMode === 'gradcam' && !customImage && (
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                          <div className="font-mono text-xs px-4 py-2 rounded-lg" style={{ backgroundColor: 'rgba(15, 23, 42, 0.9)', borderColor: COLORS.border, color: 'var(--text-muted)' }}>
+                            Upload an image to view Grad-CAM attention
+                          </div>
+                        </div>
+                      )}
+
                       {/* 3. THERMAL SPECTRUM SENSOR FUSION */}
-                      {activeOverlayMode === 'thermal' && (
+                      {activeOverlayMode === 'thermal' && customImage && (
                         <div className="absolute inset-0 pointer-events-none mix-blend-color-dodge opacity-65 bg-gradient-to-br from-indigo-950 via-purple-900 to-amber-700">
                           {/* Simulated warm pixel areas around detected coordinates */}
                           <div className="absolute inset-0 flex items-center justify-center font-mono text-[9px] p-3" style={{ backgroundColor: 'rgba(15, 23, 42, 0.2)', color: 'var(--accent-green)' }}>
                             <div className="absolute top-4 left-4 px-2 py-1 rounded" style={{ backgroundColor: 'rgba(15, 23, 42, 0.8)', borderColor: COLORS.border }}>
                               CTR THERMAL: UNLOCK FUSION CHL-08
                             </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Thermal placeholder before analysis */}
+                      {activeOverlayMode === 'thermal' && !customImage && (
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                          <div className="font-mono text-xs px-4 py-2 rounded-lg" style={{ backgroundColor: 'rgba(15, 23, 42, 0.9)', borderColor: COLORS.border, color: 'var(--text-muted)' }}>
+                            Upload an image to view thermal spectrum
                           </div>
                         </div>
                       )}
@@ -1356,7 +1380,7 @@ export default function App() {
                     </div>
 
                     {/* HUD CORNER DETAILS GRID */}
-                    {selectedDetection && (
+                    {customImage && selectedDetection && (
                       <div className="border p-4" style={{ backgroundColor: 'var(--bg-card)', borderColor: COLORS.border, borderRadius: 'var(--border-radius)' }} id="detection-pipeline-hud">
                         <div className="flex flex-wrap items-center justify-between gap-2 border-b pb-3 mb-3" style={{ borderColor: COLORS.border }}>
                           <div>
