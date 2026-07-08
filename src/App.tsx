@@ -5,8 +5,6 @@ import {
   Database,
   History,
   BarChart3,
-  Play,
-  Pause,
   AlertTriangle,
   CheckCircle2,
   X,
@@ -67,9 +65,8 @@ const COLORS = {
 };
 
 export default function App() {
-  const videoRef = useRef<HTMLVideoElement>(null);
   // Navigation
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'analysis' | 'video' | 'blockchain' | 'history' | 'analytics'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'analysis' | 'blockchain' | 'history' | 'analytics'>('dashboard');
 
   // Stats State
   const [stats, setStats] = useState({
@@ -92,26 +89,65 @@ export default function App() {
     id: string;
     type: 'success' | 'error' | 'warning' | 'info';
     message: string;
+    remainingTime: number;
+    isPaused: boolean;
   }
   const [toasts, setToasts] = useState<Toast[]>([
     {
       id: 'startup',
       type: 'success',
-      message: 'Multispectral sensor array online. COSPAS-SARSAT orbiters telemetry established.'
+      message: 'Multispectral sensor array online. COSPAS-SARSAT orbiters telemetry established.',
+      remainingTime: 3000,
+      isPaused: false
     }
   ]);
 
+  const getDismissTime = (type: 'success' | 'error' | 'warning' | 'info'): number => {
+    switch (type) {
+      case 'success':
+        return 3000;
+      case 'info':
+        return 3000;
+      case 'warning':
+        return 4000;
+      case 'error':
+        return 5000;
+      default:
+        return 3000;
+    }
+  };
+
   const addToast = (type: 'success' | 'error' | 'warning' | 'info', message: string) => {
     const id = Math.random().toString(36).substring(2, 9);
-    setToasts((prev) => [...prev, { id, type, message }]);
-    setTimeout(() => {
-      setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 4000);
+    const dismissTime = getDismissTime(type);
+    setToasts((prev) => [...prev, { id, type, message, remainingTime: dismissTime, isPaused: false }]);
   };
 
   const removeToast = (id: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   };
+
+  const pauseToast = (id: string) => {
+    setToasts((prev) => prev.map((t) => t.id === id ? { ...t, isPaused: true } : t));
+  };
+
+  const resumeToast = (id: string) => {
+    setToasts((prev) => prev.map((t) => t.id === id ? { ...t, isPaused: false } : t));
+  };
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setToasts((prev) => {
+        const updated = prev.map((toast) => {
+          if (toast.isPaused) return toast;
+          const newRemainingTime = toast.remainingTime - 100;
+          return { ...toast, remainingTime: newRemainingTime };
+        });
+        return updated.filter((toast) => toast.remainingTime > 0);
+      });
+    }, 100);
+    return () => clearInterval(interval);
+  }, []);
 
   // Image Upload Analysis State
   const [customImage, setCustomImage] = useState<string | null>(null);
@@ -135,18 +171,6 @@ export default function App() {
     }
   };
 
-  // Video Drone State
-  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
-  const [videoFrame, setVideoFrame] = useState(0);
-  const [droneZoom, setDroneZoom] = useState(1);
-  const [trackerLocked, setTrackerLocked] = useState(true);
-
-  // Custom Video Upload Analysis State
-  const [customVideo, setCustomVideo] = useState<string | null>(null);
-  const [customVideoFileName, setCustomVideoFileName] = useState('');
-  const [customVideoSeconds, setCustomVideoSeconds] = useState(0);
-  const [videoTrackingData, setVideoTrackingData] = useState<any[] | null>(null);
-  const [isVideoAnalyzing, setIsVideoAnalyzing] = useState(false);
 
   // Blockchain Interactivity State
   const [selectedBlockForTamper, setSelectedBlockForTamper] = useState<number | null>(null);
@@ -404,93 +428,6 @@ export default function App() {
     }
   };
 
-  // --- VIDEO SIMULATION CONTROLLER ---
-  useEffect(() => {
-    let interval: any = null;
-    if (isVideoPlaying) {
-      interval = setInterval(() => {
-        setVideoFrame((prev) => (prev + 1) % 60);
-      }, 300);
-    } else {
-      clearInterval(interval);
-    }
-    return () => clearInterval(interval);
-  }, [isVideoPlaying]);
-
-  // --- DRONE COORDINATES/DETECTION FOR FRAME STEP (CUSTOM OR MOCK) ---
-  const getDroneDetectionsForFrame = (frame: number) => {
-    if (customVideo && videoTrackingData) {
-      const currentSec = Math.floor(customVideoSeconds);
-      const matched = videoTrackingData.find((t: any) => t.time_seconds === currentSec);
-      if (matched && matched.boundingBoxes) {
-        return matched.boundingBoxes;
-      }
-      return [];
-    }
-    if (frame >= 12 && frame <= 25) {
-      return [
-        { label: 'Camo Sniper (Under foliage)', confidence: 0.92, box: [40, 48, 55, 59] }
-      ];
-    }
-    if (frame >= 35 && frame <= 50) {
-      return [
-        { label: 'Tactical Vehicle T-80', confidence: 0.88, box: [25, 30, 60, 68] }
-      ];
-    }
-    return [];
-  };
-
-  const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setCustomVideoFileName(file.name);
-    setIsVideoAnalyzing(true);
-    setVideoTrackingData(null);
-
-    const reader = new FileReader();
-    reader.onload = async (event) => {
-      const base64 = event.target?.result as string;
-      setCustomVideo(base64);
-
-      try {
-        addToast('info', `Uploading tactical footprint vector of ${file.name} to CAM-YOLO11 real-time frame parser...`);
-
-        const res = await fetch('/api/detect-video', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            base64,
-            fileName: file.name,
-            modelName: selectedModel
-          })
-        });
-
-        if (!res.ok) {
-          throw new Error('Video tracker compilation rejected by YOLO frame parser.');
-        }
-
-        const json = await res.json();
-        if (json.success && json.data) {
-          setVideoTrackingData(json.data);
-          setIsVideoAnalyzing(false);
-
-          addToast('success', `Camouflage targeting network mapped! Blockchain block mined and locked for video stream ${file.name}. Click Play to watch tracking overlays.`);
-          fetchStats();
-          fetchHistory();
-          fetchBlockchain();
-        } else {
-          throw new Error(json.message || 'Video detection failed');
-        }
-      } catch (err: any) {
-        setIsVideoAnalyzing(false);
-        addToast('error', `Video surveillance compile error: ${err.message}`);
-      }
-    };
-    reader.readAsDataURL(file);
-  };
 
   // --- SYSTEM LOGS TICKERS ---
   const SYSTEM_LOGS = [
@@ -595,6 +532,8 @@ export default function App() {
               key={toast.id}
               className={`flex items-start justify-between gap-3 p-4 rounded-lg border shadow-2xl ${bg} ${border} ${borderColor} transition-all duration-300 animate-slide-in pointer-events-auto`}
               style={{ backdropFilter: 'blur(8px)' }}
+              onMouseEnter={() => pauseToast(toast.id)}
+              onMouseLeave={() => resumeToast(toast.id)}
             >
               <div className="flex gap-2.5">
                 <span className={`mt-0.5 font-bold ${iconColor}`}>
@@ -686,36 +625,6 @@ export default function App() {
                 <span className="truncate">CAM-YOLO11 Analyzer</span>
               </button>
 
-              <button 
-                onClick={() => setActiveTab('video')}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-xs tracking-wide transition-all ${
-                  activeTab === 'video' 
-                    ? 'border-l-4' 
-                    : ''
-                }`} 
-                style={activeTab === 'video' ? {
-                  backgroundColor: 'var(--accent-green-subtle)',
-                  color: 'var(--accent-green)',
-                  borderColor: 'var(--accent-green)',
-                  fontWeight: 600
-                } : {
-                  color: 'var(--text-secondary)',
-                  fontWeight: 400
-                }}
-                onMouseEnter={(e) => {
-                  if (activeTab !== 'video') {
-                    e.currentTarget.style.backgroundColor = 'var(--bg-hover)';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (activeTab !== 'video') {
-                    e.currentTarget.style.backgroundColor = 'transparent';
-                  }
-                }}
-                id="tab-video">
-                <Play className="h-4 w-4 shrink-0" style={{ color: activeTab === 'video' ? 'var(--accent-green)' : 'var(--text-secondary)' }} />
-                <span className="truncate">Real-Time Drone Feed</span>
-              </button>
 
               <button 
                 onClick={() => setActiveTab('blockchain')}
@@ -1533,335 +1442,6 @@ export default function App() {
             </div>
           )}
 
-          {/* ----- MODULE 3: REAL-TIME DRONEsurveillance DRONE VIDEO FEED ----- */}
-          {activeTab === 'video' && (
-            <div className="space-y-6 animate-fade-in" id="video-analysis-view">
-              
-              <div className="border p-4" style={{ backgroundColor: 'var(--bg-card)', borderColor: COLORS.border, borderRadius: 'var(--border-radius)', boxShadow: 'var(--shadow-card)' }}>
-                <div>
-                  <h2 className="text-sm font-bold uppercase tracking-widest flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-                    <Play className="h-5 w-5" style={{ color: 'var(--accent-green)' }} />
-                    <span>COSMOSPACE SATELLITE DRONE FRAME FEED</span>
-                  </h2>
-                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Simulate specialized real-time object tracking over a 60-frame optical sweep. CAM-YOLO11 executes per-frame edge categorization.</p>
-                </div>
-
-                <div className="mt-4 grid gap-6 lg:grid-cols-12">
-                  
-                  {/* LEFT CONTROLLER COMPONENT */}
-                  <div className="lg:col-span-8 flex flex-col gap-4">
-                    
-                    {/* VIDEO CONTAINER */}
-                    <div className="relative w-full h-[320px] border flex flex-col items-center justify-center overflow-hidden" style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border, borderRadius: 'var(--border-radius)' }}>
-                      
-                      {/* Top Overlay Camera Info HUD */}
-                      <div className="absolute top-3 left-3 right-3 flex justify-between text-[10px] font-mono p-2 rounded border z-10" style={{ backgroundColor: 'rgba(15, 23, 42, 0.8)', borderColor: COLORS.border }}>
-                        <div className="flex gap-4">
-                          <span className="text-red-500 font-bold flex items-center gap-1 uppercase">
-                            <span className="h-2 w-2 rounded-full bg-red-500 animate-ping inline-block" />
-                            <span>REC DRONE FEED</span>
-                          </span>
-                          <span>ALT: 450m</span>
-                          <span>ZOOM: {droneZoom}x</span>
-                        </div>
-                        <div>
-                          <span>
-                            {customVideo && videoRef.current ? (
-                              `TIME: ${customVideoSeconds.toFixed(1)}s / ${videoRef.current.duration ? videoRef.current.duration.toFixed(1) : 0}s`
-                            ) : (
-                              `FRAME: ${videoFrame}/59`
-                            )}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Video graphic scenery display or real video tag */}
-                      {customVideo ? (
-                        <video
-                          ref={videoRef}
-                          src={customVideo}
-                          className="absolute inset-0 w-full h-full object-cover"
-                          muted
-                          loop
-                          playsInline
-                          onTimeUpdate={(e) => {
-                            const video = e.currentTarget;
-                            setCustomVideoSeconds(video.currentTime);
-                          }}
-                          style={{ transform: `scale(${droneZoom})`, transition: 'transform 0.3s ease' }}
-                        />
-                      ) : (
-                        <div className="absolute inset-0 flex items-center justify-center transition-all bg-emerald-950/20 bg-cover bg-center">
-                          {/* Custom moving graphics represent drone frame movement */}
-                          <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-                            <defs>
-                              <pattern id="grid-pattern" width="10" height="10" patternUnits="userSpaceOnUse">
-                                <path d="M 10 0 L 0 0 0 10" fill="none" stroke="#10b981" strokeWidth="0.1" opacity="0.15" />
-                              </pattern>
-                            </defs>
-                            <rect width="100" height="100" fill="url(#grid-pattern)" />
-                            
-                            {/* Rotating terrain overlay vectors based on frame counts */}
-                            <path d={`M 0,${60 + Math.sin(videoFrame * 0.1) * 5} L 100,${70 + Math.cos(videoFrame * 0.1) * 3} L 100,100 L 0,100 Z`} fill="#111827" opacity="0.4" />
-                            
-                            {/* Draw military objective target coordinates on coordinates */}
-                            <circle cx="50" cy="50" r="1.5" fill="#f97316" className="animate-pulse" />
-                          </svg>
-                        </div>
-                      )}
-
-                      {/* Live moving Bounding Boxes tracking over the active frame */}
-                      {getDroneDetectionsForFrame(videoFrame).map((boxObj: any, idx: number) => {
-                        const [ymin, xmin, ymax, xmax] = boxObj.box;
-                        return (
-                          <div 
-                            key={idx}
-                            className="absolute border border-red-500 bg-red-500/10 shadow-[0_0_12px_rgba(239,68,68,0.2)] animate-pulse flex flex-col justify-between"
-                            style={{
-                              top: `${ymin}%`,
-                              left: `${xmin}%`,
-                              height: `${ymax - ymin}%`,
-                              width: `${xmax - xmin}%`,
-                              transition: 'all 0.1s linear'
-                            }}
-                          >
-                            <div className="absolute -top-4.5 left-0 bg-red-500 text-white text-[8px] font-mono px-1 rounded uppercase whitespace-nowrap">
-                              LOCK: {boxObj.label} • {(boxObj.confidence * 100).toFixed(0)}%
-                            </div>
-                            <div className="absolute bottom-1 right-1 h-2 w-2 border-r border-b border-red-500" />
-                          </div>
-                        );
-                      })}
-
-                      {/* Large Center HUD Crosshairs */}
-                      <div className="absolute border border-emerald-500/30 w-44 h-44 rounded-full flex items-center justify-center pointer-events-none">
-                        <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full" />
-                        <div className="absolute w-6 h-[1px] bg-emerald-500" />
-                        <div className="absolute h-6 w-[1px] bg-emerald-500" />
-                      </div>
-
-                      {/* Overlay alerts */}
-                      {getDroneDetectionsForFrame(videoFrame).length > 0 && (
-                        <div className="absolute bottom-3 left-3 bg-red-950/90 border border-red-600 px-3 py-1.5 rounded animate-bounce text-red-200 text-[10px] font-mono font-bold uppercase tracking-wider z-10 flex items-center gap-1.5 font-sans">
-                          <AlertTriangle className="h-4 w-4 text-red-500" />
-                          <span>HIGH INT CONCEALED TARGET IDENTIFIED</span>
-                        </div>
-                      )}
-
-                    </div>
-
-                    {/* VIDEO CONTROLS TRACKBAR */}
-                    <div className="flex flex-col gap-3 bg-slate-900/60 p-4 rounded-lg border border-slate-800">
-                      
-                      {/* Video upload row */}
-                      <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-slate-800">
-                        <div className="text-xs font-mono text-gray-400 flex items-center gap-2">
-                          {isVideoAnalyzing ? (
-                            <span className="flex items-center gap-1.5 text-amber-400">
-                              <span className="h-2 w-2 rounded-full bg-amber-500 animate-ping" />
-                              <span>ANALYZING SURVEILLANCE FEED...</span>
-                            </span>
-                          ) : customVideoFileName ? (
-                            <span className="text-emerald-400 font-bold">STREAM: {customVideoFileName}</span>
-                          ) : (
-                            <span>SYSTEM STANDBY: Simulator Active</span>
-                          )}
-                        </div>
-
-                        <div className="flex gap-2">
-                          {customVideo && (
-                            <button
-                              onClick={() => {
-                                setCustomVideo(null);
-                                setCustomVideoFileName('');
-                                setVideoTrackingData(null);
-                                setVideoFrame(0);
-                                setCustomVideoSeconds(0);
-                                setIsVideoPlaying(false);
-                                if (videoRef.current) {
-                                  videoRef.current.pause();
-                                  videoRef.current.currentTime = 0;
-                                }
-                              }}
-                              className="text-[10px] tracking-wider uppercase px-2 py-1 rounded bg-red-950/30 border border-red-800 text-red-400 hover:bg-red-900/50"
-                            >
-                              Unload Video
-                            </button>
-                          )}
-                          <label className="text-[10px] tracking-wider uppercase px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 border border-slate-700 text-gray-300 cursor-pointer flex items-center gap-1">
-                            <Upload className="h-3 w-3" />
-                            <span>Upload Recon Clip</span>
-                            <input
-                              type="file"
-                              accept="video/mp4,video/webm,video/ogg,video/quicktime"
-                              className="hidden"
-                              onChange={handleVideoUpload}
-                            />
-                          </label>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between gap-4">
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => {
-                              const nextPlaying = !isVideoPlaying;
-                              setIsVideoPlaying(nextPlaying);
-                              if (videoRef.current) {
-                                if (nextPlaying) {
-                                  videoRef.current.play().catch(e => console.log(e));
-                                } else {
-                                  videoRef.current.pause();
-                                }
-                              }
-                            }}
-                            className="flex items-center justify-center text-black transition-all"
-                            style={{
-                              backgroundColor: 'var(--accent-green)',
-                              borderRadius: '10px',
-                              height: '44px',
-                              width: '44px',
-                              transition: 'all 0.2s ease'
-                            }}
-                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--accent-green-hover)'}
-                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--accent-green)'}
-                            id="btn-play-pause"
-                          >
-                            {isVideoPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-                          </button>
-                          
-                          <button
-                            onClick={() => {
-                              setVideoFrame(0);
-                              setCustomVideoSeconds(0);
-                              setIsVideoPlaying(false);
-                              if (videoRef.current) {
-                                videoRef.current.pause();
-                                videoRef.current.currentTime = 0;
-                              }
-                            }}
-                            className="text-xs bg-slate-800 hover:bg-slate-700 px-2.5 py-1.5 rounded font-bold"
-                          >
-                            Reset Frame
-                          </button>
-                        </div>
-
-                        {/* Slide track */}
-                        <div className="flex-1 flex items-center gap-2">
-                          {customVideo && videoRef.current ? (
-                            <input 
-                              type="range" 
-                              min="0" 
-                              max={videoRef.current.duration || 10} 
-                              step="0.1"
-                              value={customVideoSeconds}
-                              onChange={(e) => {
-                                const val = Number(e.target.value);
-                                setCustomVideoSeconds(val);
-                                if (videoRef.current) {
-                                  videoRef.current.currentTime = val;
-                                }
-                              }}
-                              className="w-full h-1.5 rounded" 
-                              style={{ accentColor: 'var(--accent-green)', backgroundColor: 'var(--bg-sidebar)' }}
-                            />
-                          ) : (
-                            <input 
-                              type="range" 
-                              min="0" 
-                              max="59" 
-                              value={videoFrame}
-                              onChange={(e) => setVideoFrame(Number(e.target.value))}
-                              className="w-full h-1.5 rounded" 
-                              style={{ accentColor: 'var(--accent-green)', backgroundColor: 'var(--bg-sidebar)' }}
-                            />
-                          )}
-                        </div>
-
-                        <div className="flex gap-2">
-                          <button onClick={() => setDroneZoom(1)} className="px-2 py-1 text-[10px] uppercase rounded border" style={droneZoom === 1 ? { backgroundColor: 'var(--accent-green-subtle)', borderColor: 'var(--accent-green)', color: 'var(--accent-green)' } : { backgroundColor: 'var(--bg-sidebar)', borderColor: 'transparent', color: 'var(--text-secondary)' }}>1x</button>
-                          <button onClick={() => setDroneZoom(2)} className="px-2 py-1 text-[10px] uppercase rounded border" style={droneZoom === 2 ? { backgroundColor: 'var(--accent-green-subtle)', borderColor: 'var(--accent-green)', color: 'var(--accent-green)' } : { backgroundColor: 'var(--bg-sidebar)', borderColor: 'transparent', color: 'var(--text-secondary)' }}>2x</button>
-                          <button onClick={() => setDroneZoom(4)} className="px-2 py-1 text-[10px] uppercase rounded border" style={droneZoom === 4 ? { backgroundColor: 'var(--accent-green-subtle)', borderColor: 'var(--accent-green)', color: 'var(--accent-green)' } : { backgroundColor: 'var(--bg-sidebar)', borderColor: 'transparent', color: 'var(--text-secondary)' }}>4x</button>
-                        </div>
-                      </div>
-                    </div>
-
-                  </div>
-
-                  {/* RIGHT THREAT REPORT TIMELINE DETAILS */}
-                  <div className="lg:col-span-4 flex flex-col gap-4">
-                    
-                    {/* THREAT METRIC COUNTERS */}
-                    <div className="rounded-lg bg-slate-900/50 p-3 border border-slate-800 space-y-3">
-                      <div className="text-[10px] font-black uppercase tracking-widest text-gray-400">REAL-TIME TELEMETRY</div>
-                      
-                      <div className="space-y-2">
-                        <div className="flex justify-between items-center text-xs border-b border-slate-800 pb-2">
-                          <span className="text-gray-400">Current Targets Locked:</span>
-                          <span className="font-mono font-black text-red-400 text-sm">
-                            {getDroneDetectionsForFrame(videoFrame).length}
-                          </span>
-                        </div>
-                        <div className="flex justify-between items-center text-xs border-b border-slate-800 pb-2">
-                          <span className="text-gray-400">Sweep Velocity:</span>
-                          <span className="font-mono text-gray-200">14.8 ms/frame</span>
-                        </div>
-                        <div className="flex justify-between items-center text-xs">
-                          <span className="text-gray-400">Edge Alignment Confidence:</span>
-                          <span className="font-mono text-emerald-400 font-bold">96.4% OPT</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* LIVE THREAT FEED ACTIVITY SCORES */}
-                    <div className="rounded-lg p-3 border flex-1 flex flex-col justify-between" style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border }}>
-                      <div>
-                        <div className="text-[10px] font-black uppercase tracking-widest mb-2" style={{ color: 'var(--text-muted)' }}>RUNNING ANALYSIS LOG</div>
-                        <div className="font-mono text-[10px] space-y-2 max-h-[140px] overflow-y-auto scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent" style={{ color: 'var(--text-secondary)' }}>
-                          <div>[f_01-f_11] Terrain matching: 0 threats detected.</div>
-                          {videoFrame >= 12 && (
-                            <div className="text-red-400 font-bold">[f_12-f_25] lock on "Sniper (foliage coverage)" at coordinates [48, 40].</div>
-                          )}
-                          {videoFrame >= 26 && videoFrame <= 34 && (
-                            <div style={{ color: 'var(--text-muted)' }}>[f_26-f_34] Target zone cleared. Re-establishing visual tracking matrices.</div>
-                          )}
-                          {videoFrame >= 35 && (
-                            <div className="text-red-400 font-bold">[f_35-f_50] lock on APC Heavy Armor (T-80 Variant) at [30, 25].</div>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="mt-4 pt-3 border-t" style={{ borderColor: COLORS.border }}>
-                        <div className="text-[10px] font-black uppercase tracking-wide flex items-center gap-1.5" style={{ color: 'var(--text-muted)' }}>
-                          <Clock className="h-3.5 w-3.5" />
-                          <span>DETECTION TIMELINE SPANS</span>
-                        </div>
-                        <div className="mt-2 h-16 w-full flex items-end gap-0.5 p-1.5 rounded border font-mono text-[9px]" style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: 'rgba(55, 65, 81, 0.6)' }}>
-                          {Array.from({ length: 30 }).map((_, i) => {
-                            const isZoneA = i >= 6 && i <= 12;
-                            const isZoneB = i >= 17 && i <= 25;
-                            const h = isZoneA ? 'h-10 bg-red-500/80' : isZoneB ? 'h-14 bg-red-600' : 'h-1.5';
-                            return (
-                              <div key={i} className={`flex-1 rounded-t transition-all ${h}`} title={`Interval ${i}`} />
-                            );
-                          })}
-                        </div>
-                        <div className="flex justify-between text-[8px] font-mono mt-1" style={{ color: 'var(--text-muted)' }}>
-                          <span>Frame 1</span>
-                          <span>Frame 30</span>
-                          <span>Frame 60</span>
-                        </div>
-                      </div>
-                    </div>
-
-                  </div>
-
-                </div>
-
-              </div>
-
-            </div>
-          )}
 
           {/* ----- MODULE 5: BLOCKCHAIN SECURITY SECURE LEDGER ----- */}
           {activeTab === 'blockchain' && (
