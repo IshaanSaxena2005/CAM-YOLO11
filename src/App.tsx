@@ -591,26 +591,41 @@ export default function App() {
             </div>
           </div>
 
-          {/* TELEMETRY READOUTS */}
+          {/* Updated telemetry readouts with new status labels */}
           <div className="hidden items-center gap-8 text-xs md:flex lg:gap-10">
             <div className="flex items-center gap-3">
               <span className="h-2 w-2 rounded-full animate-pulse" style={{ backgroundColor: 'var(--accent-green)' }} />
               <div className="text-left">
-                <div className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>TACTICAL WATCHDOG</div>
-                <div className="font-bold" style={{ color: 'var(--text-primary)' }}>GEO-STATIONERY SATELLITE ACTIVE</div>
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-3">
-              <span className={`h-2 w-2 rounded-full ${isChainCompromised ? 'bg-red-500 animate-ping' : 'animate-pulse'}`} style={{ backgroundColor: isChainCompromised ? '#ef4444' : 'var(--accent-green)' }} />
-              <div className="text-left">
-                <div className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>BLOCKCHAIN SECURITY</div>
-                <div className={`font-bold font-mono text-[11px] ${isChainCompromised ? 'text-red-400' : ''}`} style={{ color: isChainCompromised ? '#f87171' : 'var(--accent-green)' }}>
-                  {isChainCompromised ? 'COMPROMISED (TAMPER TRIGGERED)' : 'CRYPTOGRAPHIC INTEGRITY GUARANTEED'}
-                </div>
+                <div className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>YOLOv11 ENGINE</div>
+                <div className="font-bold" style={{ color: 'var(--accent-green)' }}>ONLINE</div>
               </div>
             </div>
 
+            <div className="flex items-center gap-3">
+              <span className="h-2 w-2 rounded-full animate-pulse" style={{ backgroundColor: 'var(--accent-green)' }} />
+              <div className="text-left">
+                <div className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>INFERENCE SERVER</div>
+                <div className="font-bold" style={{ color: 'var(--accent-green)' }}>ACTIVE</div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <span className="h-2 w-2 rounded-full animate-pulse" style={{ backgroundColor: 'var(--accent-green)' }} />
+              <div className="text-left">
+                <div className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>SQLITE</div>
+                <div className="font-bold" style={{ color: 'var(--accent-green)' }}>CONNECTED</div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <span className={`h-2 w-2 rounded-full ${isChainCompromised ? 'bg-red-500 animate-ping' : 'animate-pulse'}`} style={{ backgroundColor: isChainCompromised ? '#ef4444' : 'var(--accent-green)' }} />
+              <div className="text-left">
+                <div className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>BLOCKCHAIN</div>
+                <div className={`font-bold font-mono text-[11px] ${isChainCompromised ? 'text-red-400' : ''}`} style={{ color: isChainCompromised ? '#f87171' : 'var(--accent-green)' }}>
+                  {isChainCompromised ? 'COMPROMISED (TAMPER TRIGGERED)' : 'VERIFIED'}
+                </div>
+              </div>
+            </div>
             <div className="flex items-center gap-3 border-l pl-6" style={{ borderColor: COLORS.border }}>
               <Clock className="h-4 w-4" style={{ color: 'var(--accent-green)' }} />
               <div className="font-mono" style={{ color: 'var(--text-primary)' }}>
@@ -2001,7 +2016,9 @@ export default function App() {
       {/* FOOTER BLOCK SIGNATURE */}
       <footer className="mt-8 border-t py-6 text-center text-xs" style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border, color: 'var(--text-muted)' }} id="footer-signature">
         <div className="mx-auto max-w-7xl px-4 space-y-1 font-mono">
-          <p>CAM-YOLO11 Tactical surveillance network dashboard prototype.</p>
+          <p>CAM-YOLO11 Military Camouflage Detection System</p>
+          <p>Powered by</p>
+          <p>YOLOv11 • React • Express • SQLite • Blockchain</p>
           <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Built in accordance with secure database and blockchain mandates.</p>
         </div>
       </footer>
