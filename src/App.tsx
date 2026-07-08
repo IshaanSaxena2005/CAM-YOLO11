@@ -35,8 +35,6 @@ import {
   Legend,
   BarChart,
   Bar,
-  PieChart,
-  Pie,
   Cell,
   RadarChart,
   PolarGrid,
@@ -153,11 +151,23 @@ export default function App() {
   const [customImage, setCustomImage] = useState<string | null>(null);
   const [customFileName, setCustomFileName] = useState('');
   const [uploadError, setUploadError] = useState<string | null>(null);
-  const [activeOverlayMode, setActiveOverlayMode] = useState<'raw' | 'yolo' | 'gradcam' | 'thermal'>('yolo');
+  const [activeOverlayMode, setActiveOverlayMode] = useState<'yolo' | 'gradcam' | 'thermal'>('yolo');
   const [gradcamAlpha, setGradcamAlpha] = useState<number>(75);
   const selectedModel = 'yolo11'; // model name fixed, selector removed
   const [confThreshold, setConfThreshold] = useState<number>(0.70);
   const [systemLogs, setSystemLogs] = useState<any[]>([]);
+
+  // Reusable timestamp formatter
+  const formatTimestampUTC = (dateString: string | Date): string => {
+    const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
+    const day = String(date.getUTCDate()).padStart(2, '0');
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const month = months[date.getUTCMonth()];
+    const year = date.getUTCFullYear();
+    const hours = String(date.getUTCHours()).padStart(2, '0');
+    const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+    return `${day} ${month} ${year}\n${hours}:${minutes} UTC`;
+  };
 
   const fetchLogs = async () => {
     try {
@@ -1149,7 +1159,7 @@ export default function App() {
                     {/* CHOOSE PREVIEW RECON LAYER */}
                     <div className="flex flex-wrap gap-1 p-1.5 rounded-lg border justify-between items-center" style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border }}>
                       <div className="flex gap-1">
-                        {(['raw', 'yolo', 'gradcam', 'thermal'] as const).map((mode) => (
+                        {(['yolo', 'gradcam', 'thermal'] as const).map((mode) => (
                           <button
                             key={mode}
                             onClick={() => setActiveOverlayMode(mode)}
@@ -1178,8 +1188,7 @@ export default function App() {
                               }
                             }}
                           >
-                            {mode === 'raw' ? 'Raw drone frame' :
-                             mode === 'yolo' ? 'YOLO Coordinates' :
+                            {mode === 'yolo' ? 'YOLO Coordinates' :
                              mode === 'gradcam' ? 'Grad-CAM Attention' :
                              'Thermal spectrum'}
                           </button>
@@ -1565,7 +1574,7 @@ export default function App() {
                             <div className="space-y-1.5 font-mono text-[10px] text-gray-300">
                               <div>
                                 <span className="text-gray-500">TIMESTAMP:</span>
-                                <div className="truncate text-white">{new Date(block.timestamp).toLocaleTimeString()}</div>
+                                <div className="truncate text-white whitespace-pre-line">{formatTimestampUTC(block.timestamp)}</div>
                               </div>
 
                               <div>
@@ -1750,7 +1759,7 @@ export default function App() {
                             </td>
                             <td className="p-3 text-center text-emerald-400 font-bold whitespace-nowrap">{(item.confidence * 100).toFixed(1)}%</td>
                             <td className="p-3 whitespace-nowrap">{item.tacticalAnalysis?.concealmentScore || 80}% score</td>
-                            <td className="p-3 text-gray-400 whitespace-nowrap">{new Date(item.timestamp).toLocaleString()}</td>
+                            <td className="p-3 text-gray-400 whitespace-nowrap whitespace-pre-line">{formatTimestampUTC(item.timestamp)}</td>
                             <td className="p-3 text-indigo-400 whitespace-nowrap">Block #{item.blocIndex || idx + 1}</td>
                             <td className="p-3 text-right whitespace-nowrap">
                               <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-950/40 px-2 py-0.5 text-[9px] font-bold text-emerald-400 border border-emerald-900/50 uppercase">
@@ -1763,8 +1772,9 @@ export default function App() {
                     </tbody>
                   </table>
                   {detections.length === 0 && (
-                    <div className="p-8 text-center text-gray-500">
-                      No matching camouflaged targets found in surveillance archives.
+                    <div className="p-8 text-center" style={{ color: 'var(--text-muted)' }}>
+                      <div className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>No Detection Timeline Available</div>
+                      <div className="text-[10px] mt-1">Upload images to generate detection history</div>
                     </div>
                   )}
                 </div>
@@ -1793,32 +1803,36 @@ export default function App() {
                   <div className="rounded-lg p-4 border" style={{ backgroundColor: 'var(--bg-card)', borderColor: COLORS.border }}>
                     <div className="text-[10px] font-black tracking-widest uppercase mb-3" style={{ color: 'var(--text-muted)' }}>TELEMETRY SCANS PROCESS RATE</div>
                     <div className="h-[200px] w-full text-xs font-mono flex items-center justify-center" style={{ color: 'var(--text-muted)' }}>
-                      {stats.todaysScans > 0 ? (
+                      {detections.length > 0 ? (
                         <ResponsiveContainer width="100%" height="100%">
-                          <BarChart data={[
-                            { day: 'Mon', Scans: 0 },
-                            { day: 'Tue', Scans: 0 },
-                            { day: 'Wed', Scans: 0 },
-                            { day: 'Thu', Scans: 0 },
-                            { day: 'Fri', Scans: 0 },
-                            { day: 'Sat', Scans: 0 },
-                            { day: 'Sun', Scans: stats.todaysScans }
-                          ]}>
+                          <BarChart data={(() => {
+                            const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                            const today = new Date().getDay();
+                            const last7Days = Array.from({ length: 7 }, (_, i) => {
+                              const d = new Date();
+                              d.setDate(d.getDate() - (6 - i));
+                              return d;
+                            });
+                            return last7Days.map(date => {
+                              const dayName = days[date.getDay()];
+                              const dayDetections = detections.filter(d => {
+                                const dDate = new Date(d.timestamp);
+                                return dDate.toDateString() === date.toDateString();
+                              }).length;
+                              return { day: dayName, Scans: dayDetections };
+                            });
+                          })()}>
                             <CartesianGrid strokeDasharray="3" stroke="#27272a" />
                             <XAxis dataKey="day" stroke="#52525b" />
                             <YAxis stroke="#52525b" />
                             <Tooltip contentStyle={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border }} />
-                            <Bar dataKey="Scans" fill="#10b981">
-                              {Array.from({ length: 7 }).map((_, i) => (
-                                <Cell key={i} fill={i === 6 ? '#0ea5e9' : '#10b981'} />
-                              ))}
-                            </Bar>
+                            <Bar dataKey="Scans" fill="#10b981" />
                           </BarChart>
                         </ResponsiveContainer>
                       ) : (
                         <div className="text-center">
-                          <div className="text-sm">No scan data available</div>
-                          <div className="text-[10px] mt-1">Upload images to generate telemetry</div>
+                          <div className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>No Detection Data Available</div>
+                          <div className="text-[10px] mt-1" style={{ color: 'var(--text-muted)' }}>Upload images to generate telemetry</div>
                         </div>
                       )}
                     </div>
@@ -1839,8 +1853,8 @@ export default function App() {
                         </ResponsiveContainer>
                       ) : (
                         <div className="text-center">
-                          <div className="text-sm">No classification data available</div>
-                          <div className="text-[10px] mt-1">Run detections to generate classifications</div>
+                          <div className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>No Detection Data Available</div>
+                          <div className="text-[10px] mt-1" style={{ color: 'var(--text-muted)' }}>Run detections to generate classifications</div>
                         </div>
                       )}
                     </div>
@@ -1852,25 +1866,18 @@ export default function App() {
                     <div className="h-[200px] w-full text-xs font-mono flex items-center justify-center" style={{ color: 'var(--text-muted)' }}>
                       {detections.length > 0 ? (
                         <ResponsiveContainer width="100%" height="100%">
-                          <LineChart data={[
-                            { sample: 'P_01', conf: 0 },
-                            { sample: 'P_02', conf: 0 },
-                            { sample: 'P_03', conf: 0 },
-                            { sample: 'P_04', conf: 0 },
-                          { sample: 'P_05', conf: 93 },
-                          { sample: 'P_06', conf: 96 }
-                        ]}>
-                          <CartesianGrid strokeDasharray="3" stroke="#27272a" />
-                          <XAxis dataKey="sample" stroke="#52525b" />
-                          <YAxis domain={[75, 100]} stroke="#52525b" />
-                          <Tooltip contentStyle={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border }} />
-                          <Line type="monotone" dataKey="conf" stroke="#f97316" strokeWidth={2.5} />
-                        </LineChart>
-                      </ResponsiveContainer>
+                          <LineChart data={detections.map((d, i) => ({ sample: `P_${String(i + 1).padStart(2, '0')}`, conf: Math.round(d.confidence * 100) }))}>
+                            <CartesianGrid strokeDasharray="3" stroke="#27272a" />
+                            <XAxis dataKey="sample" stroke="#52525b" />
+                            <YAxis domain={[0, 100]} stroke="#52525b" />
+                            <Tooltip contentStyle={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border }} />
+                            <Line type="monotone" dataKey="conf" stroke="#f97316" strokeWidth={2.5} />
+                          </LineChart>
+                        </ResponsiveContainer>
                       ) : (
                         <div className="text-center">
-                          <div className="text-sm">No confidence data available</div>
-                          <div className="text-[10px] mt-1">Run detections to generate confidence metrics</div>
+                          <div className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>No Detection Data Available</div>
+                          <div className="text-[10px] mt-1" style={{ color: 'var(--text-muted)' }}>Run detections to generate confidence metrics</div>
                         </div>
                       )}
                     </div>
