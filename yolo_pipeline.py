@@ -80,7 +80,7 @@ class YOLO11GradCAM:
             bbox = box.xyxy[0].cpu().numpy().tolist()  # [xmin, ymin, xmax, ymax]
             conf = float(box.conf[0].cpu().item())
             cls_id = int(box.cls[0].cpu().item())
-            class_name = self.model.names[cls_id].lower()
+            class_name = self.model.names[cls_id].lower().replace(" ", "").replace("_", "")
             
             if conf < 0.50:
                 continue  # Confidence < 0.50 is always rejected
@@ -313,8 +313,8 @@ def main():
             print(json.dumps({"error": f"Failed to parse base64: {str(e)}"}))
             sys.exit(1)
 
-    # Allowed classes
-    ALLOWED_CLASSES = {"person", "truck", "car", "bus", "motorcycle", "bicycle"}
+    # Allowed classes matching custom YOLOv11 trained model
+    ALLOWED_CLASSES = {"person", "militaryvehicle", "tank", "aeroplane", "warship"}
     
     inference_start = time.time()
     

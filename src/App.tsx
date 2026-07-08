@@ -282,7 +282,7 @@ export default function App() {
   const [activeOverlayMode, setActiveOverlayMode] = useState<'yolo' | 'gradcam' | 'thermal'>('yolo');
   const [gradcamAlpha, setGradcamAlpha] = useState<number>(75);
   const selectedModel = 'yolo11'; // model name fixed, selector removed
-  const [confThreshold, setConfThreshold] = useState<number>(0.70);
+  const [confThreshold, setConfThreshold] = useState<number>(0.50);
   const [systemLogs, setSystemLogs] = useState<any[]>([]);
 
   // Reusable timestamp formatter
