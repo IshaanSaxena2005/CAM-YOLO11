@@ -292,28 +292,20 @@ def process_opencv_fallback(image_bytes, allowed_classes, conf_threshold, is_moc
 
 
 def apply_colormap_to_heatmap(heatmap, original_image_bytes):
-    try:
-        nparr = np.frombuffer(original_image_bytes, np.uint8)
-        orig_img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-        if orig_img is None:
-            sys.stderr.write("[PIPELINE] Warning: cv2.imdecode failed to decode original image bytes\n")
-            return None
-            
-        h, w, _ = orig_img.shape
-        
-        # Scale heatmap to 0-255
-        heatmap_resized = cv2.resize(heatmap, (w, h))
-        heatmap_8bit = np.uint8(255 * heatmap_resized)
-        
-        color_map = cv2.applyColorMap(heatmap_8bit, cv2.COLORMAP_JET)
-        overlay = cv2.addWeighted(orig_img, 0.45, color_map, 0.55, 0)
-        
-        _, encoded_img = cv2.imencode('.jpg', overlay)
-        b64_str = base64.b64encode(encoded_img).decode('utf-8')
-        return f"data:image/jpeg;base64,{b64_str}"
-    except Exception as e:
-        sys.stderr.write(f"[PIPELINE] apply_colormap_to_heatmap failed: {type(e).__name__}: {e}\n")
-        return None
+    nparr = np.frombuffer(original_image_bytes, np.uint8)
+    orig_img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+    h, w, _ = orig_img.shape
+    
+    # Scale heatmap to 0-255
+    heatmap_resized = cv2.resize(heatmap, (w, h))
+    heatmap_8bit = np.uint8(255 * heatmap_resized)
+    
+    color_map = cv2.applyColorMap(heatmap_8bit, cv2.COLORMAP_JET)
+    overlay = cv2.addWeighted(orig_img, 0.45, color_map, 0.55, 0)
+    
+    _, encoded_img = cv2.imencode('.jpg', overlay)
+    b64_str = base64.b64encode(encoded_img).decode('utf-8')
+    return f"data:image/jpeg;base64,{b64_str}"
 
 
 def main():
@@ -387,7 +379,7 @@ def main():
                 main._cached_model = YOLO(model_path)
                 sys.stderr.write(f"[PIPELINE] Model loaded in {(time.time() - model_load_start)*1000:.0f}ms\n")
             yolo_model = main._cached_model
-            # Log actual model class names now that yolo_model is defined
+            # Log actual model class names here, after yolo_model is assigned.
             sys.stderr.write(f"[PIPELINE] Model class names: {yolo_model.names}\n")
 
             if ENABLE_GRADCAM:
@@ -464,13 +456,7 @@ def main():
         sys.stderr.write(f"[PIPELINE] Total pipeline time: {latency_ms:.0f}ms | accepted_boxes: {len(accepted_boxes)}\n")
         
         if len(accepted_boxes) > 0:
-            gradcam_url = None
-            if heatmap is not None:
-                try:
-                    gradcam_url = apply_colormap_to_heatmap(heatmap, img_bytes)
-                except Exception as e:
-                    sys.stderr.write(f"[PIPELINE] Warning: apply_colormap_to_heatmap failed: {e}\n")
-                    gradcam_url = None
+            gradcam_url = apply_colormap_to_heatmap(heatmap, img_bytes) if heatmap is not None else None
             output = {
                 "detected": True,
                 "threatType": accepted_boxes[0]["label"],
