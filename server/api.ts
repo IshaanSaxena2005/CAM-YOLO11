@@ -2,7 +2,7 @@ import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { execSync } from 'child_process';
+import { execFile, execFileSync } from 'child_process';
 import { CONFIG } from '../config';
 
 // Resolve __dirname for ESM
@@ -322,23 +322,21 @@ function getPythonExecutable(): string {
     return process.env.PYTHON_PATH.trim();
   }
 
-  const platform = process.platform as string;
-
   // On Windows, use 'python'
-  if (platform === 'win32') {
+  if (process.platform === 'win32') {
     return 'python';
   }
 
   // On Linux/macOS, try 'python3' first, then 'python'
+  // Uses execFileSync (no shell) to avoid /bin/sh ETIMEDOUT on slow containers
   try {
-    execSync('python3 --version', { stdio: 'ignore' });
+    execFileSync('python3', ['--version'], { stdio: 'ignore' });
     return 'python3';
   } catch {
     try {
-      execSync('python --version', { stdio: 'ignore' });
+      execFileSync('python', ['--version'], { stdio: 'ignore' });
       return 'python';
     } catch {
-      // Fallback to 'python3' if neither works (will fail with clear error)
       return 'python3';
     }
   }
@@ -351,6 +349,7 @@ export async function processCamouflageImageAI(
   threshold: number = 0.70,
   mockType: string = 'none'
 ): Promise<Omit<DetectionRecord, 'blocIndex' | 'blockchainHash'>> {
+  const requestStart = Date.now();
   const cleanBase64 = base64Data.includes(',') ? base64Data.split(',')[1] : base64Data;
   const imageSource = base64Data.startsWith('data:') ? base64Data : `data:image/jpeg;base64,${base64Data}`;
 
@@ -361,23 +360,68 @@ export async function processCamouflageImageAI(
   const tempFileName = `temp_${Date.now()}_${Math.floor(Math.random() * 1000)}.jpg`;
   const tempFilePath = path.join(tempDir, tempFileName);
 
+  const PYTHON_TIMEOUT_MS = 180_000; // 3 minutes – covers cold-start model load + Grad-CAM on CPU
+
   try {
     const buffer = Buffer.from(cleanBase64, 'base64');
     fs.writeFileSync(tempFilePath, buffer);
 
-    // Call Python core passing configuration threshold and model path
-    // Use absolute path to yolo_pipeline.py so it works regardless of cwd (critical on Linux/Railway)
     const pipelineScript = path.join(PROJECT_ROOT, 'yolo_pipeline.py');
-    const mockArg = mockType !== 'none' ? ` "${mockType}"` : '';
     const pythonCmd = getPythonExecutable();
-    const stdout = execSync(`"${pythonCmd}" "${pipelineScript}" "${tempFilePath}" "${threshold}" "${DEFAULT_MODEL_PATH}"${mockArg}`, {
-      encoding: 'utf-8',
-      timeout: 30000,
-      cwd: PROJECT_ROOT,
+    const modelPath = DEFAULT_MODEL_PATH;
+
+    // Build argument list (no shell interpolation – safe against path injection)
+    const args: string[] = [pipelineScript, tempFilePath, String(threshold), modelPath];
+    if (mockType !== 'none') args.push(mockType);
+
+    console.log(`[DETECT] Python process starting: ${pythonCmd} ${args.join(' ')}`);
+    const spawnStart = Date.now();
+
+    // execFile is async & non-blocking; it does NOT go through /bin/sh so there
+    // is no shell-quoting risk and no ETIMEDOUT from shell fork overhead.
+    const stdout = await new Promise<string>((resolve, reject) => {
+      const proc = execFile(
+        pythonCmd,
+        args,
+        {
+          encoding: 'utf-8',
+          timeout: PYTHON_TIMEOUT_MS,
+          cwd: PROJECT_ROOT,
+          maxBuffer: 50 * 1024 * 1024, // 50 MB – large enough for base64 Grad-CAM image
+          env: {
+            ...process.env,
+            // Ultralytics writes settings/cache here; /tmp is always writable in Docker
+            YOLO_CONFIG_DIR: '/tmp/ultralytics',
+            // Suppress PyTorch CUDA init noise on CPU-only containers
+            CUDA_VISIBLE_DEVICES: '',
+          },
+        },
+        (error, out, stderr) => {
+          const elapsed = Date.now() - spawnStart;
+          if (error) {
+            const reason = (error as NodeJS.ErrnoException).code === 'ETIMEDOUT'
+              ? `Python process timed out after ${PYTHON_TIMEOUT_MS / 1000}s`
+              : error.message;
+            console.error(`[DETECT] Python FAILED after ${elapsed}ms: ${reason}`);
+            if (stderr) console.error(`[DETECT] stderr: ${stderr.slice(0, 2000)}`);
+            reject(new Error(reason));
+          } else {
+            console.log(`[DETECT] Python completed in ${elapsed}ms`);
+            if (stderr) console.warn(`[DETECT] Python stderr: ${stderr.slice(0, 500)}`);
+            resolve(out);
+          }
+        }
+      );
+
+      // Log when the child process actually starts
+      proc.once('spawn', () => {
+        console.log(`[DETECT] Python process spawned (PID ${proc.pid})`);
+      });
     });
 
-    const parsed = JSON.parse(stdout);
+    const parsed = JSON.parse(stdout.trim());
     const detId = `det-${Math.floor(Math.random() * 90000) + 10000}`;
+    console.log(`[DETECT] Total request time: ${Date.now() - requestStart}ms | detected: ${parsed.detected}`);
 
     if (parsed && parsed.detected) {
       const finalBoxes: BoundingBox[] = parsed.boundingBoxes.map((boxObj: any, index: number) => ({
@@ -431,7 +475,8 @@ export async function processCamouflageImageAI(
       };
     }
   } catch (err: any) {
-    console.error('YOLO execution failed:', err);
+    const elapsed = Date.now() - requestStart;
+    console.error(`[DETECT] Request failed after ${elapsed}ms:`, err.message);
     return {
         id: `scan-err-${Date.now()}`,
         timestamp: new Date().toISOString(),

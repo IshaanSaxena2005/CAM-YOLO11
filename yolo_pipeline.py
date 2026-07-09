@@ -6,20 +6,26 @@ import base64
 import math
 import time
 
+# ── Ultralytics config dir ──────────────────────────────────────────────────
+# Set BEFORE importing ultralytics so it never tries to write to ~/.config
+# /tmp is always writable in Docker / Railway containers.
+os.environ.setdefault('YOLO_CONFIG_DIR', '/tmp/ultralytics')
+
 # Import NumPy and OpenCV unconditionally (required for both PyTorch and fallback pipelines)
 import numpy as np
 import cv2
 
 # Attempt to import PyTorch and Ultralytics
 PYTORCH_AVAILABLE = False
+_import_start = time.time()
 try:
     import torch
     import torch.nn as nn
     from ultralytics import YOLO
     PYTORCH_AVAILABLE = True
+    sys.stderr.write(f"[PIPELINE] PyTorch + Ultralytics imported in {(time.time() - _import_start)*1000:.0f}ms\n")
 except ImportError as e:
-    sys.stderr.write(f"CUDA/PyTorch core environments uncoupled or incomplete: {str(e)}\n")
-    sys.stderr.write("Using real OpenCV visual contrast contour analysis fallback.\n")
+    sys.stderr.write(f"[PIPELINE] CUDA/PyTorch unavailable ({e}) – using OpenCV fallback\n")
 
 # --- TRUE PYTORCH GRAD-CAM EXPLAINER & ENGINE ---
 class YOLO11GradCAM:
@@ -321,15 +327,23 @@ def main():
     try:
         if PYTORCH_AVAILABLE and not is_mock_positive:
             # --- REAL ULTRALYTICS DEEP ACTION MAP ---
+            sys.stderr.write(f"[PIPELINE] Loading YOLO model from: {model_path}\n")
+            model_load_start = time.time()
             grad_cam_engine = YOLO11GradCAM(model_path=model_path, layer_index=15)
+            sys.stderr.write(f"[PIPELINE] Model loaded in {(time.time() - model_load_start)*1000:.0f}ms\n")
+
+            sys.stderr.write("[PIPELINE] Running Grad-CAM inference...\n")
+            infer_start = time.time()
             heatmap, accepted_boxes, low_conf_boxes, has_any_candidates = grad_cam_engine.compute_heatmap(
                 img_bytes, ALLOWED_CLASSES, conf_threshold
             )
             grad_cam_engine.remove_hooks()
+            sys.stderr.write(f"[PIPELINE] Inference + Grad-CAM done in {(time.time() - infer_start)*1000:.0f}ms\n")
             engine_name = "YOLOv11 Ultralytics PyTorch pipeline Core"
             device_name = "CUDA GPU Mode (Activated)" if torch.cuda.is_available() else "AVX2 CPU Multi-Threading"
         else:
             # --- REAL OPENCV VISUAL CORE FALLBACK ---
+            sys.stderr.write("[PIPELINE] Using OpenCV fallback\n")
             heatmap, accepted_boxes, low_conf_boxes, has_any_candidates = process_opencv_fallback(
                 img_bytes, ALLOWED_CLASSES, conf_threshold, is_mock_positive
             )
@@ -337,6 +351,7 @@ def main():
             device_name = "AVX2 SIMD CPU Core Acceleration"
 
         latency_ms = (time.time() - inference_start) * 1000.0
+        sys.stderr.write(f"[PIPELINE] Total pipeline time: {latency_ms:.0f}ms | accepted_boxes: {len(accepted_boxes)}\n")
         
         if len(accepted_boxes) > 0:
             gradcam_url = apply_colormap_to_heatmap(heatmap, img_bytes)
