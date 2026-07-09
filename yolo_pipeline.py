@@ -361,8 +361,6 @@ def main():
             print(json.dumps({"error": f"Failed to parse base64: {str(e)}"}))
             sys.exit(1)
 
-    # Log actual model class names so we can verify they match ALLOWED_CLASSES
-    sys.stderr.write(f"[PIPELINE] Model class names: {yolo_model.names}\n")
     # ALLOWED_CLASSES — accept every class the custom model detects.
     # Previously this whitelist silently rejected all detections when the
     # model's class names differed (e.g. "soldier" vs "person").
@@ -381,6 +379,8 @@ def main():
                 main._cached_model = YOLO(model_path)
                 sys.stderr.write(f"[PIPELINE] Model loaded in {(time.time() - model_load_start)*1000:.0f}ms\n")
             yolo_model = main._cached_model
+            # Log actual model class names now that yolo_model is defined
+            sys.stderr.write(f"[PIPELINE] Model class names: {yolo_model.names}\n")
 
             if ENABLE_GRADCAM:
                 # --- REAL ULTRALYTICS DEEP ACTION MAP WITH GRAD‑CAM ---
