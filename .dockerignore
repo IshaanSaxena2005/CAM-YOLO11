@@ -1,0 +1,44 @@
+﻿# Version control
+.git
+.gitignore
+
+# Node
+node_modules
+npm-debug.log*
+
+# Build output (rebuilt inside Docker)
+dist
+
+# Python cache
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info
+.eggs
+
+# YOLO training artifacts (not needed for inference)
+runs/
+datasets/
+
+# Local env files
+.env
+.env.local
+.env.*.local
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+.vscode
+.idea
+
+# Logs
+logs/
+*.log
+
+# Temporary inference files
+database/*.jpg
+database/*.png
+gradcam_output/
+
