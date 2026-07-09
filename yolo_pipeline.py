@@ -456,7 +456,13 @@ def main():
         sys.stderr.write(f"[PIPELINE] Total pipeline time: {latency_ms:.0f}ms | accepted_boxes: {len(accepted_boxes)}\n")
         
         if len(accepted_boxes) > 0:
-            gradcam_url = apply_colormap_to_heatmap(heatmap, img_bytes) if heatmap is not None else None
+            gradcam_url = None
+            if heatmap is not None:
+                try:
+                    gradcam_url = apply_colormap_to_heatmap(heatmap, img_bytes)
+                except Exception as e:
+                    sys.stderr.write(f"[PIPELINE] Warning: apply_colormap_to_heatmap failed: {e}\n")
+                    gradcam_url = None
             output = {
                 "detected": True,
                 "threatType": accepted_boxes[0]["label"],
