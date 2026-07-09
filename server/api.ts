@@ -403,11 +403,16 @@ export async function processCamouflageImageAI(
               ? `Python process timed out after ${PYTHON_TIMEOUT_MS / 1000}s`
               : error.message;
             console.error(`[DETECT] Python FAILED after ${elapsed}ms: ${reason}`);
-            if (stderr) console.error(`[DETECT] stderr: ${stderr.slice(0, 2000)}`);
+            if (stderr) console.error(`[DETECT] Python stderr (FULL):\n${stderr}`);
             reject(new Error(reason));
           } else {
             console.log(`[DETECT] Python completed in ${elapsed}ms`);
-            if (stderr) console.warn(`[DETECT] Python stderr: ${stderr.slice(0, 500)}`);
+            // === STEP 2a: Raw Python output ===
+            console.log('=========================');
+            console.log('STEP 2 – Python output');
+            console.log('=========================');
+            console.log('[STEP2] Python stdout (raw):', JSON.stringify(out));
+            if (stderr) console.log('[STEP2] Python stderr (full):\n' + stderr);
             resolve(out);
           }
         }
@@ -421,6 +426,20 @@ export async function processCamouflageImageAI(
 
     const parsed = JSON.parse(stdout.trim());
     const detId = `det-${Math.floor(Math.random() * 90000) + 10000}`;
+
+    // === STEP 2b: Parsed Python JSON ===
+    console.log('=========================');
+    console.log('STEP 2b – Parsed Python JSON');
+    console.log('=========================');
+    console.log('[STEP2b] parsed.detected      :', parsed.detected);
+    console.log('[STEP2b] parsed.boundingBoxes :', JSON.stringify(parsed.boundingBoxes));
+    console.log('[STEP2b] parsed.boundingBoxes.length:', parsed.boundingBoxes ? parsed.boundingBoxes.length : 'N/A (field missing)');
+    console.log('[STEP2b] parsed.confidence    :', parsed.confidence);
+    console.log('[STEP2b] parsed.threatType    :', parsed.threatType);
+    console.log('[STEP2b] parsed.message       :', parsed.message);
+    console.log('[STEP2b] Full parsed object   :', JSON.stringify(parsed, null, 2));
+    console.log('[STEP2b] typeof parsed.detected:', typeof parsed.detected);
+    console.log('[STEP2b] Boolean(parsed.detected):', Boolean(parsed.detected));
     console.log(`[DETECT] Total request time: ${Date.now() - requestStart}ms | detected: ${parsed.detected}`);
 
     if (parsed && parsed.detected) {
@@ -440,7 +459,8 @@ export async function processCamouflageImageAI(
         sensorConfidence: Math.round(parsed.confidence * 100)
       };
 
-      return {
+      // === STEP 3: DetectionRecord before return ===
+      const rawRecord = {
           id: detId,
           timestamp: new Date().toISOString(),
           imageUrl: imageSource,
@@ -453,7 +473,22 @@ export async function processCamouflageImageAI(
           performanceMetrics: parsed.performanceMetrics,
           detected: true
       };
+      console.log('=========================');
+      console.log('STEP 3 – rawResult before return (detected branch)');
+      console.log('=========================');
+      console.log('[STEP3] rawResult.detected        :', rawRecord.detected);
+      console.log('[STEP3] rawResult.boundingBoxes.length:', rawRecord.boundingBoxes.length);
+      console.log('[STEP3] rawResult.threatType      :', rawRecord.threatType);
+      console.log('[STEP3] rawResult.confidence      :', rawRecord.confidence);
+      console.log('[STEP3] Full rawResult            :', JSON.stringify(rawRecord, null, 2));
+      return rawRecord;
     } else {
+      // === STEP 3 (no-detection branch) ===
+      console.log('=========================');
+      console.log('STEP 3 – rawResult (NO DETECTION branch taken)');
+      console.log('=========================');
+      console.log('[STEP3-NODET] parsed.detected was falsy. Value:', parsed.detected, '| type:', typeof parsed.detected);
+      console.log('[STEP3-NODET] parsed.boundingBoxes:', JSON.stringify(parsed.boundingBoxes));
       return {
           id: detId,
           timestamp: new Date().toISOString(),
@@ -476,6 +511,8 @@ export async function processCamouflageImageAI(
     }
   } catch (err: any) {
     const elapsed = Date.now() - requestStart;
+    console.error('[STEP3-CATCH] processCamouflageImageAI caught an exception:', err.message);
+    console.error('[STEP3-CATCH] Full error:', err);
     console.error(`[DETECT] Request failed after ${elapsed}ms:`, err.message);
     return {
         id: `scan-err-${Date.now()}`,

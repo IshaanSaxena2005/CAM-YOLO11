@@ -180,7 +180,7 @@ app.get('/api/history', (_req, res) => {
  * Request : { base64: string, fileName?: string, modelName?: string, threshold?: number }
  * Response: { success, message, data: DetectionRecord, error }
  */
-app.post('/api/detect', async (req, res) => {
+app.post(['/api/detect', '/api/detect/'], async (req, res) => {
   try {
     const { base64, fileName, modelName, threshold } = req.body as {
       base64?: unknown;
@@ -201,6 +201,17 @@ app.post('/api/detect', async (req, res) => {
       threshold !== undefined && !Number.isNaN(Number(threshold))
         ? Math.min(1, Math.max(0, Number(threshold)))
         : CONFIG.CONFIDENCE_THRESHOLD;
+
+    // === STEP 1: Request received ===
+    console.log('=========================');
+    console.log('STEP 1 – POST /api/detect received');
+    console.log('=========================');
+    console.log('[STEP1] base64 length      :', typeof base64 === 'string' ? base64.length : 'NOT A STRING');
+    console.log('[STEP1] base64 prefix      :', typeof base64 === 'string' ? base64.slice(0, 30) : 'N/A');
+    console.log('[STEP1] fileName           :', safeFileName);
+    console.log('[STEP1] modelName          :', safeModelName);
+    console.log('[STEP1] threshold (raw)    :', threshold);
+    console.log('[STEP1] confThreshold final:', confThreshold);
 
     addSurveillanceLog(`Image uploaded: ${safeFileName}`);
     addSurveillanceLog('Detection request received');
@@ -232,11 +243,41 @@ app.post('/api/detect', async (req, res) => {
     }
     addSurveillanceLog('History updated');
 
+    // === STEP 4 – rawResult returned from processCamouflageImageAI ===
+    console.log('=========================');
+    console.log('STEP 4 – rawResult from processCamouflageImageAI');
+    console.log('=========================');
+    console.log('[STEP4] rawResult.detected          :', rawResult.detected);
+    console.log('[STEP4] rawResult.boundingBoxes.length:', rawResult.boundingBoxes?.length);
+    console.log('[STEP4] rawResult.threatType        :', rawResult.threatType);
+    console.log('[STEP4] rawResult.confidence        :', rawResult.confidence);
+    console.log('[STEP4] Full rawResult              :', JSON.stringify(rawResult, null, 2));
+
+    // === STEP 5 – savedRecord after dbService.addDetection ===
+    console.log('=========================');
+    console.log('STEP 5 – savedRecord after dbService.addDetection');
+    console.log('=========================');
+    console.log('[STEP5] savedRecord.detected          :', savedRecord.detected);
+    console.log('[STEP5] savedRecord.boundingBoxes.length:', savedRecord.boundingBoxes?.length);
+    console.log('[STEP5] savedRecord.blocIndex         :', savedRecord.blocIndex);
+    console.log('[STEP5] savedRecord.blockchainHash    :', savedRecord.blockchainHash);
+    console.log('[STEP5] Full savedRecord              :', JSON.stringify(savedRecord, null, 2));
+
     const message = rawResult.detected
       ? `Detection complete – ${rawResult.boundingBoxes.length} target(s) identified`
       : 'Inference complete – no targets detected above threshold';
 
-    return res.status(200).json(ok(savedRecord, message));
+    // === STEP 5b – Response payload sent to frontend ===
+    const responsePayload = { success: true, message, data: savedRecord, error: null };
+    console.log('=========================');
+    console.log('STEP 5b – HTTP response payload');
+    console.log('=========================');
+    console.log('[STEP5b] response.success       :', responsePayload.success);
+    console.log('[STEP5b] response.data.detected :', responsePayload.data.detected);
+    console.log('[STEP5b] response.data.boundingBoxes.length:', responsePayload.data.boundingBoxes?.length);
+    console.log('[STEP5b] Full response          :', JSON.stringify(responsePayload, null, 2));
+
+    return res.status(200).json(responsePayload);
   } catch (err: unknown) {
     const errMsg = err instanceof Error ? err.message : 'Unknown error';
     if (errMsg.includes('timeout')) {
@@ -258,7 +299,7 @@ app.post('/api/detect', async (req, res) => {
  * Request : { base64: string, fileName?: string, modelName?: string }
  * Response: { success, message, data: TrackingFrame[], error }
  */
-app.post('/api/detect-video', async (req, res) => {
+app.post(['/api/detect-video', '/api/detect-video/'], async (req, res) => {
   try {
     const { base64, fileName, modelName } = req.body as {
       base64?: unknown;
@@ -306,7 +347,7 @@ app.get('/api/blockchain', (_req, res) => {
  * Request : none
  * Response: { success, message, data: { isValid, errorBlockIndex? }, error }
  */
-app.post('/api/blockchain/verify', (_req, res) => {
+app.post(['/api/blockchain/verify', '/api/blockchain/verify/'], (_req, res) => {
   try {
     const audit = blockchainInstance.validateChain();
     const message = audit.isValid
@@ -326,7 +367,7 @@ app.post('/api/blockchain/verify', (_req, res) => {
  * Request : { index: number, modifiedThreatType: string }
  * Response: { success, message, data: null, error }
  */
-app.post('/api/blockchain/tamper', (req, res) => {
+app.post(['/api/blockchain/tamper', '/api/blockchain/tamper/'], (req, res) => {
   try {
     const { index, modifiedThreatType } = req.body as {
       index?: unknown;
@@ -379,7 +420,7 @@ app.post('/api/blockchain/tamper', (req, res) => {
  * Request : none
  * Response: { success, message, data: null, error }
  */
-app.post('/api/blockchain/reset', (_req, res) => {
+app.post(['/api/blockchain/reset', '/api/blockchain/reset/'], (_req, res) => {
   try {
     blockchainInstance.chain = [];
     // @ts-ignore – createGenesisBlock is private but required for reset
@@ -407,7 +448,7 @@ app.post('/api/blockchain/reset', (_req, res) => {
  * Request : { threshold?: number }
  * Response: { success, message, data: TestSuiteReport, error }
  */
-app.post('/api/test-suite/run', async (req, res) => {
+app.post(['/api/test-suite/run', '/api/test-suite/run/'], async (req, res) => {
   try {
     const { threshold } = req.body as { threshold?: unknown };
     const confThreshold =
@@ -424,7 +465,8 @@ app.post('/api/test-suite/run', async (req, res) => {
 });
 
 // ─── 404 catch-all for unknown /api/* routes ─────────────────────────────────
-app.use('/api/*', (_req, res) => {
+app.use('/api/*', (req, res) => {
+  console.warn(`[404] Route not found: ${req.method} ${req.originalUrl} (path: ${req.path})`);
   res.status(404).json(fail('Endpoint not found', 'The requested API route does not exist'));
 });
 
@@ -442,6 +484,20 @@ if (process.env.NODE_ENV === 'production') {
 app.listen(PORT, () => {
   const env = process.env.NODE_ENV || 'development';
   console.log(`CAM-YOLO11 backend running on port ${PORT} (${env})`);
+  
+  // Print all registered routes
+  try {
+    const routes: string[] = [];
+    app._router.stack.forEach((middleware: any) => {
+      if (middleware.route) {
+        const methods = Object.keys(middleware.route.methods).join(', ').toUpperCase();
+        routes.push(`${methods} ${middleware.route.path}`);
+      }
+    });
+    console.log('[STARTUP] Registered routes:\n  ' + routes.join('\n  '));
+  } catch (e) {
+    console.error('[STARTUP] Failed to print routes:', e);
+  }
 });
 
 export default app;

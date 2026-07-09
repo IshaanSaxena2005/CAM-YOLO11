@@ -285,6 +285,24 @@ export default function App() {
   const [confThreshold, setConfThreshold] = useState<number>(0.50);
   const [systemLogs, setSystemLogs] = useState<any[]>([]);
 
+  // === STEP 7: Log selectedDetection every time it changes (render-time verification) ===
+  useEffect(() => {
+    if (selectedDetection !== null) {
+      console.log('=========================');
+      console.log('STEP 7 – selectedDetection state changed (render-time)');
+      console.log('=========================');
+      console.log('[STEP7] selectedDetection            :', JSON.stringify(selectedDetection, null, 2));
+      console.log('[STEP7] selectedDetection.detected   :', selectedDetection.detected);
+      console.log('[STEP7] typeof .detected             :', typeof selectedDetection.detected);
+      console.log('[STEP7] selectedDetection.boundingBoxes:', JSON.stringify(selectedDetection.boundingBoxes));
+      console.log('[STEP7] boundingBoxes.length         :', selectedDetection.boundingBoxes?.length);
+      console.log('[STEP7] === Render condition check ===');
+      console.log('[STEP7] (detected !== false)         :', selectedDetection.detected !== false);
+      console.log('[STEP7] (boundingBoxes?.length > 0)  :', (selectedDetection.boundingBoxes?.length ?? 0) > 0);
+      console.log('[STEP7] Will render bounding boxes?  :', selectedDetection.detected !== false && (selectedDetection.boundingBoxes?.length ?? 0) > 0);
+    }
+  }, [selectedDetection]);
+
   // Reusable timestamp formatter
   const formatTimestampUTC = (dateString: string | Date): string => {
     const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
@@ -508,9 +526,9 @@ export default function App() {
       let base64Part = customImage.split(',')[1];
       let fName = customFileName || 'uploaded_image.jpg';
 
-      // Create abort controller for timeout (30 seconds)
+      // Create abort controller for timeout (180 seconds – matches backend PYTHON_TIMEOUT_MS)
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000);
+      const timeoutId = setTimeout(() => controller.abort(), 180000);
 
       const res = await fetch('/api/detect', {
         method: 'POST',
@@ -536,6 +554,20 @@ export default function App() {
 
       if (json.success && json.data) {
         const responseRecord = json.data;
+
+        // === STEP 6: Frontend API response ===
+        console.log('=========================');
+        console.log('STEP 6 – Frontend: API response received');
+        console.log('=========================');
+        console.log('[STEP6] json.success                    :', json.success);
+        console.log('[STEP6] json.data                       :', JSON.stringify(json.data, null, 2));
+        console.log('[STEP6] responseRecord.detected         :', responseRecord.detected);
+        console.log('[STEP6] typeof responseRecord.detected  :', typeof responseRecord.detected);
+        console.log('[STEP6] responseRecord.boundingBoxes    :', JSON.stringify(responseRecord.boundingBoxes));
+        console.log('[STEP6] boxes length                    :', responseRecord.boundingBoxes?.length);
+        console.log('[STEP6] responseRecord.confidence       :', responseRecord.confidence);
+        console.log('[STEP6] responseRecord.threatType       :', responseRecord.threatType);
+
         // Update states
         setSelectedDetection(responseRecord);
         if (responseRecord.detected !== false) {
@@ -550,6 +582,8 @@ export default function App() {
         fetchBlockchain();
         fetchLogs();
       } else {
+        console.log('[STEP6-FAIL] json.success is false or json.data is missing');
+        console.log('[STEP6-FAIL] json:', JSON.stringify(json));
         throw new Error(json.message || 'Detection failed');
       }
     } catch (err: any) {

@@ -37,6 +37,9 @@ _import_start = time.time()
 try:
     import torch
     import torch.nn as nn
+    torch.set_num_threads(os.cpu_count() or 4)  # Use all available CPUs for torch ops
+    torch.backends.mkldnn.enabled = True  # Enable MKL-DNN acceleration if available
+
     from ultralytics import YOLO
     PYTORCH_AVAILABLE = True
     sys.stderr.write(f"[PIPELINE] PyTorch + Ultralytics imported in {(time.time() - _import_start)*1000:.0f}ms\n")
@@ -97,8 +100,11 @@ class YOLO11GradCAM:
             
         h, w, _ = orig_img.shape
         
-        # Run inference using standard YOLO
-        results = self.model(orig_img, verbose=False)
+        # Resize image to the model's expected input size (640x640) to avoid costly processing of huge original images.
+        resized_img = cv2.resize(orig_img, (640, 640))
+        # Perform a single inference using the Ultralytics model. This call internally runs the forward pass.
+        # Pass explicit imgsz to guarantee the model does not auto‑scale to the original resolution.
+        results = self.model(resized_img, imgsz=640, verbose=False)
         result = results[0]
         
         # Extract detections using the Strict Validation Pipeline
@@ -115,10 +121,12 @@ class YOLO11GradCAM:
             if conf < 0.50:
                 continue  # Confidence < 0.50 is always rejected
 
-            if class_name in allowed_classes:
-                label_name = class_name
-            else:
+            # Accept all classes when allowed_classes is None, else filter
+            if allowed_classes is not None and class_name not in allowed_classes:
                 label_name = "Unknown Object"
+            else:
+                label_name = class_name
+            sys.stderr.write(f"[PIPELINE][GradCAM] Box {idx}: class={class_name} conf={conf:.3f} label={label_name}\n")
 
             ymin_pct = (bbox[1] / h) * 100.0
             xmin_pct = (bbox[0] / w) * 100.0
@@ -142,16 +150,15 @@ class YOLO11GradCAM:
                 if label_name != "Unknown Object":
                     low_conf_boxes.append(box_obj)
 
-        if len(accepted_boxes) == 0 or not ENABLE_GRADCAM:
-            if not ENABLE_GRADCAM:
-                sys.stderr.write("[PIPELINE] Skipping Grad-CAM backward pass and heatmap computation\n")
+        # If Grad‑CAM is disabled we return after the single inference – no second forward/backward pass is needed.
+        if not ENABLE_GRADCAM:
             return None, accepted_boxes, low_conf_boxes, has_any_candidates
 
-        # Preprocess image tensor for PyTorch backprop
+        # Preprocess image tensor for PyTorch backprop (only when Grad‑CAM is enabled)
         sys.stderr.write("[PIPELINE] Preprocessing image tensor for backpropagation...\n")
         prep_start = time.time()
-        img_resized = cv2.resize(orig_img, (640, 640))
-        img_tensor = torch.from_numpy(img_resized).permute(2, 0, 1).float() / 255.0
+        # Reuse the already resized image for tensor conversion
+        img_tensor = torch.from_numpy(resized_img).permute(2, 0, 1).float() / 255.0
         img_tensor = img_tensor.unsqueeze(0).to(self.device).requires_grad_(True)
         sys.stderr.write(f"[PIPELINE] Tensor preprocessed in {(time.time() - prep_start)*1000:.0f}ms\n")
         
@@ -255,7 +262,6 @@ def process_opencv_fallback(image_bytes, allowed_classes, conf_threshold, is_moc
             "id": f"box-contour-{idx}-{int(time.time())}",
             "label": "YOLOv11: Unknown Object",
             "confidence": confidence,
-            "box": [ymin_pct, xmin_pct, ymax_pct, xmax_pct],
             "class_name": "unknown object"
         })
         
@@ -355,28 +361,88 @@ def main():
             print(json.dumps({"error": f"Failed to parse base64: {str(e)}"}))
             sys.exit(1)
 
-    # Allowed classes matching custom YOLOv11 trained model
-    ALLOWED_CLASSES = {"person", "militaryvehicle", "tank", "aeroplane", "warship"}
+    # Log actual model class names so we can verify they match ALLOWED_CLASSES
+    sys.stderr.write(f"[PIPELINE] Model class names: {yolo_model.names}\n")
+    # ALLOWED_CLASSES — accept every class the custom model detects.
+    # Previously this whitelist silently rejected all detections when the
+    # model's class names differed (e.g. "soldier" vs "person").
+    # Set to None to accept all classes; restrict after verifying model.names.
+    ALLOWED_CLASSES = None  # Accept all classes above confidence threshold
     
     inference_start = time.time()
     
     try:
         if PYTORCH_AVAILABLE and not is_mock_positive:
-            # --- REAL ULTRALYTICS DEEP ACTION MAP ---
-            sys.stderr.write(f"[PIPELINE] Loading YOLO model from: {model_path}\n")
-            model_load_start = time.time()
-            grad_cam_engine = YOLO11GradCAM(model_path=model_path, layer_index=15)
-            sys.stderr.write(f"[PIPELINE] Model loaded in {(time.time() - model_load_start)*1000:.0f}ms\n")
+            # Load YOLO model once per process to avoid re‑loading on every request.
+            if not hasattr(main, "_cached_model"):
+                sys.stderr.write(f"[PIPELINE] Loading YOLO model from: {model_path}\n")
+                model_load_start = time.time()
+                # Instantiate the model directly; we do not need the GradCAM wrapper when it is disabled.
+                main._cached_model = YOLO(model_path)
+                sys.stderr.write(f"[PIPELINE] Model loaded in {(time.time() - model_load_start)*1000:.0f}ms\n")
+            yolo_model = main._cached_model
 
-            sys.stderr.write("[PIPELINE] Running Grad-CAM inference...\n")
-            infer_start = time.time()
-            heatmap, accepted_boxes, low_conf_boxes, has_any_candidates = grad_cam_engine.compute_heatmap(
-                img_bytes, ALLOWED_CLASSES, conf_threshold
-            )
-            grad_cam_engine.remove_hooks()
-            sys.stderr.write(f"[PIPELINE] Inference + Grad-CAM done in {(time.time() - infer_start)*1000:.0f}ms\n")
-            engine_name = "YOLOv11 Ultralytics PyTorch pipeline Core"
-            device_name = "CUDA GPU Mode (Activated)" if torch.cuda.is_available() else "AVX2 CPU Multi-Threading"
+            if ENABLE_GRADCAM:
+                # --- REAL ULTRALYTICS DEEP ACTION MAP WITH GRAD‑CAM ---
+                grad_cam_engine = YOLO11GradCAM(model_path=model_path, layer_index=15)
+                sys.stderr.write("[PIPELINE] Running Grad‑CAM inference...\n")
+                infer_start = time.time()
+                heatmap, accepted_boxes, low_conf_boxes, has_any_candidates = grad_cam_engine.compute_heatmap(
+                    img_bytes, ALLOWED_CLASSES, conf_threshold
+                )
+                grad_cam_engine.remove_hooks()
+                sys.stderr.write(f"[PIPELINE] Inference + Grad‑CAM done in {(time.time() - infer_start)*1000:.0f}ms\n")
+                engine_name = "YOLOv11 Ultralytics PyTorch pipeline Core"
+                device_name = "CUDA GPU Mode (Activated)" if torch.cuda.is_available() else "AVX2 CPU Multi‑Threading"
+            else:
+                # Fast inference without Grad‑CAM: use the cached model and single forward pass.
+                sys.stderr.write("[PIPELINE] Running fast YOLO inference (Grad‑CAM disabled)\n")
+                # Decode and resize image once.
+                img_array = np.frombuffer(img_bytes, np.uint8)
+                img_bgr = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
+                img_resized = cv2.resize(img_bgr, (640, 640))
+                # Perform inference.
+                # Perform inference within a no‑grad context for speed
+                with torch.no_grad():
+                    results = yolo_model(img_resized, imgsz=640, verbose=False)
+                result = results[0]
+                # Extract detections – same logic as in compute_heatmap.
+                h, w, _ = img_resized.shape
+                accepted_boxes = []
+                low_conf_boxes = []
+                has_any_candidates = False
+                for idx, box in enumerate(result.boxes):
+                    bbox = box.xyxy[0].cpu().numpy().tolist()
+                    conf = float(box.conf[0].cpu().item())
+                    cls_id = int(box.cls[0].cpu().item())
+                    class_name = yolo_model.names[cls_id].lower().replace(" ", "").replace("_", "")
+                    if conf < 0.50:
+                        continue
+                    # Accept all detected classes (ALLOWED_CLASSES=None) or filter when set
+                    if ALLOWED_CLASSES is not None and class_name not in ALLOWED_CLASSES:
+                        label_name = "Unknown Object"
+                    else:
+                        label_name = class_name
+                    sys.stderr.write(f"[PIPELINE] Box {idx}: class={class_name} conf={conf:.3f} label={label_name}\n")
+                    ymin_pct = (bbox[1] / h) * 100.0
+                    xmin_pct = (bbox[0] / w) * 100.0
+                    ymax_pct = (bbox[3] / h) * 100.0
+                    xmax_pct = (bbox[2] / w) * 100.0
+                    box_obj = {
+                        "id": f"box-yolo-{idx}-{int(time.time())}",
+                        "label": f"YOLOv11: {label_name.capitalize()}",
+                        "confidence": conf,
+                        "box": [ymin_pct, xmin_pct, ymax_pct, xmax_pct],
+                        "class_name": label_name
+                    }
+                    has_any_candidates = True
+                    if conf >= conf_threshold and label_name != "Unknown Object":
+                        accepted_boxes.append(box_obj)
+                    elif label_name != "Unknown Object":
+                        low_conf_boxes.append(box_obj)
+                heatmap = None
+                engine_name = "YOLOv11 Ultralytics PyTorch Fast Inference"
+                device_name = "CUDA GPU Mode (Activated)" if torch.cuda.is_available() else "AVX2 CPU Multi‑Threading"
         else:
             # --- REAL OPENCV VISUAL CORE FALLBACK ---
             sys.stderr.write("[PIPELINE] Using OpenCV fallback\n")
@@ -390,7 +456,7 @@ def main():
         sys.stderr.write(f"[PIPELINE] Total pipeline time: {latency_ms:.0f}ms | accepted_boxes: {len(accepted_boxes)}\n")
         
         if len(accepted_boxes) > 0:
-            gradcam_url = apply_colormap_to_heatmap(heatmap, img_bytes)
+            gradcam_url = apply_colormap_to_heatmap(heatmap, img_bytes) if heatmap is not None else None
             output = {
                 "detected": True,
                 "threatType": accepted_boxes[0]["label"],
