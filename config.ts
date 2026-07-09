@@ -11,11 +11,16 @@ function getEnv(key: string, defaultValue: string): string {
 
 export const CONFIG = {
   PORT: Number(getEnv('PORT', '5000')),
+  NODE_ENV: getEnv('NODE_ENV', 'development'),
   MODEL_PATH: getEnv('MODEL_PATH', path.resolve('models/best.pt')),
   DATABASE_PATH: getEnv('DATABASE_PATH', path.resolve('database')),
   LOG_DIRECTORY: getEnv('LOG_DIRECTORY', path.resolve('logs')),
   CONFIDENCE_THRESHOLD: Number(getEnv('CONFIDENCE_THRESHOLD', '0.70')),
-  MAX_UPLOAD_SIZE: getEnv('MAX_UPLOAD_SIZE', '10mb')
+  MAX_UPLOAD_SIZE: getEnv('MAX_UPLOAD_SIZE', '10mb'),
+  // CORS: set to the Vercel frontend URL in production (e.g. https://cam-yolo11.vercel.app)
+  CORS_ORIGIN: getEnv('CORS_ORIGIN', '*'),
+  // Python: set to explicit path for virtualenvs (e.g. /opt/venv/bin/python3)
+  PYTHON_PATH: getEnv('PYTHON_PATH', ''),
 };
 
 // Ensure required directories exist at startup

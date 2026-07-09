@@ -37,9 +37,27 @@ ensureStartupPaths();
 
 app.use(express.json({ limit: CONFIG.MAX_UPLOAD_SIZE }));
 
-// ─── Security headers ───────────────────────────────────────────────────────────
+// ─── CORS ─────────────────────────────────────────────────────────────────────
+// Allow cross-origin requests from the Vercel-hosted frontend
+const CORS_ORIGIN = process.env.CORS_ORIGIN || '*';
 app.use((_req, res, next) => {
-  res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' http://localhost:* ws://localhost:*;");
+  res.setHeader('Access-Control-Allow-Origin', CORS_ORIGIN);
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  if (_req.method === 'OPTIONS') {
+    res.sendStatus(204);
+    return;
+  }
+  next();
+});
+
+// ─── Security headers ───────────────────────────────────────────────────────────
+const cspConnectSrc = CORS_ORIGIN === '*'
+  ? "connect-src 'self' http://localhost:* ws://localhost:*;"
+  : `connect-src 'self' http://localhost:* ws://localhost:* ${CORS_ORIGIN};`;
+
+app.use((_req, res, next) => {
+  res.setHeader('Content-Security-Policy', `default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; ${cspConnectSrc}`);
   next();
 });
 

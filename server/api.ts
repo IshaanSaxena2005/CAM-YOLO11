@@ -1,8 +1,15 @@
 import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import { execSync } from 'child_process';
 import { CONFIG } from '../config';
+
+// Resolve __dirname for ESM
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+// Project root = one level up from server/
+const PROJECT_ROOT = path.resolve(__dirname, '..');
 
 // --- DATA STRUCTURES & CLASS DEFINITIONS ---
 
@@ -55,7 +62,8 @@ export interface Block {
 
 // --- HELPER STORAGE SETUP ---
 
-const DB_DIR = path.resolve('./database');
+// Use CONFIG.DATABASE_PATH (env-configurable) instead of hardcoded './database'
+const DB_DIR = path.resolve(CONFIG.DATABASE_PATH);
 const DB_FILE = path.join(DB_DIR, 'surveillance_db.json');
 const LOGS_FILE = path.join(DB_DIR, 'surveillance_logs.json');
 
@@ -309,13 +317,18 @@ const DEFAULT_MODEL_PATH = CONFIG.MODEL_PATH;
 
 // Cross-platform Python detection
 function getPythonExecutable(): string {
+  // Allow explicit override via environment variable (useful for virtualenvs on Railway)
+  if (process.env.PYTHON_PATH && process.env.PYTHON_PATH.trim() !== '') {
+    return process.env.PYTHON_PATH.trim();
+  }
+
   const platform = process.platform as string;
-  
+
   // On Windows, use 'python'
   if (platform === 'win32') {
     return 'python';
   }
-  
+
   // On Linux/macOS, try 'python3' first, then 'python'
   try {
     execSync('python3 --version', { stdio: 'ignore' });
@@ -341,7 +354,7 @@ export async function processCamouflageImageAI(
   const cleanBase64 = base64Data.includes(',') ? base64Data.split(',')[1] : base64Data;
   const imageSource = base64Data.startsWith('data:') ? base64Data : `data:image/jpeg;base64,${base64Data}`;
 
-  const tempDir = path.resolve('./database');
+  const tempDir = path.join(PROJECT_ROOT, 'database');
   if (!fs.existsSync(tempDir)) {
     fs.mkdirSync(tempDir, { recursive: true });
   }
@@ -353,11 +366,14 @@ export async function processCamouflageImageAI(
     fs.writeFileSync(tempFilePath, buffer);
 
     // Call Python core passing configuration threshold and model path
+    // Use absolute path to yolo_pipeline.py so it works regardless of cwd (critical on Linux/Railway)
+    const pipelineScript = path.join(PROJECT_ROOT, 'yolo_pipeline.py');
     const mockArg = mockType !== 'none' ? ` "${mockType}"` : '';
     const pythonCmd = getPythonExecutable();
-    const stdout = execSync(`${pythonCmd} yolo_pipeline.py "${tempFilePath}" "${threshold}" "${DEFAULT_MODEL_PATH}"${mockArg}`, {
+    const stdout = execSync(`"${pythonCmd}" "${pipelineScript}" "${tempFilePath}" "${threshold}" "${DEFAULT_MODEL_PATH}"${mockArg}`, {
       encoding: 'utf-8',
       timeout: 30000,
+      cwd: PROJECT_ROOT,
     });
 
     const parsed = JSON.parse(stdout);
