@@ -292,20 +292,28 @@ def process_opencv_fallback(image_bytes, allowed_classes, conf_threshold, is_moc
 
 
 def apply_colormap_to_heatmap(heatmap, original_image_bytes):
-    nparr = np.frombuffer(original_image_bytes, np.uint8)
-    orig_img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-    h, w, _ = orig_img.shape
-    
-    # Scale heatmap to 0-255
-    heatmap_resized = cv2.resize(heatmap, (w, h))
-    heatmap_8bit = np.uint8(255 * heatmap_resized)
-    
-    color_map = cv2.applyColorMap(heatmap_8bit, cv2.COLORMAP_JET)
-    overlay = cv2.addWeighted(orig_img, 0.45, color_map, 0.55, 0)
-    
-    _, encoded_img = cv2.imencode('.jpg', overlay)
-    b64_str = base64.b64encode(encoded_img).decode('utf-8')
-    return f"data:image/jpeg;base64,{b64_str}"
+    try:
+        nparr = np.frombuffer(original_image_bytes, np.uint8)
+        orig_img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        if orig_img is None:
+            sys.stderr.write("[PIPELINE] Warning: cv2.imdecode failed to decode original image bytes\n")
+            return None
+            
+        h, w, _ = orig_img.shape
+        
+        # Scale heatmap to 0-255
+        heatmap_resized = cv2.resize(heatmap, (w, h))
+        heatmap_8bit = np.uint8(255 * heatmap_resized)
+        
+        color_map = cv2.applyColorMap(heatmap_8bit, cv2.COLORMAP_JET)
+        overlay = cv2.addWeighted(orig_img, 0.45, color_map, 0.55, 0)
+        
+        _, encoded_img = cv2.imencode('.jpg', overlay)
+        b64_str = base64.b64encode(encoded_img).decode('utf-8')
+        return f"data:image/jpeg;base64,{b64_str}"
+    except Exception as e:
+        sys.stderr.write(f"[PIPELINE] apply_colormap_to_heatmap failed: {type(e).__name__}: {e}\n")
+        return None
 
 
 def main():
