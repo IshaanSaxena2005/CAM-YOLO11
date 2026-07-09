@@ -52,6 +52,7 @@ EXPOSE 5000
 # Environment defaults
 ENV NODE_ENV=production
 ENV PYTHON_PATH=python3
+ENV ENABLE_GRADCAM=false
 
 # Start the unified Node + Python server
 CMD ["npm", "start"]

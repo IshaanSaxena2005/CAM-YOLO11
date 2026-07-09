@@ -27,6 +27,10 @@ try:
 except ImportError as e:
     sys.stderr.write(f"[PIPELINE] CUDA/PyTorch unavailable ({e}) – using OpenCV fallback\n")
 
+# Configuration flag for Grad-CAM activation. Defaulting to False on CPU/Railway to avoid ETIMEDOUT.
+ENABLE_GRADCAM = os.environ.get('ENABLE_GRADCAM', 'false').lower() == 'true'
+sys.stderr.write(f"[PIPELINE] Configuration ENABLE_GRADCAM={ENABLE_GRADCAM}\n")
+
 # --- TRUE PYTORCH GRAD-CAM EXPLAINER & ENGINE ---
 class YOLO11GradCAM:
     def __init__(self, model_path="best.pt", layer_index=15):
@@ -45,7 +49,11 @@ class YOLO11GradCAM:
         self.activations = None
         self.gradients = None
         self.handlers = []
-        self._register_hooks()
+        if ENABLE_GRADCAM:
+            sys.stderr.write("[PIPELINE] Registering forward/backward hooks for Grad-CAM...\n")
+            self._register_hooks()
+        else:
+            sys.stderr.write("[PIPELINE] Skipping hook registration (ENABLE_GRADCAM=false)\n")
 
     def _register_hooks(self):
         def forward_hook(module, input, output):
@@ -118,24 +126,36 @@ class YOLO11GradCAM:
                 if label_name != "Unknown Object":
                     low_conf_boxes.append(box_obj)
 
-        if len(accepted_boxes) == 0:
-            return np.zeros((h, w), dtype=np.float32), [], low_conf_boxes, has_any_candidates
+        if len(accepted_boxes) == 0 or not ENABLE_GRADCAM:
+            if not ENABLE_GRADCAM:
+                sys.stderr.write("[PIPELINE] Skipping Grad-CAM backward pass and heatmap computation\n")
+            return None, accepted_boxes, low_conf_boxes, has_any_candidates
 
         # Preprocess image tensor for PyTorch backprop
+        sys.stderr.write("[PIPELINE] Preprocessing image tensor for backpropagation...\n")
+        prep_start = time.time()
         img_resized = cv2.resize(orig_img, (640, 640))
         img_tensor = torch.from_numpy(img_resized).permute(2, 0, 1).float() / 255.0
         img_tensor = img_tensor.unsqueeze(0).to(self.device).requires_grad_(True)
+        sys.stderr.write(f"[PIPELINE] Tensor preprocessed in {(time.time() - prep_start)*1000:.0f}ms\n")
         
+        sys.stderr.write("[PIPELINE] Performing forward pass on PyTorch tensor...\n")
+        fwd_start = time.time()
         self.model.model.zero_grad()
         model_output = self.model.model(img_tensor)
+        sys.stderr.write(f"[PIPELINE] Forward pass completed in {(time.time() - fwd_start)*1000:.0f}ms\n")
         
         if isinstance(model_output, tuple):
             score = model_output[0].sum()
         else:
             score = model_output.sum()
             
+        sys.stderr.write("[PIPELINE] Performing backward pass (score.backward())...\n")
+        bwd_start = time.time()
         score.backward()
+        sys.stderr.write(f"[PIPELINE] Backward pass completed in {(time.time() - bwd_start)*1000:.0f}ms\n")
         
+        sys.stderr.write("[PIPELINE] Extracting gradients and activations...\n")
         gradients = self.gradients.cpu().data.numpy()[0]
         activations = self.activations.cpu().data.numpy()[0]
         
