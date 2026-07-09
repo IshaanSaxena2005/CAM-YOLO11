@@ -1,15 +1,31 @@
 #!/usr/bin/env python3
 import sys
 import os
+
+# Save the original stdout to output the final JSON result strictly at the end
+original_stdout = sys.stdout
+# Redirect stdout to stderr globally so all library prints, warnings, and messages go to stderr
+sys.stdout = sys.stderr
+
 import json
 import base64
 import math
 import time
+import warnings
+import logging
+
+# Disable all warnings from python libraries
+warnings.filterwarnings("ignore")
 
 # ── Ultralytics config dir ──────────────────────────────────────────────────
 # Set BEFORE importing ultralytics so it never tries to write to ~/.config
 # /tmp is always writable in Docker / Railway containers.
 os.environ.setdefault('YOLO_CONFIG_DIR', '/tmp/ultralytics')
+# Disable Ultralytics verbose logging
+os.environ['YOLO_VERBOSE'] = 'False'
+
+# Set logging level for ultralytics to ERROR/CRITICAL
+logging.getLogger("ultralytics").setLevel(logging.ERROR)
 
 # Import NumPy and OpenCV unconditionally (required for both PyTorch and fallback pipelines)
 import numpy as np
@@ -407,14 +423,19 @@ def main():
                 "gradcamHeatmapUrl": None
             }
 
+        # Restore original stdout strictly to output the JSON response
+        sys.stdout = original_stdout
         print(json.dumps(output))
+        sys.stdout = sys.stderr
 
     except Exception as e:
+        sys.stdout = original_stdout
         print(json.dumps({
             "detected": False,
             "message": f"No valid target detected. Pipeline error: {str(e)}",
             "boundingBoxes": []
         }))
+        sys.stdout = sys.stderr
 
 if __name__ == '__main__':
     main()
