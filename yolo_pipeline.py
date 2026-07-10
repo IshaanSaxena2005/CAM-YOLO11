@@ -43,8 +43,19 @@ try:
     from ultralytics import YOLO
     PYTORCH_AVAILABLE = True
     sys.stderr.write(f"[PIPELINE] PyTorch + Ultralytics imported in {(time.time() - _import_start)*1000:.0f}ms\n")
+    
+    # Import pytorch-grad-cam for EigenCAM heatmap generation
+    try:
+        from pytorch_grad_cam import EigenCAM
+        from pytorch_grad_cam.utils.image import show_cam_on_image
+        GRADCAM_AVAILABLE = True
+        sys.stderr.write("[PIPELINE] pytorch-grad-cam library imported successfully\n")
+    except ImportError as e:
+        GRADCAM_AVAILABLE = False
+        sys.stderr.write(f"[PIPELINE] pytorch-grad-cam unavailable ({e}) – EigenCAM will not be available\n")
 except ImportError as e:
     sys.stderr.write(f"[PIPELINE] CUDA/PyTorch unavailable ({e}) – using OpenCV fallback\n")
+    GRADCAM_AVAILABLE = False
 
 # Configuration flag for Grad-CAM activation. Defaulting to False on CPU/Railway to avoid ETIMEDOUT.
 ENABLE_GRADCAM = os.environ.get('ENABLE_GRADCAM', 'false').lower() == 'true'
@@ -194,6 +205,71 @@ class YOLO11GradCAM:
             
         heatmap = cv2.resize(cam, (w, h))
         return heatmap, accepted_boxes, low_conf_boxes, has_any_candidates
+
+# --- EIGENCAM HEATMAP GENERATION HELPER ---
+def generate_eigencam_heatmap(model, img_array):
+    """
+    Generate EigenCAM heatmap using pytorch-grad-cam library.
+    
+    Args:
+        model: Ultralytics YOLO model instance
+        img_array: Decoded image as numpy array (H, W, 3) in BGR format
+        
+    Returns:
+        heatmap: 2D numpy array (H, W) with heatmap values in range [0, 1]
+                Returns None if EigenCAM is not available or fails
+    """
+    if not GRADCAM_AVAILABLE or not PYTORCH_AVAILABLE:
+        sys.stderr.write("[PIPELINE] EigenCAM unavailable - skipping heatmap generation\n")
+        return None
+    
+    try:
+        # Create a wrapper to access the raw PyTorch model
+        class YOLOWrapper(nn.Module):
+            def __init__(self, model):
+                super().__init__()
+                self.model = model.model
+            
+            def forward(self, x):
+                return self.model(x)
+        
+        # Wrap the model
+        wrapped_model = YOLOWrapper(model)
+        wrapped_model.eval()
+        
+        # Get device
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        wrapped_model.to(device)
+        
+        # Prepare image tensor
+        h, w, _ = img_array.shape
+        resized_img = cv2.resize(img_array, (640, 640))
+        img_tensor = torch.from_numpy(resized_img).permute(2, 0, 1).float() / 255.0
+        img_tensor = img_tensor.unsqueeze(0).to(device)
+        
+        # Select target layer (use the same layer as YOLO11GradCAM)
+        target_layers = [model.model.model[-4]]
+        
+        # Create EigenCAM instance
+        cam = EigenCAM(model=wrapped_model, target_layers=target_layers)
+        
+        # Generate heatmap
+        grayscale_cam = cam(input_tensor=img_tensor)
+        heatmap = grayscale_cam[0, :, :]
+        
+        # Resize back to original image dimensions
+        heatmap = cv2.resize(heatmap, (w, h))
+        
+        # Ensure heatmap is in [0, 1] range
+        if heatmap.max() > 0:
+            heatmap = heatmap / heatmap.max()
+        
+        sys.stderr.write("[PIPELINE] EigenCAM heatmap generated successfully\n")
+        return heatmap
+        
+    except Exception as e:
+        sys.stderr.write(f"[PIPELINE] EigenCAM generation failed: {str(e)}\n")
+        return None
 
 # --- REAL OPENCV VISUAL CONVENIENT FALLBACK PIPELINE ---
 def process_opencv_fallback(image_bytes, allowed_classes, conf_threshold, is_mock_positive=False):
