@@ -13,6 +13,7 @@ import math
 import time
 import warnings
 import logging
+import traceback
 
 # Disable all warnings from python libraries
 warnings.filterwarnings("ignore")
@@ -60,6 +61,7 @@ except ImportError as e:
 # Configuration flag for Grad-CAM activation. Defaulting to False on CPU/Railway to avoid ETIMEDOUT.
 ENABLE_GRADCAM = os.environ.get('ENABLE_GRADCAM', 'false').lower() == 'true'
 sys.stderr.write(f"[PIPELINE] Configuration ENABLE_GRADCAM={ENABLE_GRADCAM}\n")
+sys.stderr.write(f"\n========== ENABLE_GRADCAM runtime value = {ENABLE_GRADCAM} ==========\n")
 
 # --- TRUE PYTORCH GRAD-CAM EXPLAINER & ENGINE ---
 class YOLO11GradCAM:
@@ -219,8 +221,10 @@ def generate_eigencam_heatmap(model, img_array):
         heatmap: 2D numpy array (H, W) with heatmap values in range [0, 1]
                 Returns None if EigenCAM is not available or fails
     """
+    sys.stderr.write("\n========== ENTERED generate_eigencam_heatmap ==========\n")
     if not GRADCAM_AVAILABLE or not PYTORCH_AVAILABLE:
         sys.stderr.write("[PIPELINE] EigenCAM unavailable - skipping heatmap generation\n")
+        sys.stderr.write(f"[PIPELINE] Reason: GRADCAM_AVAILABLE={GRADCAM_AVAILABLE}, PYTORCH_AVAILABLE={PYTORCH_AVAILABLE}\n")
         return None
     
     try:
@@ -246,29 +250,71 @@ def generate_eigencam_heatmap(model, img_array):
         resized_img = cv2.resize(img_array, (640, 640))
         img_tensor = torch.from_numpy(resized_img).permute(2, 0, 1).float() / 255.0
         img_tensor = img_tensor.unsqueeze(0).to(device)
+        sys.stderr.write(f"[PIPELINE] EigenCAM input tensor shape: {img_tensor.shape}\n")
         
         # Select target layer (use the same layer as YOLO11GradCAM)
         target_layers = [model.model.model[-4]]
+        sys.stderr.write(f"[PIPELINE] EigenCAM target layer: model.model.model[-4]\n")
+        
+        # Test wrapped model to inspect output structure
+        print("\n========== Testing wrapped model forward pass ==========", file=sys.stderr, flush=True)
+        with torch.no_grad():
+            test_output = wrapped_model(img_tensor)
+        print(f"Wrapped model output type: {type(test_output)}", file=sys.stderr, flush=True)
+        if isinstance(test_output, tuple):
+            print(f"Output is tuple with length: {len(test_output)}", file=sys.stderr, flush=True)
+            for i, item in enumerate(test_output):
+                msg = f"  Item {i}: type={type(item)}"
+                if hasattr(item, "shape"):
+                    msg += f", shape={item.shape}"
+                print(msg, file=sys.stderr, flush=True)
+        elif isinstance(test_output, list):
+            print(f"Output is list with length: {len(test_output)}", file=sys.stderr, flush=True)
+            for i, item in enumerate(test_output):
+                msg = f"  Item {i}: type={type(item)}"
+                if hasattr(item, "shape"):
+                    msg += f", shape={item.shape}"
+                print(msg, file=sys.stderr, flush=True)
+        else:
+            print("Output is not tuple/list", file=sys.stderr, flush=True)
+            if hasattr(test_output, "shape"):
+                print(f"Output shape: {test_output.shape}", file=sys.stderr, flush=True)
+        print("========== Wrapped model test complete ==========\n", file=sys.stderr, flush=True)
         
         # Create EigenCAM instance
+        sys.stderr.write("\n========== Creating EigenCAM object ==========\n")
         cam = EigenCAM(model=wrapped_model, target_layers=target_layers)
+        sys.stderr.write("\n========== EigenCAM object created ==========\n")
         
         # Generate heatmap
+        sys.stderr.write("\n========== Running EigenCAM ==========\n")
         grayscale_cam = cam(input_tensor=img_tensor)
+        sys.stderr.write(f"\n========== EigenCAM returned type={type(grayscale_cam)} shape={getattr(grayscale_cam,'shape',None)} ==========\n")
         heatmap = grayscale_cam[0, :, :]
+        sys.stderr.write(f"[PIPELINE] EigenCAM heatmap shape before resize: {heatmap.shape}\n")
         
         # Resize back to original image dimensions
         heatmap = cv2.resize(heatmap, (w, h))
+        sys.stderr.write(f"[PIPELINE] EigenCAM heatmap shape after resize: {heatmap.shape}\n")
+        
+        # Log CAM statistics
+        sys.stderr.write(f"[PIPELINE] EigenCAM min value: {heatmap.min()}\n")
+        sys.stderr.write(f"[PIPELINE] EigenCAM max value: {heatmap.max()}\n")
         
         # Ensure heatmap is in [0, 1] range
         if heatmap.max() > 0:
             heatmap = heatmap / heatmap.max()
+            sys.stderr.write(f"[PIPELINE] EigenCAM normalized - new max: {heatmap.max()}\n")
+        else:
+            sys.stderr.write("[PIPELINE] EigenCAM warning: max value is 0, skipping normalization\n")
         
         sys.stderr.write("[PIPELINE] EigenCAM heatmap generated successfully\n")
         return heatmap
         
     except Exception as e:
-        sys.stderr.write(f"[PIPELINE] EigenCAM generation failed: {str(e)}\n")
+        sys.stderr.write("\n========== EIGENCAM EXCEPTION ==========\n")
+        sys.stderr.write(traceback.format_exc())
+        sys.stderr.write("\n========================================\n")
         return None
 
 # --- REAL OPENCV VISUAL CONVENIENT FALLBACK PIPELINE ---
@@ -385,6 +431,7 @@ def apply_colormap_to_heatmap(heatmap, original_image_bytes):
 
 
 def main():
+    print("=== MAIN ENTERED ===", file=sys.stderr, flush=True)
     if len(sys.argv) < 2:
         print(json.dumps({"error": "No image argument supplied to YOLO pipeline"}))
         sys.exit(1)
@@ -458,17 +505,69 @@ def main():
             # Log actual model class names here, after yolo_model is assigned.
             sys.stderr.write(f"[PIPELINE] Model class names: {yolo_model.names}\n")
 
+            sys.stderr.write("\n========== ABOUT TO ENTER ENABLE_GRADCAM BRANCH ==========\n")
+            print("=== BEFORE ENABLE_GRADCAM ===", file=sys.stderr, flush=True)
             if ENABLE_GRADCAM:
-                # --- REAL ULTRALYTICS DEEP ACTION MAP WITH GRAD‑CAM ---
-                grad_cam_engine = YOLO11GradCAM(model_path=model_path, layer_index=15)
-                sys.stderr.write("[PIPELINE] Running Grad‑CAM inference...\n")
+                print("=== INSIDE ENABLE_GRADCAM ===", file=sys.stderr, flush=True)
+                sys.stderr.write("\n========== ENTERED ENABLE_GRADCAM BRANCH ==========\n")
+                # --- REAL ULTRALYTICS DEEP ACTION MAP WITH EIGENCAM ---
+                sys.stderr.write("[PIPELINE] Running YOLO inference with EigenCAM...\n")
                 infer_start = time.time()
-                heatmap, accepted_boxes, low_conf_boxes, has_any_candidates = grad_cam_engine.compute_heatmap(
-                    img_bytes, ALLOWED_CLASSES, conf_threshold
-                )
-                grad_cam_engine.remove_hooks()
-                sys.stderr.write(f"[PIPELINE] Inference + Grad‑CAM done in {(time.time() - infer_start)*1000:.0f}ms\n")
-                engine_name = "YOLOv11 Ultralytics PyTorch pipeline Core"
+                # Decode and resize image for detection
+                img_array = np.frombuffer(img_bytes, np.uint8)
+                img_bgr = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
+                img_resized = cv2.resize(img_bgr, (640, 640))
+                # Perform inference within a no‑grad context for speed
+                with torch.no_grad():
+                    results = yolo_model(img_resized, imgsz=640, verbose=False)
+                result = results[0]
+                # Extract detections – same logic as fast inference path
+                h, w, _ = img_resized.shape
+                accepted_boxes = []
+                low_conf_boxes = []
+                has_any_candidates = False
+                for idx, box in enumerate(result.boxes):
+                    bbox = box.xyxy[0].cpu().numpy().tolist()
+                    conf = float(box.conf[0].cpu().item())
+                    cls_id = int(box.cls[0].cpu().item())
+                    class_name = yolo_model.names[cls_id].lower().replace(" ", "").replace("_", "")
+                    if conf < 0.50:
+                        continue
+                    # Accept all detected classes (ALLOWED_CLASSES=None) or filter when set
+                    if ALLOWED_CLASSES is not None and class_name not in ALLOWED_CLASSES:
+                        label_name = "Unknown Object"
+                    else:
+                        label_name = class_name
+                    sys.stderr.write(f"[PIPELINE] Box {idx}: class={class_name} conf={conf:.3f} label={label_name}\n")
+                    ymin_pct = (bbox[1] / h) * 100.0
+                    xmin_pct = (bbox[0] / w) * 100.0
+                    ymax_pct = (bbox[3] / h) * 100.0
+                    xmax_pct = (bbox[2] / w) * 100.0
+                    box_obj = {
+                        "id": f"box-yolo-{idx}-{int(time.time())}",
+                        "label": f"YOLOv11: {label_name.capitalize()}",
+                        "confidence": conf,
+                        "box": [ymin_pct, xmin_pct, ymax_pct, xmax_pct],
+                        "class_name": label_name
+                    }
+                    has_any_candidates = True
+                    if conf >= conf_threshold and label_name != "Unknown Object":
+                        accepted_boxes.append(box_obj)
+                    elif label_name != "Unknown Object":
+                        low_conf_boxes.append(box_obj)
+                # Generate EigenCAM heatmap after detection is complete
+                sys.stderr.write("\n========== CALLING generate_eigencam_heatmap ==========\n")
+                try:
+                    heatmap = generate_eigencam_heatmap(yolo_model, img_bgr)
+                except Exception as e:
+                    sys.stderr.write(f"[PIPELINE] EigenCAM generation failed: {str(e)}\n")
+                    heatmap = None
+                if heatmap is None:
+                    sys.stderr.write("\n========== generate_eigencam_heatmap RETURNED NONE ==========\n")
+                else:
+                    sys.stderr.write(f"\n========== Heatmap generated. Shape={heatmap.shape} ==========\n")
+                sys.stderr.write(f"[PIPELINE] Inference + EigenCAM done in {(time.time() - infer_start)*1000:.0f}ms\n")
+                engine_name = "YOLOv11 Ultralytics PyTorch pipeline Core with EigenCAM"
                 device_name = "CUDA GPU Mode (Activated)" if torch.cuda.is_available() else "AVX2 CPU Multi‑Threading"
             else:
                 # Fast inference without Grad‑CAM: use the cached model and single forward pass.
