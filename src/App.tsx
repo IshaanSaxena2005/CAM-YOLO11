@@ -1477,9 +1477,6 @@ export default function App() {
                                 <div className="p-1 border-b border-r font-mono text-[9px] self-start" style={{ borderColor: boxColor, color: boxColor, backgroundColor: 'rgba(15, 23, 42, 0.6)' }}>
                                   [{xmin.toFixed(1)}%, {ymin.toFixed(1)}%]
                                 </div>
-                                <div className="absolute bottom-0 right-0 p-1 border-t border-l font-mono text-[8px]" style={{ borderColor: boxColor, color: boxColor, backgroundColor: 'rgba(15, 23, 42, 0.6)' }}>
-                                  {boxObj.class_name || 'Unknown'}
-                                </div>
                               </div>
                             );
                           })}
