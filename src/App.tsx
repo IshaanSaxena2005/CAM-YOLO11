@@ -617,10 +617,7 @@ export default function App() {
       <header className="border-b px-4 py-5" style={{ backgroundColor: 'var(--bg-sidebar)', borderColor: COLORS.border, boxShadow: 'var(--shadow-subtle)' }} id="header-bar">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-6">
           <div className="flex items-center gap-4">
-            <div className="relative flex h-10 w-10 items-center justify-center rounded-lg border" style={{ backgroundColor: 'var(--accent-green-subtle)', borderColor: 'var(--accent-green)' }}>
-              <Radar className="h-5 w-5 animate-pulse" style={{ color: 'var(--accent-green)' }} />
-              <div className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 animate-ping rounded-full" style={{ backgroundColor: 'var(--accent-green)' }} />
-            </div>
+            <img src="/logo.png" alt="CAM-YOLO11 Logo" className="max-h-20 w-auto object-contain" />
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-sm font-bold tracking-widest uppercase sm:text-base" style={{ color: 'var(--text-primary)' }}>CAM-YOLO11</h1>
@@ -1477,9 +1474,6 @@ export default function App() {
                                 <div className="p-1 border-b border-r font-mono text-[9px] self-start" style={{ borderColor: boxColor, color: boxColor, backgroundColor: 'rgba(15, 23, 42, 0.6)' }}>
                                   [{xmin.toFixed(1)}%, {ymin.toFixed(1)}%]
                                 </div>
-                                <div className="absolute bottom-0 right-0 p-1 border-t border-l font-mono text-[8px]" style={{ borderColor: boxColor, color: boxColor, backgroundColor: 'rgba(15, 23, 42, 0.6)' }}>
-                                  {boxObj.class_name || 'Unknown'}
-                                </div>
                               </div>
                             );
                           })}
@@ -2010,7 +2004,7 @@ export default function App() {
                           <PolarGrid stroke="#27272a" />
                           <PolarAngleAxis dataKey="label" stroke="#52525b" />
                           <PolarRadiusAxis stroke="#27272a" />
-                          <RechartsRadar name="Camo Target Weight" dataKey="count" stroke="#38bdf8" fill="#0ea5e9" fillOpacity={0.3} animationDuration={1200} />
+                          <RechartsRadar name="Camo Target Weight" dataKey="count" stroke="#38bdf8" fill="#0ea5e9" fillOpacity={0.3} />
                         </RadarChart>
                       </ResponsiveContainer>
                     </div>
@@ -2022,7 +2016,7 @@ export default function App() {
                     <div className="w-full text-xs font-mono" style={{ color: 'var(--text-muted)', height: 200 }}>
                       {(() => {
                         const lineData = detections.length > 0
-                          ? detections.map((d, i) => { const v = typeof d.confidence === 'number' ? Math.round(d.confidence * 100) : 0; return { sample: `P_${String(i+1).padStart(2,'0')}`, conf: isNaN(v) ? 0 : v }; })
+                          ? detections.slice(-10).map((d, i) => { const v = typeof d.confidence === 'number' ? Math.round(d.confidence * 100) : 0; return { sample: `P_${String(i+1).padStart(2,'0')}`, conf: isNaN(v) ? 0 : v }; })
                           : [{sample:'P_01',conf:0},{sample:'P_02',conf:0},{sample:'P_03',conf:0},{sample:'P_04',conf:0},{sample:'P_05',conf:80},{sample:'P_06',conf:85}];
                         return <AnimatedLineChart data={lineData} />;
                       })()}

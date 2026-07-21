@@ -411,7 +411,7 @@ export async function processCamouflageImageAI(
             console.log('=========================');
             console.log('STEP 2 – Python output');
             console.log('=========================');
-            console.log('[STEP2] Python stdout (raw):', JSON.stringify(out));
+            console.log('[STEP2] Python stdout received');
             if (stderr) console.log('[STEP2] Python stderr (full):\n' + stderr);
             resolve(out);
           }
@@ -432,12 +432,12 @@ export async function processCamouflageImageAI(
     console.log('STEP 2b – Parsed Python JSON');
     console.log('=========================');
     console.log('[STEP2b] parsed.detected      :', parsed.detected);
-    console.log('[STEP2b] parsed.boundingBoxes :', JSON.stringify(parsed.boundingBoxes));
+    console.log('[STEP2b] parsed.boundingBoxes length:', parsed.boundingBoxes ? parsed.boundingBoxes.length : 'N/A');
     console.log('[STEP2b] parsed.boundingBoxes.length:', parsed.boundingBoxes ? parsed.boundingBoxes.length : 'N/A (field missing)');
     console.log('[STEP2b] parsed.confidence    :', parsed.confidence);
     console.log('[STEP2b] parsed.threatType    :', parsed.threatType);
     console.log('[STEP2b] parsed.message       :', parsed.message);
-    console.log('[STEP2b] Full parsed object   :', JSON.stringify(parsed, null, 2));
+    console.log('[STEP2b] Parsed successfully');
     console.log('[STEP2b] typeof parsed.detected:', typeof parsed.detected);
     console.log('[STEP2b] Boolean(parsed.detected):', Boolean(parsed.detected));
     console.log(`[DETECT] Total request time: ${Date.now() - requestStart}ms | detected: ${parsed.detected}`);
@@ -480,7 +480,7 @@ export async function processCamouflageImageAI(
       console.log('[STEP3] rawResult.boundingBoxes.length:', rawRecord.boundingBoxes.length);
       console.log('[STEP3] rawResult.threatType      :', rawRecord.threatType);
       console.log('[STEP3] rawResult.confidence      :', rawRecord.confidence);
-      console.log('[STEP3] Full rawResult            :', JSON.stringify(rawRecord, null, 2));
+      console.log('[STEP3] rawResult prepared');
       return rawRecord;
     } else {
       // === STEP 3 (no-detection branch) ===
@@ -488,7 +488,7 @@ export async function processCamouflageImageAI(
       console.log('STEP 3 – rawResult (NO DETECTION branch taken)');
       console.log('=========================');
       console.log('[STEP3-NODET] parsed.detected was falsy. Value:', parsed.detected, '| type:', typeof parsed.detected);
-      console.log('[STEP3-NODET] parsed.boundingBoxes:', JSON.stringify(parsed.boundingBoxes));
+      console.log('[STEP3-NODET] No detection');
       return {
           id: detId,
           timestamp: new Date().toISOString(),
