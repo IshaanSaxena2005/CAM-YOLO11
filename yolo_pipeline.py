@@ -235,7 +235,12 @@ def generate_eigencam_heatmap(model, img_array):
                 self.model = model.model
             
             def forward(self, x):
-                return self.model(x)
+                output = self.model(x)
+
+                if isinstance(output, tuple):
+                    return output[0]
+
+                return output
         
         # Wrap the model
         wrapped_model = YOLOWrapper(model)
@@ -253,8 +258,31 @@ def generate_eigencam_heatmap(model, img_array):
         sys.stderr.write(f"[PIPELINE] EigenCAM input tensor shape: {img_tensor.shape}\n")
         
         # Select target layer (use the same layer as YOLO11GradCAM)
-        target_layers = [model.model.model[-4]]
-        sys.stderr.write(f"[PIPELINE] EigenCAM target layer: model.model.model[-4]\n")
+        target_layers = [model.model.model[-2]]
+        sys.stderr.write(f"[PIPELINE] EigenCAM target layer: model.model.model[-2]\n")
+
+        # Inspect current target layer
+        current_layer = model.model.model[-2]
+        sys.stderr.write(f"[PIPELINE] Current target layer index: -2\n")
+        sys.stderr.write(f"[PIPELINE] Current target layer type: {type(current_layer).__name__}\n")
+        sys.stderr.write(f"[PIPELINE] Current target layer module name: {current_layer._get_name() if hasattr(current_layer, '_get_name') else 'N/A'}\n")
+        if hasattr(current_layer, 'out_channels'):
+            sys.stderr.write(f"[PIPELINE] Current target layer out_channels: {current_layer.out_channels}\n")
+
+        # Inspect candidate layers
+        print("\n========== Inspecting candidate layers ==========\n", file=sys.stderr, flush=True)
+        for idx in [-2, -3, -4, -5, -6]:
+            try:
+                layer = model.model.model[idx]
+                print(f"\nLayer index: {idx}\n", file=sys.stderr, flush=True)
+                print(f"Layer class: {type(layer).__name__}\n", file=sys.stderr, flush=True)
+                if hasattr(layer, 'out_channels'):
+                    print(f"Output channels: {layer.out_channels}\n", file=sys.stderr, flush=True)
+                if hasattr(layer, '_get_name'):
+                    print(f"Module name: {layer._get_name()}\n", file=sys.stderr, flush=True)
+            except IndexError as e:
+                print(f"Layer index {idx}: Invalid - {e}\n", file=sys.stderr, flush=True)
+        print("========== Layer inspection complete ==========\n", file=sys.stderr, flush=True)
         
         # Test wrapped model to inspect output structure
         print("\n========== Testing wrapped model forward pass ==========", file=sys.stderr, flush=True)
