@@ -215,13 +215,6 @@ The system is evaluated with the **MHCD2022** dataset, which contains labeled ca
 
 ---
 
-## Authors
-
-- **Ishaan Saxena** – Lead Engineer, Front‑end & UI/UX
-- **[Additional contributors]** – Backend, AI pipeline, Security
-
----
-
 ## License
 
 This project is licensed under the **MIT License**. See the `LICENSE` file for details.
